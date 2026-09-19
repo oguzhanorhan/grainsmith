@@ -1,0 +1,98 @@
+# ===================== grainsmith run configuration =====================
+# Cu/Fe two-element composite — different ELEMENTS and different
+# STRUCTURES per phase.
+#
+# WHAT THIS TEACHES
+#   * Phases may differ in chemistry, not just structure: FCC Cu grains
+#     and BCC Fe grains in one periodic polycrystal — model setups for
+#     metal-matrix composites, immiscible alloys (Cu-Fe is the textbook
+#     immiscible pair), and heterophase-interface studies.
+#   * Every atom of a grain carries its phase's element: the LAMMPS file
+#     gets two atom types (type 1 = Cu, type 2 = Fe, alphabetical) with
+#     the right masses — ready for an eam/alloy CuFe potential.
+#   * Gate G9 compares the final composition against the volume-weighted
+#     nominal mix sum_p w_p·x_p with w_p ∝ rho_p·V_p^assigned: with 50/50
+#     volume fractions Fe gets slightly MORE atoms than Cu per Å³ ratio
+#     (rho_bcc-Fe = 0.0849 vs rho_fcc-Cu = 0.0847 atoms/Å³) — the gate
+#     message shows both.
+#   * Same outputs as the Ti example (alloys_multiphase/ti_alpha_beta.yaml):
+#     phase columns, interphase boundary rows, per-phase mdf_/odf_mtex_
+#     files, phase:<name> summary sections and the G15 fraction row.
+#
+# HOW TO RUN
+#   grainsmith validate examples/alloys_multiphase/cufe_composite.yaml
+#   grainsmith generate examples/alloys_multiphase/cufe_composite.yaml
+#   Check grains.csv's phase column, boundaries.csv's interphase rows,
+#   and gate G9's composition-mix message in summary.csv.
+
+meta:
+  title: "Cu/Fe composite, 10 grains, 50/50 volume fractions"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 90210
+
+box:
+  lengths: [55.0, 55.0, 55.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 10
+  min_seed_distance: auto
+  lloyd_iterations: 0
+
+phases:
+  - name: Cu_fcc
+    fraction: 0.5
+    crystal:
+      space_group:
+        number: 225            # Fm-3m
+      lattice:
+        a: 3.615               # Cu, Å
+      wyckoff_sites:
+        - {element: Cu, coords: [0.0, 0.0, 0.0], letter: a}
+  - name: Fe_bcc
+    fraction: 0.5
+    crystal:
+      space_group:
+        number: 229            # Im-3m
+      lattice:
+        a: 2.866               # alpha-Fe, Å
+      wyckoff_sites:
+        - {element: Fe, coords: [0.0, 0.0, 0.0], letter: a}
+
+orientation:
+  scheme: random_uniform
+
+boundaries:
+  geometry: flat
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"        # resolves vs d_nn_Fe = 2.482 Å (smaller)
+    policy: delete_shallower   # midpoint_merge is forbidden (two species)
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false
+  per_atom_margin: false
+
+output:
+  directory: ./out_cufe_composite
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

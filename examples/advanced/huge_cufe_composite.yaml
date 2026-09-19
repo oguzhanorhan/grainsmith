@@ -1,0 +1,146 @@
+# ===================== grainsmith run configuration =====================
+# HUGE TIER — Cu(FCC, 60%) / Fe(BCC, 40%) two-phase composite in a
+# 1500 A cube. ~2.87e8 atoms, 256 grains (~29 nm). Cluster job.
+# Box-expanded sibling of adv_cufe_composite.yaml (228 A, 48 grains,
+# ~1e6 atoms).
+#
+# WHY THIS ONE IS WORTH RUNNING BIG
+# ---------------------------------
+# A phase fraction is a VOLUME fraction, and grainsmith realises it by
+# partitioning whole grains between the phases (greedy longest-processing-
+# time on the grain volumes, gate G15). The achievable accuracy is
+# therefore bounded by the grain-volume granularity: with 48 grains the
+# realised split cannot land arbitrarily close to 60/40, because it is a
+# sum of a subset of 48 numbers. At 256 grains there are far more subsets
+# and the realised fraction lands much closer. This example exists to show
+# that convergence, and G15 records the realised fractions so it can be
+# read off rather than assumed.
+#
+# The second thing scale buys here is interphase statistics. Cu-Cu, Fe-Fe
+# and Cu-Fe boundaries are three different populations; at 48 grains the
+# interphase set is small enough to be noise-dominated. Note that an
+# interphase boundary has NO defined misorientation (the two lattices are
+# not related by a rotation), so boundaries.csv reports NaN there by
+# design, and the MDF/CSL machinery is single-phase only.
+#
+# NO ORIENTATION RELATIONSHIP IS IMPOSED. Kurdjumov-Sachs and
+# Nishiyama-Wassermann Cu/Fe ORs are real and well documented, but this
+# code does not generate them (a documented planned extension). Both
+# phases here draw random uniform orientations, so the interfaces are
+# general, not OR-related. Use this structure for stability/energetics
+# screening, not as a model of a specific OR-controlled interface.
+#
+# GEOMETRY (computed from the installed code)
+# -------------------------------------------
+#   * N = 256 grains in a 1500.0 A cube -> r_ws = 146.55 A, d_eq = 29.3 nm,
+#     min_seed_distance: auto resolves to that same r_ws.
+#   * Cu FCC a = 3.615 A: 4 atoms/cell, d_nn = 2.5562 A, 0.08467 at/A^3.
+#     Fe BCC a = 2.866 A: 2 atoms/cell, d_nn = 2.4820 A, 0.08496 at/A^3.
+#     The two number densities are within 0.4% of each other, so the atom
+#     count is ~2.87e8 almost independently of how the volume splits --
+#     roughly 1.7e8 in the Cu grains and 1.1e8 in the Fe grains.
+#   * Geometry is FLAT: exact polyhedral cell volumes (which is what makes
+#     the G15 phase-fraction accounting exact) and a vertices.csv.
+#
+# THE OVERLAP POLICY IS NOT A FREE CHOICE. `midpoint_merge` averages the
+# positions of two overlapping atoms, which is meaningless across a Cu/Fe
+# interface -- there is no sensible "average" of a Cu and an Fe atom. This
+# file uses delete_shallower, and the config layer rejects midpoint_merge
+# for multi-species runs.
+#
+# RESOURCES
+# ---------
+#   * ~2.87e8 atoms x 36 B = 10.3 GB for the atom arrays; the post-fill
+#     sort holds old + new + index (~23 GB) and the writers add buffers.
+#     Budget >= 64 GB, expect 35-45 GB resident.
+#   * 256 grains keeps the per-grain fill box small (~0.4 GB transient per
+#     worker); with --jobs 32 the fill pool needs ~13 GB between them. See
+#     huge_pdau_perturbed.yaml's header for why the grain count is a memory
+#     parameter and not only a physics one.
+#
+# Run:
+#   grainsmith validate examples/advanced/huge_cufe_composite.yaml
+#   grainsmith generate examples/advanced/huge_cufe_composite.yaml --jobs 32
+# =========================================================================
+
+meta:
+  title: "HUGE: Cu(FCC,60%)/Fe(BCC,40%) composite, 1500 A box, 256 grains"
+  verbose: 1
+
+runtime:
+  # Per-ALLOCATION guard, not a total-RSS cap; also the budget the parallel
+  # fill divides by the worker count.
+  memory_limit_gb: 32.0
+
+seed:
+  mode: fixed
+  value: 60240
+
+box:
+  lengths: [1500.0, 1500.0, 1500.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 256                 # more grains -> finer volume granularity for
+                              # the phase partition (see header) and a
+                              # smaller per-grain fill box
+  min_seed_distance: auto     # -> r_ws = 146.55 A
+  lloyd_iterations: 0
+
+phases:
+  - name: Cu_fcc
+    fraction: 0.6             # VOLUME fraction, realised by whole-grain
+                              # partition; G15 records what was achieved
+    crystal:
+      space_group:
+        number: 225           # Fm-3m
+      lattice:
+        a: 3.615
+      wyckoff_sites:
+        - {element: Cu, coords: [0.0, 0.0, 0.0], letter: a}
+  - name: Fe_bcc
+    fraction: 0.4
+    crystal:
+      space_group:
+        number: 229           # Im-3m
+      lattice:
+        a: 2.866
+      wyckoff_sites:
+        - {element: Fe, coords: [0.0, 0.0, 0.0], letter: a}
+
+orientation:
+  scheme: random_uniform      # no imposed OR — see header
+
+boundaries:
+  geometry: flat
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"       # d_nn resolves per phase
+    policy: delete_shallower  # midpoint_merge is rejected for multi-species
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false                  # CSL classes are single-phase; an interphase
+                              # boundary has no defined misorientation
+  per_atom_margin: false
+  statistics: true
+  section: {axis: z, position: 0.5}
+
+output:
+  directory: ./out_huge_cufe_composite
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  methods_snippet: true

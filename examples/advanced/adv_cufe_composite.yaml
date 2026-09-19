@@ -1,0 +1,108 @@
+# ===================== grainsmith run configuration =====================
+# ADVANCED example (~1M atoms) — Cu/Fe two-phase composite at scale.
+# FCC Cu matrix (60 vol%) + BCC Fe dispersed phase (40 vol%), ~1e6 atoms.
+#
+# WHAT THIS TEACHES
+#   * Multiphase capacity at MD scale: two DIFFERENT structures (FCC Cu,
+#     SG 225; BCC Fe, SG 229) and two DIFFERENT elements coexist in one
+#     periodic polycrystal.  Cu-Fe is the textbook immiscible pair — this
+#     is a model setup for metal-matrix composites and heterophase-
+#     interface studies, now at ~1e6 atoms rather than the ~1e4 teaching
+#     size.
+#   * Phase assignment is a deterministic greedy largest-processing-time
+#     (LPT) partition of the grains to hit the target volume fractions;
+#     gate G15 (warn) reports the achieved vs target fractions.  The
+#     interphase boundaries carry NaN misorientation (no crystallographic
+#     misorientation is defined between different lattices).
+#   * IMPORTANT physical caveat: grainsmith imposes NO orientation
+#     relationship (no Kurdjumov-Sachs / Nishiyama-Wassermann) across the
+#     Cu/Fe interfaces — they are as-built, generally high-energy
+#     interphase boundaries.  A single scalar "GB energy" is therefore
+#     NOT meaningful here; the intended MD use is STABILITY-only (does
+#     the structure relax without blowing up), not a gamma_GB
+#     measurement.
+#   * Type map is alphabetical: LAMMPS type 1 = Cu, type 2 = Fe, each with
+#     its correct mass — ready for the Bonny 2009 FeCuNi eam/alloy
+#     potential (pair_coeff ... Cu Fe).
+#   * Gate G9 compares the final composition to the volume-weighted
+#     nominal mix; the overlap cutoff 0.85*d_nn resolves against the
+#     SMALLER d_nn (BCC Fe, d_nn = 2.482 A).
+#
+# HOW TO RUN
+#   grainsmith validate examples/advanced/adv_cufe_composite.yaml
+#   grainsmith generate examples/advanced/adv_cufe_composite.yaml --jobs 0
+#   Check grains.csv's phase column, boundaries.csv's interphase rows,
+#   and gate G15's achieved vs target volume fractions in summary.csv.
+
+meta:
+  title: "Cu(FCC,60%)/Fe(BCC,40%) composite, ~1M atoms"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 60240
+
+box:
+  lengths: [228.0, 228.0, 228.0]     # ~1e6 atoms of mixed FCC-Cu / BCC-Fe
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 48                         # realistic dispersion of the two phases
+  min_seed_distance: auto
+  lloyd_iterations: 0
+
+phases:
+  - name: Cu_fcc
+    fraction: 0.6                     # matrix
+    crystal:
+      space_group:
+        number: 225                   # Fm-3m
+      lattice:
+        a: 3.615                      # Cu, A
+      wyckoff_sites:
+        - {element: Cu, coords: [0.0, 0.0, 0.0], letter: a}
+  - name: Fe_bcc
+    fraction: 0.4                     # dispersed phase
+    crystal:
+      space_group:
+        number: 229                   # Im-3m
+      lattice:
+        a: 2.866                      # alpha-Fe, A
+      wyckoff_sites:
+        - {element: Fe, coords: [0.0, 0.0, 0.0], letter: a}
+
+orientation:
+  scheme: random_uniform
+
+boundaries:
+  geometry: flat
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"               # resolves vs the smaller d_nn (Fe, 2.482 A)
+    policy: delete_shallower          # midpoint_merge forbidden (two species)
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false                          # interphase misorientation is undefined
+  per_atom_margin: false
+  statistics: true
+
+output:
+  directory: ./out_adv_cufe_composite
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

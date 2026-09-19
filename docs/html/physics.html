@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Physics &amp; conventions · grainsmith</title>
+<style>
+
+:root{
+  --sidebar-w: 300px; --toc-w: 240px;
+  --accent:#b5651d; --accent-2:#1f6f8b;
+  --ink:#1a1f24; --ink-soft:#4a545e; --line:#e3e7ea;
+  --bg:#ffffff; --bg-side:#1c2530; --bg-side-2:#243040;
+  --code-bg:#f5f7f9; --side-ink:#c9d3de; --side-ink-soft:#8a97a6;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:Georgia,"Times New Roman",Times,serif;
+  color:var(--ink); background:var(--bg); line-height:1.68; font-size:16px;
+}
+/* ---- full-screen layout: fixed sidebar + fluid content ---- */
+.sidebar{
+  position:fixed; top:0; left:0; width:var(--sidebar-w); height:100vh;
+  overflow-y:auto; background:var(--bg-side); color:var(--side-ink);
+  padding:22px 0 40px; z-index:20;
+}
+.brand{padding:6px 24px 20px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:14px;}
+.brand a{color:#fff;font-weight:700;font-size:1.35rem;text-decoration:none;letter-spacing:.5px;}
+.brand-sub{display:block;color:var(--side-ink-soft);font-size:.8rem;margin-top:2px;}
+.nav-group{margin:0 0 6px;}
+.nav-group-title{
+  padding:12px 24px 5px;font-size:.72rem;text-transform:uppercase;
+  letter-spacing:.09em;color:var(--side-ink-soft);font-weight:700;
+}
+.nav-group ul{list-style:none;margin:0;padding:0;}
+.nav-group li a{
+  display:block;padding:6px 24px 6px 28px;color:var(--side-ink);
+  text-decoration:none;font-size:.92rem;border-left:3px solid transparent;
+}
+.nav-group li a:hover{background:var(--bg-side-2);color:#fff;}
+.nav-group li.active a{
+  color:#fff;border-left-color:var(--accent);background:var(--bg-side-2);font-weight:600;
+}
+.content{margin-left:var(--sidebar-w);min-height:100vh;}
+.content-inner{
+  display:grid;grid-template-columns:minmax(0,1fr) var(--toc-w);
+  gap:48px;max-width:1500px;margin:0 auto;padding:52px 64px 96px;
+}
+article{min-width:0;}
+/* ---- in-page TOC (sticky, right rail) ---- */
+.toc{position:sticky;top:36px;align-self:start;font-size:.86rem;
+  border-left:1px solid var(--line);padding-left:18px;max-height:calc(100vh-72px);overflow-y:auto;}
+.toc-title{font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--ink-soft);margin-bottom:10px;}
+.toc ul{list-style:none;margin:0;padding:0;}
+.toc li{margin:3px 0;}
+.toc li a{color:var(--ink-soft);text-decoration:none;display:block;line-height:1.4;}
+.toc li a:hover{color:var(--accent);}
+.toc-l3{padding-left:14px;font-size:.82rem;}
+/* ---- typography ---- */
+article h1{font-size:2.05rem;line-height:1.2;margin:.1em 0 .7em;font-weight:750;letter-spacing:-.01em;}
+article h2{font-size:1.5rem;margin:1.9em 0 .6em;padding-bottom:.28em;
+  border-bottom:2px solid var(--line);font-weight:700;}
+article h3{font-size:1.18rem;margin:1.6em 0 .5em;font-weight:650;}
+article h4{font-size:1.02rem;margin:1.3em 0 .4em;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;}
+article p{margin:.85em 0;}
+article a{color:var(--accent-2);text-decoration:none;}
+article a:hover{text-decoration:underline;}
+article strong{font-weight:650;}
+article img{max-width:100%;height:auto;display:block;margin:1.4em auto;
+  border:1px solid var(--line);border-radius:8px;background:#fff;}
+article ul,article ol{padding-left:1.5em;margin:.7em 0;}
+article li{margin:.32em 0;}
+article blockquote{
+  margin:1.3em 0;padding:.7em 1.2em;border-left:4px solid var(--accent);
+  background:#fbf6f0;color:var(--ink);border-radius:0 6px 6px 0;
+}
+article blockquote p{margin:.4em 0;}
+/* ---- display math (MathJax typesets these; this is the no-JS/offline fallback) ---- */
+.math-display{
+  margin:1.5em 0;padding:.9em 1.2em;text-align:center;overflow-x:auto;
+  font-family:"Cambria Math","STIX Two Math",Cambria,"Times New Roman",serif;
+  font-size:1.05rem;color:var(--ink);
+}
+/* ---- code ---- */
+code{font-family:"SF Mono",SFMono-Regular,ui-monospace,Menlo,Consolas,monospace;
+  font-size:.88em;background:var(--code-bg);padding:.12em .38em;border-radius:4px;
+  color:#b03a2e;border:1px solid var(--line);}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;
+  padding:16px 18px;overflow-x:auto;margin:1.2em 0;line-height:1.5;}
+pre code{background:none;border:none;padding:0;color:var(--ink);font-size:.86rem;}
+/* ---- tables (wide, striped, scrollable) ---- */
+article table{border-collapse:collapse;width:100%;margin:1.3em 0;font-size:.9rem;display:block;overflow-x:auto;}
+article thead th{background:#2c3844;color:#fff;text-align:left;padding:9px 12px;font-weight:600;white-space:nowrap;}
+article tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top;}
+article tbody tr:nth-child(even){background:#f8fafb;}
+article tbody code{white-space:nowrap;}
+/* ---- prev/next ---- */
+.prevnext{display:flex;justify-content:space-between;gap:16px;margin-top:3.5em;
+  padding-top:1.6em;border-top:1px solid var(--line);}
+.prevnext a{flex:1;max-width:48%;padding:14px 18px;border:1px solid var(--line);
+  border-radius:8px;text-decoration:none;color:var(--ink);background:#fcfdfe;}
+.prevnext a:hover{border-color:var(--accent);background:#fbf6f0;}
+.prevnext .next{text-align:right;}
+.prevnext span{display:block;font-size:.78rem;color:var(--ink-soft);margin-bottom:3px;}
+.prevnext strong{font-size:.98rem;color:var(--accent-2);font-weight:600;}
+/* ---- mobile ---- */
+.menu-toggle{display:none;position:fixed;top:12px;left:12px;z-index:30;
+  background:var(--bg-side);color:#fff;border:none;border-radius:6px;
+  width:42px;height:42px;font-size:1.3rem;cursor:pointer;}
+@media (max-width:1080px){
+  .content-inner{grid-template-columns:minmax(0,1fr);}
+  .toc{display:none;}
+}
+@media (max-width:820px){
+  .menu-toggle{display:block;}
+  .sidebar{transform:translateX(-100%);transition:transform .2s ease;}
+  body.nav-open .sidebar{transform:translateX(0);}
+  .content{margin-left:0;}
+  .content-inner{padding:64px 22px 72px;}
+}
+
+</style>
+<script>
+window.MathJax = {
+  tex: { displayMath: [['\\[', '\\]']], processEscapes: true },
+  options: { enableMenu: false }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</head>
+<body>
+<button class="menu-toggle" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+<nav class="sidebar" aria-label="Documentation navigation">
+<div class="brand"><a href="index.html">grainsmith</a><span class="brand-sub">documentation</span></div>
+<div class="nav-group"><div class="nav-group-title">Getting started</div><ul>
+<li><a href="index.html">Overview</a></li>
+<li><a href="manual.html">User manual</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Concepts &amp; physics</div><ul>
+<li><a href="architecture.html">Architecture</a></li>
+<li><a href="geometry.html">Grain geometry</a></li>
+<li class="active"><a href="physics.html">Physics &amp; conventions</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Reference</div><ul>
+<li><a href="config_reference.html">Configuration reference</a></li>
+<li><a href="gates.html">QA gates (G1–G26)</a></li>
+<li><a href="outputs.html">Outputs</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Developer</div><ul>
+<li><a href="developer.html">Developer guide</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Help</div><ul>
+<li><a href="faq.html">FAQ &amp; troubleshooting</a></li>
+</ul></div>
+</nav>
+<main class="content">
+<div class="content-inner">
+<article>
+<h1>grainsmith physics &amp; conventions</h1>
+<p>The conventions and formulae grainsmith implements, distilled from the code
+docstrings. Citations are listed at the end and match
+<code>constants.METHODS_BIBLIOGRAPHY</code>.</p>
+<h2 id="1-orientations-quaternions-and-bunge-euler-angles">1. Orientations: quaternions and Bunge Euler angles</h2>
+<p>grainsmith uses <strong>active, scalar-first unit quaternions</strong> <code>q = (w, x, y, z)</code>. A
+quaternion rotates a <em>crystal</em>-frame vector into the <em>lab</em> frame:</p>
+<div class="math-display">\[ v_{\mathrm{lab}} = R(q) \cdot v_{\mathrm{crystal}} \]</div>
+<p>where <code>R(q)</code> is the active rotation matrix. This is the orientation of the grain
+(crystal → sample).</p>
+<p><strong>Bunge Euler export.</strong> The standard Bunge orientation matrix <code>g</code> maps
+<em>sample → crystal</em> (the inverse direction), so</p>
+<div class="math-display">\[ g = R(q)^{\mathrm{T}} = \left[\mathrm{intrinsic\ ZXZ}(\varphi_1, \Phi, \varphi_2)\right]^{\mathrm{T}} \]</div>
+<p><code>quat_to_bunge</code> extracts (φ1, Φ, φ2) from <code>R(q)</code> accordingly. This matches the
+MTEX / EBSD convention: it was MTEX-round-trip-verified and pinned against the
+textbook Bunge matrix and the ideal Brass component {011}⟨2-11⟩ → (35.26°,
+45°, 0°). <code>grains.csv</code>, <code>odf_mtex.txt</code>, the EBSD-like section and the DREAM.3D
+Euler reader all use this convention.</p>
+<h2 id="2-disorientation-csl-and-boundary-character">2. Disorientation, CSL, and boundary character</h2>
+<p>The <strong>disorientation</strong> between two grains is the misorientation of minimal angle
+over the <strong>double coset</strong> of the point group (crystal symmetry applied on <em>both</em>
+sides) — it is symmetry-invariant by construction (Grimmer / Brandon
+conventions). <code>boundaries.csv</code> reports the disorientation angle and axis.</p>
+<p><strong>CSL Σ</strong> assignment uses a built-in <strong>cubic</strong> coincidence-site-lattice table; a
+boundary is labelled ΣN when its disorientation lies within the <strong>Brandon</strong>
+window Δθ ≤ 15°/√Σ of an exact CSL rotation [Brandon 1966]. This is a
+distance between full rotation classes, not a test on the angle alone.
+The implementation requires 24 proper cubic rotations; enabling
+<code>analysis.csl</code> for an unsupported point group is an error. Disabled
+classification leaves the CSV field blank. A blank classification with
+CSL enabled means no match in the built-in finite table, not proof that
+no higher-Sigma coincidence exists. Sigma3 classification alone also
+does not establish a coherent twin plane or mechanical equilibrium.</p>
+<p><strong>GB character</strong> (tilt / twist / mixed) is the physical minimal-angle map between
+the boundary-plane normal and the disorientation axis, with boundary-plane Miller
+indices reported in both crystal frames.
+Zero disorientation has no rotation axis: its axis indices are <code>(0,0,0)</code>,
+axis deviation and character angle are <code>nan</code>, and character is <code>undefined</code>.
+Geometrically defined boundary-plane indices and areas are retained.</p>
+<h2 id="3-tessellation">3. Tessellation</h2>
+<p><strong>Flat Voronoi.</strong> Planar Voronoi faces via Qhull. Periodic boundaries are handled
+by <em>mirror seeds</em>; the wall-clipping inequality is <strong>exact</strong> (a d² half-space
+test), and the <code>owns()</code> rule tiles the torus <strong>exactly once</strong> — atoms are filled
+by tiling each grain's compact home cell, with no wrap-and-dedupe.</p>
+<p><strong>Power / Laguerre diagram + SDOT.</strong> To prescribe grain <em>volumes</em>, grainsmith fits
+power-diagram weights by <strong>semi-discrete optimal transport</strong>: damped Newton on
+the Kantorovich dual [Kitagawa–Mérigot–Thibert 2019], applied to polycrystals by
+[Bourne et al. 2020, 2023]. With cell volumes V(w) and targets V*:</p>
+<div class="math-display">\[ F(w) = V(w) - V^*, \qquad J_{ij} = \frac{\partial V_i}{\partial w_j} = -\frac{A_{ij}}{2 d_{ij}} \ (i \neq j), \qquad
+J_{ii} = +\sum_j \frac{A_{ij}}{2 d_{ij}} \]</div>
+<p><code>A_ij</code> is the exact interface area and <code>d_ij</code> the seed distance — both read off
+the polyhedral faces (which is why the power backend keeps exact geometry, not
+voxel estimates). <code>J</code> is a graph Laplacian (rows sum to 0; gauge fixed by pinning
+w₀ = 0). KMT damping backtracks the step so no cell ever vanishes — global
+convergence, quadratic near the solution. An optional outer <strong>centroidal</strong> loop
+[Kuhn et al. 2020] moves seeds to power-cell centroids for equiaxed grains <em>with</em>
+prescribed volumes. Gate <strong>G11</strong> re-measures the achieved volumes
+(measured: ≤ 1.2 × 10⁻⁴ relative in 3–6 Newton iterations).</p>
+<p><strong>Curved boundaries.</strong> grainsmith's user-facing GB-morphology taxonomy has
+three tiers: <strong>flat</strong> (Voronoi/power, §3), <strong>curved</strong>, and <strong>self-affine</strong>.
+Within <code>boundaries.geometry: curved</code>, three methods produce a <em>smoothly
+curved</em> boundary: a periodic Gaussian random field warps the diagram
+(<code>warp</code> method, <strong>gaussian spectrum only</strong> — see §5b for why) under
+bijectivity guards (G6); <code>additive_weights</code> (Johnson–Mehl/Apollonius) and
+<code>anisotropic</code> (ellipsoidal metric) reshape it by a different local metric.
+Only a bijective <code>warp</code> preserves its base diagram's topology. Additive
+weights and grain-dependent anisotropic metrics can change neighbours;
+their adjacency is measured from their actual voxelized geometry.
+The self-affine tier is a single method, <code>perturbed_distance</code> (§5/§5b): its
+level-set folding is not a coordinate map, so it is the one curved method
+whose as-built boundary genuinely responds to a self-affine roughness
+spectrum, and the one place (along with <code>voxel_import</code>) genuinely
+non-Voronoi shapes come from.</p>
+<h2 id="4-texture-odf-and-boundary-angle-statistics">4. Texture (ODF) and boundary-angle statistics</h2>
+<p><strong>ODF components.</strong> <code>orientation.scheme: odf_components</code> builds a discrete ODF
+from weighted components: an Euler centre with isotropic spread (an SO(3) von
+Mises–Fisher small-angle surrogate with the exact Haar sin²(θ/2) correction), a
+fiber component, or one Haar-uniform random fraction. How a component's
+<code>weight</code> is <em>realised</em> is <code>orientation.component_weight_basis</code>: <code>"count"</code>
+draws each grain's component i.i.d. from <code>Categorical(weight)</code>, so <code>weight</code>
+is a GRAIN-COUNT fraction; <code>"volume"</code> (the default) instead partitions
+grains deterministically so <code>weight</code> is a VOLUME fraction — see below for
+why that distinction matters for the ODF specifically.</p>
+<p><strong>Disorientation-angle shaping.</strong> <code>orientation.mdf_target</code> pulls the neighbour
+misorientation-angle distribution toward a target by <strong>simulated annealing that
+permutes which grain gets which orientation</strong> over a fixed orientation
+multiset — Miodownik et al. 1999's own term for the swap-only variant is
+<strong>conserved texture</strong> [Miodownik et al. 1999]. Because the set of orientations
+never changes, only <em>who carries</em> each one, the NUMBER-weighted discrete
+orientation distribution is invariant by construction. The ODF as
+conventionally defined is <strong>volume</strong>-weighted, not number-weighted — f(g) by
+volume fraction, the MDF f(Δg) by area fraction [Saylor et al. 2004] — and it
+is <strong>not</strong> invariant in general: swapping distinct orientations on grains a and b moves
+|V_a − V_b| / ΣV of its total-variation mass between the two orientations
+swapped. <code>mdf_target.odf_drift_max</code> bounds that drift directly — a hard cap
+enforced on every accepted swap — and because kernel smoothing is a
+total-variation contraction, the same cap also bounds the drift of the
+kernel-smoothed ODF at every half-width (see <code>orientation/odf.py</code>). The
+default <code>odf_drift_max: null</code> only MEASURES drift; it does not preserve
+the volume-weighted ODF. This one-dimensional angle histogram is not the
+full distribution over misorientation space. Targets:
+<code>haar_random</code> (deprecated alias <code>mackenzie</code>; the random-pair
+disorientation-<strong>angle</strong> reference of the actual point group, equal to the
+Mackenzie 1958 law only for the cubic proper point group), <code>sigma3_angle_enriched</code>
+(deprecated alias <code>csl_enriched</code>; <code>(1-f)*haar_random + f*angle_window</code>, where
+<code>f = sigma3_fraction</code> and the added distribution occupies the 60° Brandon
+<strong>angular</strong> window — the ⟨111⟩ axis condition CSL
+classification also requires is not enforced), or an explicit <code>histogram</code>. Gate
+<strong>G12</strong> reports the final χ² distance; <code>mdf.csv</code> carries the achieved, reference
+and target densities. <code>sigma3_fraction</code> is a mixture coefficient, NOT the
+total target mass in the angular window: the Haar reference already has
+mass there. Neither quantity is the true CSL Σ3 area fraction, measured
+independently using both the angle and the axis.</p>
+<p><strong>Component-fraction error budget: sampler + annealer.</strong> For the
+component-labelled volume-fraction vectors, the triangle inequality gives
+<strong>final error &lt;= sampler error + annealing change</strong>, not equality and not
+statistical independence. The <em>sampler term</em> is the distance between each component's configured
+<code>weight</code> and the volume fraction <code>odf_components</code> assigns it, before any
+annealing runs at all. The <em>annealer term</em> is the assignment-annealing drift
+in that component-labelled vector. This coarse component diagnostic does
+not measure finite-sampling error within each angular component, and is
+not the distance from a continuous target ODF to a discrete empirical
+measure. G22 separately measures and, when configured, bounds drift on
+exact orientation classes. Coincident or overlapping component labels
+must not be mistaken for distinct physical orientations. Before this revision only
+the annealer term was under any control — the sampler term was implicitly
+assumed zero, which is false for <code>component_weight_basis: "count"</code>: drawing
+each grain's component i.i.d. from <code>Categorical(weight)</code> realises <code>weight</code> as
+a GRAIN-COUNT fraction. The realised component-volume error depends on
+both grain sizes and the sampled component assignment. Measured on a 24-grain case
+(<code>grains.size_distribution</code> lognormal, <code>sigma_log = 0.5</code>, two texture
+components at <code>weight: 0.5</code> each): configured volume fractions 0.500/0.500
+realised as 0.745/0.255 — a total-variation deviation of 0.245, <strong>twelve
+times</strong> the 0.02 trust-region cap a typical <code>odf_drift_max</code> setting bounds
+the annealer term to. The uncontrolled sampler term was the larger of the
+two error sources, by more than an order of magnitude.</p>
+<p><code>orientation.component_weight_basis: "volume"</code> (the default from this
+revision on) reduces the component-fraction sampling error, but cannot in
+general eliminate finite-grain granularity, via
+<code>orientation.odf.volume_balanced_partition</code>: sort grains by volume,
+descending; repeatedly hand the next (largest remaining) grain to whichever
+component currently has the largest unassigned volume deficit
+(<code>weight * total_volume − volume_assigned_so_far</code>), and reduce that
+component's deficit by the grain's volume. No RNG is involved, so the
+assignment is deterministic and bit-reproducible. With two grains of
+volumes 80 and 20 and target component fractions 0.5/0.5, for example,
+the best whole-grain assignment still has a TV error of 0.3. Gate G25
+reports this residual instead of certifying an exact match.</p>
+<blockquote>
+<p><strong>Lemma (no component overshoots by more than its smallest grain).</strong> When
+grain <em>i</em> is assigned to component <em>c</em>, the sum of all components'
+deficits equals the volume not yet assigned, which is at least
+<code>volumes[i] &gt; 0</code>; hence the <em>largest</em> deficit at that moment is at least
+<code>remaining / K &gt; 0</code> for <em>K</em> components, so <code>deficit_c</code> is chosen <code>&gt;
+−volumes[i]</code> after the assignment. A component's deficit changes again only
+when it receives another grain — which, by the descending processing
+order, is no larger than <em>i</em>. Therefore no component's realised volume
+ever exceeds its target by more than the smallest grain it received.</p>
+</blockquote>
+<p><strong>Honest cost.</strong> Demanding an exact volume match on a finite grain set with a
+broad size distribution necessarily induces a correlation between grain size
+and component: the lemma's mechanism deterministically routes the largest
+remaining grain to whichever component is furthest short, so large grains
+disproportionately land wherever the running deficit is largest. This is a
+stated trade-off, not a bug — it shrinks as the grain count grows (the
+lemma's bound is one grain's worth of granularity error, not a
+whole-distribution one), and gate <strong>G25</strong> reports it directly: per
+texture component, the configured weight, the realised grain-count and
+volume fractions (pre- and post-annealing), and the mean grain volume, so
+the size-component correlation is visible in the same table as the fidelity
+numbers it is the cost of.</p>
+<blockquote>
+<p><strong>Honest bound (measured).</strong> Annealing returns the lowest angle-histogram
+χ² encountered; individual accepted Metropolis moves may increase it,
+but the achievable Σ3 <em>area</em> fraction is bounded by the twin content of the
+fixed orientation set and the Voronoi adjacency graph — it does not track the
+nominal <code>sigma3_fraction</code> linearly. This is why G12 is a <em>warn</em> gate, and is
+a property of <strong>conserved-texture</strong> assignment [Miodownik et al. 1999] — the
+orientation multiset is fixed, only which grain carries which orientation
+changes — not a defect.</p>
+</blockquote>
+<p><strong>The atomistic discretisation floor (gate G26).</strong> Everything above — the
+sampler term, the annealer term, <code>odf_drift_max</code>, gate <strong>G22</strong> — is
+defined on <strong>tessellation</strong> grain volumes: <code>odf_mtex.txt</code> writes
+<code>volumes / sum(volumes)</code> as its weight column, and that is the vector
+<code>odf_drift_max</code> bounds. But the artefact actually shipped to an MD user
+is <strong>atomistic</strong>. Atom-count weighting is a useful discrete texture proxy
+within a phase when atomic volumes are equivalent; it is not a universal
+replacement for the physical volume-weighted ODF in mixed-density,
+strained or compositionally heterogeneous material. Those two weightings — <code>w_vol = volumes / sum(volumes)</code> and
+<code>w_atom = n_atoms / sum(n_atoms)</code> — differ, and gate <strong>G26</strong> measures the
+gap directly rather than leaving it unmeasured. Reference scenario (24
+grains, box 45 Å, <code>size_distribution</code> lognormal <code>sigma_log 0.5</code>, two
+texture components at <code>weight 0.5</code>, seed 4242, cubic Cu; same config, box
+size varied):</p>
+<table>
+<thead>
+<tr>
+<th>atoms/grain</th>
+<th>TV(volume vs atom-count)</th>
+<th>max per-grain |dw|</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>275</td>
+<td>0.027418</td>
+<td>0.009107</td>
+</tr>
+<tr>
+<td>1092</td>
+<td>0.018910</td>
+<td>0.006912</td>
+</tr>
+<tr>
+<td>3279</td>
+<td>0.013133</td>
+<td>0.004724</td>
+</tr>
+<tr>
+<td>9191</td>
+<td>0.008633</td>
+<td>0.003126</td>
+</tr>
+</tbody>
+</table>
+<p>A fitted power law gives exponent <strong>−0.33</strong>: the gap decays as <code>(atoms
+per grain)^(-1/3)</code>, i.e. as a <strong>surface</strong>, not a volume, quantity. The
+mechanism is geometric, not statistical: every atom within one
+interatomic spacing of a grain boundary is only probabilistically
+assigned to one side or the other, and that boundary shell's atom count
+is a fixed fraction of the grain's <em>surface area</em>, which scales as <code>1/L</code>
+of its <em>volume</em> for a grain of characteristic size <code>L</code>. This is why the
+exponent is <code>-1/3</code> and not the <code>-1/2</code> that pure Poisson counting noise
+(atom placement treated as independent draws with no spatial structure)
+would predict — the fitted exponent rules that simpler mechanism out.
+<strong>At 275 atoms per grain the floor (0.027) already exceeds a typical
+<code>odf_drift_max</code> of 0.02</strong>: tightening the trust region below this floor
+buys no additional fidelity that survives into the exported atomistic
+structure, since the annealer's own bound is defined on a weighting the
+export does not use. This is a <strong>discretisation floor</strong>, not a defect in
+the annealer or the sampler — it exists for any atomistic realisation of
+a continuous volume-weighted target, and shrinks only with more atoms per
+grain (larger grains, or more atoms at fixed grain count), never with a
+tighter annealing setting. Gate <strong>G26</strong> reports it per run (globally for
+single-phase, per phase for multiphase — atom number densities differ
+across phases, so a global mix would read off the density ratio between
+phases rather than the discretisation floor itself), so the
+<code>odf_drift_max</code> guarantee can be read for what it actually covers.</p>
+<p><code>odf_mtex.txt</code> itself now carries both weightings, not just the one G26
+reports on: whenever the run has a nonzero atom count, the file gets a
+fifth column, <code>atom_fraction = n_atoms / sum(n_atoms)</code>, alongside <code>weight</code>
+(tessellation-volume fraction), and its header spells out which is which
+and why they differ. A texture specialist loading the file straight into
+MTEX therefore sees both the geometric weighting grainsmith controls and
+the realised, atom-count weighting the shipped structure actually carries,
+instead of only the former. With no atom block, or an all-zero atom count,
+the file is unchanged — the original four columns.</p>
+<h2 id="5-self-affine-boundary-roughness">5. Self-affine boundary roughness</h2>
+<p><code>spectrum: self_affine</code> (<code>boundaries.curved.method: perturbed_distance</code>
+<strong>only</strong> — see §5b for why <code>warp</code> cannot accept it) replaces the
+single-scale Gaussian field with a <strong>band-limited power-law</strong> amplitude
+spectrum</p>
+<div class="math-display">\[ \sqrt{\Phi(k)} \propto k^{-(3+2H)/2}, \qquad k \in \left[\frac{2\pi}{l_{\max}}, \frac{2\pi}{l_{\min}}\right] \]</div>
+<p>so the 3D field has power P(k) ∝ k^(−(3+2H)) and its planar restriction has
+surface PSD <strong>C(q) ∝ q^(−2−2H)</strong>, i.e. fractal dimension <strong>D = 3 − H</strong>
+[Jacobs et al. 2017 conventions]. Self-affine grain-boundary morphology at
+the nanoscale is experimentally established [Braun et al. 2018]; the
+fractal-surface construction route for MD follows [Eder et al. 2017]. Gate
+<strong>G13</strong> back-estimates H from the generated field(s) by a radial-PSD
+log-log fit; because the scale-free band is finite, the estimate carries a
+small constant offset (measured: ~0.1), so G13 is a <em>warn</em> gate,
+tolerance <code>HURST_G13_TOL = 0.15</code>. This is a field-synthesis convention
+shared verbatim by <code>warp</code> and <code>perturbed_distance</code> (<code>synthesize_grf</code>/
+<code>estimate_hurst</code>, <code>tessellation/warp.py</code>) — what differs between the two
+methods is not the spectrum math but what CONSUMES the field, which is
+exactly §5b's subject and why only one of them can use it.</p>
+<h2 id="5b-self-affine-gb-morphology-why-warp-cannot-deliver-it-and-how-perturbed_distance-does">5b. Self-affine GB morphology: why <code>warp</code> cannot deliver it, and how <code>perturbed_distance</code> does</h2>
+<p>Section 5's <code>spectrum: self_affine</code> gives the <em>warp field</em> itself a self-affine
+PSD, but that is not the same claim as the <em>grain boundary</em> being self-affine —
+and, perhaps counter-intuitively, it never is under <code>warp</code>, at any Hurst
+exponent. This section states the argument precisely and describes the
+<code>boundaries.curved.method: perturbed_distance</code> backend that resolves it by
+perturbing the assignment rule instead of the coordinate frame.</p>
+<p><strong>(a) The diffeomorphism argument.</strong> <code>warp</code> computes <code>grain_of(x) =
+base.grain_of(x + u(x))</code> under the bijectivity guard G6 (<code>max‖∇u‖ &lt;
+WARP_GRAD_MAX = 0.5</code>, plus the seed-containment clip <code>‖u‖ ≤
+min_seed_distance/4</code>). A field satisfying both bounds is, by construction, a
+<strong>bi-Lipschitz homeomorphism</strong> of the periodic domain: <code>x ↦ x + u(x)</code> and its
+inverse are each Lipschitz-continuous with a constant controlled by
+<code>WARP_GRAD_MAX</code>. A bi-Lipschitz map distorts distances by at most a bounded
+factor in either direction, and the box-counting dimension of a set is
+invariant under any bi-Lipschitz reparametrization of the ambient space — a
+covering of the image by <code>N(ε)</code> boxes of size <code>ε</code> pulls back to a covering of
+the preimage by <code>N(ε)</code> boxes of a comparably-scaled size, so the two sets'
+<code>log N(ε)/log(1/ε)</code> limits coincide. The flat-Voronoi bisector plane has
+box-counting dimension 1 (a 2D section) / 2 (the full 3D surface); its image
+under any admissible <code>u(x)</code> therefore <em>also</em> has dimension 1 / 2, <strong>regardless
+of the Hurst exponent driving <code>u</code>'s spectrum</strong>. What the self-affine spectrum
+changes is only the <em>local geometric roughness</em> of that dimension-preserving
+surface — its curvature statistics, its visual waviness — not the
+scale-invariant space-filling exponent that a box-counting measurement
+reports. <code>hurst</code> on a <code>warp</code> field (back when <code>warp</code> could accept
+<code>spectrum: self_affine</code> — see below) was real and useful (it sets how the
+boundary looks and how a Hurst back-estimate characterizes it), but it was
+always a <strong>roughness-color</strong> knob, not a <strong>fractal-dimension</strong> knob. A
+direct numerical check makes this concrete: box-counting 2D sections of an
+ACTUAL <code>WarpTessellation</code> object (its own trilinear field interpolation
+and clip logic — not a hand-rolled stand-in) built while <code>WarpTessellation</code>
+still accepted <code>spectrum: self_affine</code>, on a 460 Å / 10-grain box, run at
+TWO amplitudes (both measured directly from the real class):
+at <code>amplitude = 0.4 Å</code>, <code>l_min/l_max = 12/30 Å</code> (max‖∇u‖ up
+to 0.469, under the G6 guard's 0.5 limit) — sub-pixel at this check's
+200×200 section sampling (2.3 Å/px) — <code>D_b ≈ 1.017</code>–<code>1.018</code> at H = 0.5,
+0.7 <strong>and</strong> 0.9 alike, indistinguishable from and in fact slightly BELOW
+§5b(d)'s own <code>D_b ≈ 1.027</code> straight-edge pixelation floor: at this
+amplitude the boundary is not just failing to show a Hurst-driven signal,
+it is too small to register even the ordinary curvature bias §5b(d)
+documents for a general curved section; and at <code>amplitude = 4.0 Å</code>,
+<code>l_min/l_max = 100/225 Å</code> (max‖∇u‖ up to 0.494, the largest the REAL G6
+guard admits on this wider band — 10× the smaller amplitude used above,
+large enough to displace the boundary by ~1.7 section pixels)
+— <code>D_b ≈ 1.032</code>–<code>1.034</code> at H = 0.5, 0.7 <strong>and</strong> 0.9 alike, still
+statistically indistinguishable across H. The second, larger-amplitude
+check is the one that actually discriminates "provably
+dimension-invariant" from "too small to move the boundary at all" (the
+first, at the file's own tiny amplitude, cannot rule out the latter on
+its own); together they confirm the dimension-invariance argument holds
+in the actual implementation across the amplitude range the G6 guard
+admits, not just in the idealized proof. Because this numerical
+hollowness makes the combination
+scientifically indefensible for its one stated purpose (a genuinely
+self-affine boundary), grainsmith REMOVES it outright: <code>WarpTessellation</code>
+raises <code>ConfigError</code> for any spectrum other than <code>gaussian</code>, and
+<code>config/resolve.py</code> Rule 8a rejects <code>method: warp</code> + <code>spectrum:
+self_affine</code> before any other curved-boundary rule is even checked. §5's
+<code>self_affine</code> spectrum is therefore <code>perturbed_distance</code>-only — see (b).</p>
+<p><strong>(b) The level-set rule.</strong> To get a grain boundary whose box-counting
+dimension genuinely responds to a roughness spectrum, the assignment rule
+itself must <strong>fold</strong> — i.e. be non-injective near the boundary, something a
+diffeomorphism can never be. <code>perturbed_distance</code> replaces the flat-Voronoi
+membership test with a perturbed-distance argmin:</p>
+<div class="math-display">\[ \mathrm{grain\_of}(x) = \operatorname*{argmin}_i \left[ d_{\mathrm{pbc}}(x, s_i) - A \cdot \eta_i(x) \right] \]</div>
+<p>where each grain draws an <strong>independent</strong> scalar field <code>η_i</code> from the same
+<code>synthesize_grf</code> machinery Section 5 uses (<code>spectrum</code>/<code>hurst</code>/<code>l_min</code>/<code>l_max</code>
+are the identical schema keys, reused verbatim — only the field is now
+scalar-per-grain rather than a shared 3-component displacement). The zero
+level set <code>d(x,s_i) − A η_i(x) = d(x,s_j) − A η_j(x)</code> is an implicit surface
+whose roughness is inherited directly from <code>η_i − η_j</code>, with no bijectivity
+constraint to preserve the flat bisector's topology — so its box-counting
+dimension is free to move away from the Voronoi-facet value as <code>A</code> and the
+field statistics change. Because there is no coordinate map to invert, <strong>G6
+does not apply</strong> to this method; two different guards take its place: a
+seed-containment pre-flight check (<code>A ≤ PERTURBED_DISTANCE_SAFETY ·
+min_seed_distance / (2 · ETA_CLIP)</code>, i.e. <code>min_seed_distance/12</code>) and an exact
+post-hoc seed-ownership check at construction (every grain's own seed must
+still evaluate to itself under the perturbed rule). Any voxel-scale
+fragmentation the folding can locally cause is handled by demoting G5 to a
+repair-and-report gate for this method (majority-vote reassignment; severity
+reported by <strong>G19</strong>) rather than the hard construction-time failure
+<code>warp</code>/<code>weighted</code> use — see <code>docs/gates.md</code> for both gates' exact thresholds.</p>
+<p><strong>(c) Experimental target.</strong> The motivating measurement is Braun et al.'s
+box-counting study of nanocrystalline Pd₉₀Au₁₀ [Braun et al. 2020]: annealed
+samples exhibiting abnormal grain growth with dendritic, highly convoluted
+boundaries gave a mean section-perimeter fractal dimension <strong>D_b = 1.174 ±
+0.004</strong> (averaged over 57 grains), with individual grains ranging <strong>1.10 to
+1.24</strong>, versus D_b ≈ 1.029 for conventionally cast, smooth boundaries — both
+numbers verified directly against the source measurement [Braun et al. 2020].
+This is the target <code>examples/advanced/adv_pdau_perturbed.yaml</code> — grainsmith's
+flagship self-affine-GB example — is calibrated against; before this method
+existed, an earlier <code>warp</code>-based version of that same flagship targeted the
+same D_b band via the section-dimension convention <strong>D_b = 2 − H</strong> [Jacobs et
+al. 2017 PSD conventions, consistent with Section 5's 3D surface convention D
+= 3 − H] — a convention BRIDGE to the literature, not a measurement of that
+file's own (non-self-affine, per (a)) boundary. <code>perturbed_distance</code> reaches the
+same target by an entirely different, and genuinely measurable, mechanism
+(amplitude-driven folding rather than H-driven roughness color) — see (e) for
+its own honest calibration status.</p>
+<p><strong>(d) Estimator bias.</strong> <code>perturbed.py</code>'s <code>box_count_dimension</code> follows the
+Braun et al. 2020 box-counting protocol on 2D in-box cross-sections (<code>log
+N(ε)</code> vs. <code>log(1/ε)</code> linear fit; the G13 analogue, reported as <strong>G20</strong>,
+warn-only). Box sizes are fit over <code>ε ∈ [l_min, l_max]</code> — the synthesis band
+itself, converted to each section's own pixel scale — so the reported exponent
+reflects only the scales the η field actually has designed spectral content
+at, not pixelation noise below <code>l_min</code> or finite-object-size cutoff above
+<code>l_max</code>. At this implementation's own section resolution
+(<code>SECTION_GRID = 200</code> px), the estimator carries a positive bias for
+smooth curved boundaries relative to dead-straight ones: a straight edge
+box-counts to <code>D_b ≈ 1.027</code>, while a rasterized disk perimeter lands between
+<code>D_b ≈ 1.07</code> and <code>D_b ≈ 1.15</code> <strong>depending on the disk radius and the
+perimeter-extraction stencil</strong> (measured at radii 50–80 px on the same 200 px
+grid). The bias is therefore not a single constant but an offset of order
+<strong>+0.04 to +0.12</strong>, attributable purely to finite-pixel rasterization of a
+curved perimeter, not to any genuine self-affine signal. This
+sits alongside (not instead of) the geometric flat-Voronoi limit: a true <code>A =
+0</code> perturbed-distance run box-counts to <code>D_b ≈ 1.07</code> (not the idealized 1.000)
+for the same reason. Every <code>d_b_estimated</code> value this method reports should
+be read as offset upward by roughly this order from the abstract
+box-counting-of-a-mathematically-exact-curve value — a real property of a
+finite-resolution voxel/section pipeline, stated rather than silently
+corrected, in keeping with Section 7's estimator-bias philosophy.</p>
+<p><strong>(e) Calibration status (honest).</strong> A dedicated amplitude sweep (H ∈ {0.5,
+0.7, 0.9}, 60 grains, 300 Å box, two field-seed repeats per cell) confirms
+<code>d_b_estimated</code> rises <strong>monotonically</strong> with amplitude at every Hurst tested,
+from the flat-Voronoi-like <code>A = 0</code> reference (<code>D_b ≈ 1.07</code>, this estimator's
+own reading) up through the seed-containment safety ceiling <code>A_max =
+min_seed_distance/12</code>. At that ceiling the measured <code>D_b</code> reaches only
+<strong>≈1.11–1.12</strong> — inside Braun's reported per-grain <em>range</em> (1.10–1.24) but at
+its lower edge, short of the 1.174 <em>mean</em>. The Hurst dependence at the
+ceiling is real on ensemble average (lower H → slightly higher D_b) but
+smaller and noisier than the amplitude effect, and the two are not cleanly
+separable at the amplitudes this guard permits. Reaching the upper part of
+the Braun band with a larger safety margin — a tighter per-axis containment
+argument, or accepting a larger <code>reassigned_fraction</code> — is open calibration
+work, not a claim this backend currently makes; <code>examples/self_affine_gb/pdau_perturbed_self_affine.yaml</code>
+states its own measured <code>d_b_estimated</code>/<code>reassigned_fraction</code> explicitly
+rather than presenting the method as a turnkey D_b = 1.174 generator.</p>
+<p>This sweep's own box (300 Å, <code>l_min</code>/<code>l_max</code> narrower than one decade,
+~1.5 octaves) sits well below the ≈5.5-octave band (g) below shows is
+needed for a LARGE-effect-size (η² &gt; 80%) Hurst response — so the
+"amplitude effect dominates, Hurst effect is real but small and noisy"
+pattern reported here is itself partly a decade-budget symptom, not only
+an amplitude-ceiling one. <code>examples/self_affine_gb/pdau_perturbed_50nm_H05.yaml</code> is
+sized specifically to reach that regime (≈50 nm grain diameter, 5.5
+octaves) — see (g) below.</p>
+<p><strong>(f) Amplitude reparametrization — the coarse-octave inversion, and its
+fix.</strong> An independent validation campaign (131 runs) found that
+adding a coarse octave to the synthesis band (widening <code>l_max</code> at fixed
+<code>l_min</code>) at fixed <code>amplitude</code> <strong>decreased</strong> the realized grain-boundary
+area <code>S_V</code> by 16.1% — the opposite of the physically expected direction.
+The root cause is in <code>synthesize_grf</code>'s normalization, not in the
+level-set argument of (b): the default <code>amplitude_convention: total_rms</code>
+fixes <code>amplitude</code> as the field's RMS over the <strong>whole</strong> band <code>[l_min,
+l_max]</code>. For the <code>k^(−(3+2H))</code> target spectrum, the band-integrated
+variance is dominated by its longest wavelengths, so widening the band
+redistributes a fixed total-RMS budget across more scales rather than
+adding to it — at fixed <code>amplitude</code>, a coarser <code>l_max</code> can starve the
+<code>l_min</code>-scale content that actually drives local boundary roughness.</p>
+<p><code>amplitude_convention: reference_wavelength</code> (opt-in; default remains
+<code>total_rms</code>) fixes instead the
+RMS power contributed by <strong>one reference octave</strong>,
+<code>[reference_wavelength/2, reference_wavelength]</code> (default anchor: <code>l_max</code>,
+an anchor that MOVES with the band), leaving every other resolved octave
+free to accumulate its own contribution on top. The two conventions are
+related by one exact, invertible scale factor:</p>
+<div class="math-display">\[ \kappa = \frac{\sigma(\text{reference octave})}{\sigma(\text{whole band})} = \texttt{tessellation.warp.reference\_shell\_kappa(hurst, l\_min, l\_max, reference\_wavelength)} \]</div>
+<div class="math-display">\[ \mathrm{amplitude}_{\text{reference\_wavelength}} = \mathrm{amplitude}_{\text{total\_rms}} \cdot \kappa \qquad (\kappa \le 1 \text{ always}) \]</div>
+<p>A synthetic sign-test (fixed white-noise draw,
+scanning <code>l_max</code> at fixed <code>l_min</code>) confirms the qualitative picture but
+also its limit: the <code>total_rms</code> convention's local-roughness proxy
+decreases monotonically as octaves are added (reproducing the campaign's
+inversion), while <code>reference_wavelength</code> with a <strong>fixed absolute</strong>
+<code>reference_wavelength</code> (anchored near <code>l_min</code>, not moving with <code>l_max</code>)
+accumulates monotonically in the other direction. The <strong>default</strong>
+<code>reference_wavelength</code> anchor (<code>= l_max</code>, moving with the band) does
+<em>not</em> fully invert the trend on this diagnostic — it is intended for the
+common case where <code>l_max</code> itself represents a physical scale (e.g. the
+grain radius) that should stay the roughness reference as other settings
+change, not for a controlled band-width scan at fixed physical scale. A
+band-width scan that must accumulate variance monotonically in both
+directions needs an explicit <strong>fixed absolute</strong> <code>reference_wavelength</code>
+override, not the default.</p>
+<p><strong>What the reparametrization does and does not fix.</strong> It restores a
+physically stable meaning for <code>amplitude</code> (Å-RMS at a named wavelength,
+independent of how many octaves happen to be in band) and corrects the
+coarse-octave sign inversion under a fixed absolute reference. It does
+<strong>not</strong>, by itself, generally increase the Hurst exponent's statistical
+separability in <code>d_b_estimated</code> — a feasibility study found
+both conventions give similar effect sizes (η²) at matched grain size,
+and in a majority of the grain-size points tested the ORIGINAL <code>total_rms</code>
+convention's own η² was nominally as high or higher. What actually
+controls whether <code>d_b_estimated</code> can resolve <code>hurst</code> is the <strong>octave/decade
+budget</strong> of the synthesis band (see (g) below and G20's own docstring) —
+this is a property of <code>[l_min, l_max]</code> and grid resolution, unaffected by
+which amplitude convention scales the result. The seed-containment guard
+binds the realized total-RMS-equivalent amplitude in either convention
+(<code>config/resolve.py</code> Rule 29(d); <code>PerturbedDistanceTessellation.__init__</code>
+converts <code>amplitude</code> back to its total-RMS equivalent, ÷ κ, before
+checking it against <code>A_max</code>), so a convention switch can only make the
+guard <em>stricter</em> (κ ≤ 1 ⇒ <code>amplitude/κ ≥ amplitude</code>), never weaker.</p>
+<p><strong>(g) The decade/octave budget is the dominant limitation, not the
+amplitude convention.</strong> The feasibility study that produced (f)
+above also swept grain diameter (hence, at fixed atomic-scale <code>l_min</code>,
+the number of octaves the synthesis band spans) from ~10 nm to ~1000 nm
+and measured the statistical separability of <code>d_b_estimated</code> by Hurst
+exponent (effect size η², and its p-value) at each size, under BOTH
+amplitude conventions. <strong>This is a gradient, not a single cliff</strong> — the
+independent 131-run validation campaign's own ~1.7-octave band
+(<code>pdau_perturbed_self_affine.yaml</code>) measured η² ≈ 6% at p ≈ 0.14 (statistically
+indistinguishable from no effect), while the feasibility study's synthetic-
+field Monte Carlo gives, at comparable amplitudes under both conventions:</p>
+<table>
+<thead>
+<tr>
+<th>grain diameter</th>
+<th>octaves</th>
+<th>η² (<code>total_rms</code> / <code>reference_wavelength</code> convention)</th>
+<th>worst-case p-value (either convention)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>~10 nm</td>
+<td>3.2</td>
+<td>34% / 29%</td>
+<td>5×10⁻⁶ (significant)</td>
+</tr>
+<tr>
+<td>~20 nm</td>
+<td>4.2</td>
+<td>66% / 59%</td>
+<td>1×10⁻¹⁴</td>
+</tr>
+<tr>
+<td>~50 nm</td>
+<td>5.5</td>
+<td>83% / 82%</td>
+<td>≈0 (below float64 precision)</td>
+</tr>
+<tr>
+<td>~100 nm</td>
+<td>6.5</td>
+<td>90% / 91%</td>
+<td>≈0 (below float64 precision)</td>
+</tr>
+</tbody>
+</table>
+<p>(η² values from a direct Monte Carlo sweep over
+Nyquist-safe grids; both conventions track closely at every size.) Two
+different thresholds are worth keeping separate: the effect becomes
+<strong>statistically significant</strong> (p ≪ 0.01) already by ~3.2 octaves, but only
+reaches a conventionally <strong>LARGE effect size</strong> (η² &gt; 80%, Cohen's convention)
+at ≈50 nm grain diameter / ~5.5 octaves. Which threshold matters depends on
+the goal — a config merely wanting a real (non-noise) Hurst signal in
+<code>d_b_estimated</code> can get one well below 50 nm; a config wanting a
+Braun-comparable, large-effect-size measurement needs the ~5.5-octave regime.
+This mirrors Braun et al. 2020's own protocol constraint: their box-counting
+range needs <code>ε_min ≥ 3s</code> and (in their study) <code>ε_max = 10·ε_min</code>, which
+together fix a minimum analyzable equivalent grain diameter <code>d_min =
+ε_max/0.4</code> (Braun et al. 2020, Eq. 2) — an experimental instantiation of the
+same "you need enough decades in your box-counting range" constraint this
+backend's synthesis band faces. The practical implication: a
+<code>perturbed_distance</code> config aimed at <em>demonstrating</em> a large-effect-size,
+Braun-comparable Hurst response in <code>d_b_estimated</code> (as opposed to a
+merely-significant one, or just producing plausible boundary roughness) needs
+a <code>l_max/l_min</code> ratio corresponding to ~5.5 octaves, which — since <code>l_min</code> is
+bounded below by roughly twice the crystal's own nearest-neighbor distance —
+in practice means a grain radius (hence <code>l_max</code>) at or near the upper end of
+the molecular-dynamics-accessible size range (≳50 nm).</p>
+<h2 id="6-multiphase-polycrystals">6. Multiphase polycrystals</h2>
+<p><code>phases:</code> assigns each grain to a phase by a <strong>deterministic greedy (LPT)
+partition</strong> of the measured pre-fill grain volumes, so the achieved VOLUME
+fractions (the metallographic convention) match the targets as closely as the
+grain-count granularity allows. Phases may differ in space group, lattice <strong>and</strong>
+elements. Interphase boundaries carry a <code>NaN</code> misorientation (orientation
+relationship is undefined across different lattices) but keep their habit-plane
+Miller indices. Gate <strong>G15</strong> re-measures the fractions; the deviation floor is the
+granularity bound V_max/V_box. Per-phase <code>mdf_&lt;name&gt;.csv</code> /
+<code>odf_mtex_&lt;name&gt;.txt</code> are written.</p>
+<p><strong>Multiphase outputs are geometric starting structures, not relaxed
+interfaces.</strong> grainsmith does <strong>not</strong> impose any crystallographic orientation
+relationship (Kurdjumov–Sachs, Nishiyama–Wassermann, Burgers, …) across
+phases: each phase is oriented independently, and the two lattices simply meet
+on the Voronoi habit plane. Across a heterophase boundary the lattice
+parameters and densities differ, so the as-built interface is generally
+high-energy and non-equilibrium; the uniform <code>0.85·d_nn</code> overlap removal only
+deletes geometrically coincident atoms, it does not build a coherent
+interface. <strong>Relax every multiphase configuration in MD (energy minimization +
+equilibration) before using it</strong> — see the companion LAMMPS benchmark
+simulations (e.g. the Cu/Fe composite). Imposing interphase orientation
+relationships is planned future work.</p>
+<h2 id="7-estimator-biases-stated-not-silently-corrected">7. Estimator biases (stated, not silently corrected)</h2>
+<ul>
+<li><strong>Voxel area/volume/length bias.</strong> Flat geometry uses exact polyhedral
+  estimators; voxel/curved geometry over-counts oblique boundary area by up to
+  <strong>√3</strong> and triple-line length by the voxel staircase. The
+  <code>estimator</code> field in <code>statistics.csv</code> records which was used; finer
+  <code>analysis.voxel_grid</code> reduces the bias.</li>
+<li><strong>KS with fitted parameters.</strong> The log-normal <code>lognormal_ks_p</code> uses the
+  fitted μ̂, σ̂ and is therefore optimistic — the <strong>Lilliefors</strong> caveat
+  [Lilliefors 1967].</li>
+</ul>
+<h2 id="8-grain-boundary-curvature">8. Grain-boundary curvature</h2>
+<p><code>analysis.gb_curvature</code> measures local mean (H, 1/Å) and Gaussian (K, 1/Å²)
+curvature of each grain–grain interface from the level set</p>
+<div class="math-display">\[ \varphi = \mathrm{margin}_i - \mathrm{margin}_j \]</div>
+<p>where <code>margin</code> is <code>Tessellation.margin</code>, the signed distance to the nearest
+boundary, positive <em>inside</em> its own grain (the same convention used
+throughout the fill/overlap/boundary code). The unit normal
+<code>n̂ = −∇φ/|∇φ|</code> points from grain <code>i</code> toward grain <code>j</code>, and</p>
+<div class="math-display">\[ H = \frac{\nabla\varphi^{\mathrm{T}} \cdot H_\varphi \cdot \nabla\varphi - |\nabla\varphi|^2 \cdot \mathrm{tr}\,H_\varphi}{2|\nabla\varphi|^3} \qquad \text{[Goldman 2005]} \]</div>
+<div class="math-display">\[ K = \frac{\nabla\varphi^{\mathrm{T}} \cdot \mathrm{adj}(H_\varphi) \cdot \nabla\varphi}{|\nabla\varphi|^4} \]</div>
+<p>with <code>Hφ</code> the Hessian of φ and <code>adj(·)</code> the matrix adjugate. <strong>Sign
+convention.</strong> <code>H &gt; 0</code> ⇔ the center of curvature lies on the grain-<code>i</code> side ⇔
+grain <code>i</code> is locally convex there — a spherical grain <code>i</code> of radius R embedded
+in a matrix <code>j</code> reports <code>H = +1/R</code>, <code>K = +1/R²</code> (negate <code>H</code> for grain <code>j</code>'s
+perspective; <code>K</code> is invariant under the normal flip).</p>
+<p><strong>Sampling.</strong> Derivatives are evaluated with 19-point central-difference
+stencils (the 3×3×3 neighbourhood minus the 8 corners the central differences
+never touch) using per-axis steps <code>h_vec</code> tied to the analysis voxel grid, at
+the boundary sample points only — no full-grid φ is built. Samples whose
+gradient magnitude falls below <code>CURV_GRAD_MIN</code> (<code>|∇φ| &lt; 0.1</code>) are degenerate:
+dropped, counted, and reported through gate <strong>G16</strong> (warn above 5 % dropped,
+<code>CURV_G16_DROP_TOL</code>). The stencil spacing also sets the practical resolution
+limit of the measurement, ≈ <code>1/(2h)</code>, where <code>h</code> is the voxel edge.</p>
+<p><strong>Flat geometry is exact, not sampled.</strong> <code>FlatTessellation.margin</code> is
+piecewise planar (kinks only at face edges), so flat runs never reach the
+level-set kernel above: the flat path writes literal zeros from the exact
+face polygons instead — <code>H = K = 0</code> by construction, for every sample.</p>
+<p><strong>Caveat (inherited estimator bias).</strong> Curved/voxel geometry reuses the
+voxel-face sample points of the boundary-area estimator (§7), so the same
+staircase area-weighting bias applies to the <em>area</em> column
+(<code>gb_curvature.csv</code>'s <code>area_A2</code>) used to weight the per-boundary H/K
+summaries in <code>boundaries.csv</code> — the curvature <em>values</em> themselves are
+computed from the level set directly and do not carry that bias, but their
+area-weighted aggregates inherit it exactly as <code>statistics.csv</code>'s S_V does.</p>
+<h2 id="9-dopant-insertion">9. Dopant insertion</h2>
+<p><code>doping:</code> adds substitutional (optionally GB-segregated) and interstitial
+dopants to the finished host structure. <strong>Shell/bulk mass balance.</strong> For a
+target dopant count N_t split across shell candidate sites N_s (within
+<code>shell_width</code> of a boundary) and bulk candidate sites N_b, with enrichment
+target E = c_shell/c_bulk,</p>
+<div class="math-display">\[ p_{\mathrm{bulk}} = \frac{N_t}{N_b + E \cdot N_s}, \qquad p_{\mathrm{shell}} = E \cdot p_{\mathrm{bulk}} \]</div>
+<p>are the per-site Bernoulli acceptance probabilities; a probability exceeding 1
+is infeasible and raises <code>ConfigError</code> naming the feasible maximum (either the
+enrichment or the concentration ceiling, whichever bound is violated).</p>
+<p><strong>Joint final-total targeting.</strong> Every dopant's <code>concentration</code> is a fraction
+of the <em>final</em> structure, and substitution never changes the atom total, so
+all dopants' targets are solved against the same estimated final total up
+front: with <code>c_interstitial</code> the sum of all interstitial dopants'
+concentrations and <code>n0</code> the pre-doping atom count,</p>
+<div class="math-display">\[ n_{\mathrm{final\_est}} = \frac{n_0}{1 - \sum c_{\mathrm{interstitial}}} \]</div>
+<p>solving every target sequentially against a running total would shortchange
+earlier dopants by a relative factor of roughly the later dopants'
+concentrations, which the joint solve avoids.</p>
+<p><strong>Interstitial candidate sites</strong> are generated with the ordinary per-grain
+fill machinery: the interstitial sublattice is just an extra fractional basis
+on that grain's own lattice and orientation, so candidates automatically
+follow each grain's crystallography. The basis comes from one of two input
+forms covering all 230 space groups:</p>
+<ul>
+<li>a <strong>built-in preset</strong> keyed by required space group (<code>fcc_octahedral</code> /
+  <code>fcc_tetrahedral</code> → SG 225, <code>bcc_octahedral</code> / <code>bcc_tetrahedral</code> → SG 229,
+  <code>hcp_octahedral</code> / <code>hcp_tetrahedral</code> → SG 194 with the motif on Wyckoff
+  2c) — presets are stored as complete orbits and used as-is; or</li>
+<li><strong>explicit fractional coordinates</strong> (<code>sites.coords</code>) for any structure.
+  By default (<code>expand_orbit: true</code>) each listed coordinate is expanded to
+  its full symmetry orbit under the host crystal's space group — the same
+  spglib operations, in the same Hall setting, that expand the host's own
+  <code>crystal.wyckoff_sites</code> — and deduplicated, so <em>one representative per
+  orbit suffices</em> and the sublattice always respects the host's site
+  symmetry (an incomplete orbit would be an unphysical, symmetry-breaking
+  interstitial density). Listing an already-complete orbit is harmless:
+  the expansion is idempotent. <code>expand_orbit: false</code> uses the coordinates
+  verbatim as a deliberate symmetry-breaking escape hatch — you must then
+  list every equivalent site yourself. The expanded site count is logged
+  at config time and placement time (no silent site-count changes). With
+  CIF input (<code>crystal.cif</code>) the expansion uses the spglib-<em>detected</em>
+  space group, so interstitial sublattices follow the file's true
+  symmetry even when the CIF header declares <code>P 1</code>.</li>
+</ul>
+<p>Candidates are then rejected by a PBC-correct minimum-image
+distance check against every previously placed atom (host and earlier
+dopants), Bernoulli-selected at the shell/bulk probabilities above, and
+finally pruned for self-conflicts among the accepted sites.</p>
+<p><strong>Dopant–GB distance profile (proxigram).</strong> For every dopant the stage
+records the distance to the nearest grain boundary of each placed dopant
+atom <em>and</em> of each candidate site (interstitial: min-distance survivors;
+substitutional: eligible host atoms). <code>doping_profile.csv</code> bins both
+populations by GB distance and reports the local dopant fraction</p>
+<div class="math-display">\[ c(d) = \frac{n_{\mathrm{dopant}}(d)}{n_{\mathrm{candidate}}(d)} \]</div>
+<p>on the candidate sublattice at distance d — the atom-probe-tomography
+"proxigram" analogue. Normalising by the <em>candidate</em> histogram rather than
+by bin volume removes the geometric artefact that shell bins contain more
+volume than deep-bulk bins; for GB segregation with enrichment E the
+profile should step from ≈ E·p_bulk inside the shell (d ≤ <code>shell_width</code>)
+to ≈ p_bulk outside, and be flat at the nominal fraction when segregation
+is off. The companion gnuplot script <code>doping_profile.plt</code> plots the dopant
+count histogram and c(d) against the nominal fraction and shell edge, so
+correct GB segregation is verifiable at a glance. Note the same
+small-count caveat as G17: bins with few candidate sites give noisy
+fractions (empty bins write <code>nan</code>).</p>
+<p><strong>Achieved-enrichment caveat.</strong> The achieved enrichment
+<code>E_achieved = (d_s/c_s)/(d_b/c_b)</code> reported in <code>summary.csv</code> and checked by
+gate <strong>G17</strong> is a ratio estimator over the bulk dopant count <code>d_b</code>, so it is
+only statistically reliable when the <em>expected</em> bulk dopant count is at least
+a few tens — a small expected count gives large seed-to-seed spread and an
+upward Jensen-inequality bias from the <code>1/d_b</code> term (mirrors the rule of
+thumb in <code>docs/gates.md</code> §G17). Gate <strong>G18</strong> independently re-verifies every
+interstitial dopant's <code>min_distance</code> on the final structure (G7-style fresh
+PBC neighbour query) and hard-fails on any violation.</p>
+<h2 id="references">References</h2>
+<ol>
+<li>D. P. Bourne, P. J. J. Kok, S. M. Roper, W. D. T. Spanjer, <em>Laguerre
+   tessellations … grains of given volumes</em>, Phil. Mag. 100 (2020) 2677.</li>
+<li>D. P. Bourne, M. Pearce, S. M. Roper, <em>… periodic semi-discrete optimal
+   transport</em>, Mech. Res. Commun. 127 (2023) 104023.</li>
+<li>J. Kitagawa, Q. Mérigot, B. Thibert, <em>Convergence of a Newton algorithm for
+   semi-discrete optimal transport</em>, JEMS 21 (2019) 2603.</li>
+<li>M. Kuhn et al., <em>Centroidal Laguerre … prescribed volume fractions</em>, CMAME 369
+   (2020) 113175.</li>
+<li>J. K. Mackenzie, <em>Second paper on … misorientation</em>, Biometrika 45 (1958) 229.</li>
+<li>D. G. Brandon, <em>The structure of high-angle grain boundaries</em>, Acta Metall. 14
+   (1966) 1479.</li>
+<li>T. D. B. Jacobs, T. Junge, L. Pastewka, <em>Quantitative characterization of
+   surface topography</em>, Surf. Topogr.: Metrol. Prop. 5 (2017) 013001.</li>
+<li>C. Braun, J. M. Dake, C. E. Krill III, R. Birringer, <em>Abnormal grain growth
+   mediated by fractal boundary migration at the nanoscale</em>, Sci. Rep. 8 (2018)
+   1592.</li>
+<li>C. Braun, R. A. Zeller, H. Menzel, J. Schmauch, C. E. Krill III,
+   R. Birringer, <em>Orientation mapping linked to fractal analysis: a method
+   for studying abnormal grain growth in nanocrystalline PdAu</em>, J. Appl.
+   Phys. 128 (2020) 105102.</li>
+<li>S. J. Eder, D. Bianchi, U. Cihak-Bayr, K. Gkagkas, <em>Methods for atomistic
+    abrasion simulations … fractal surfaces</em>, Comput. Phys. Commun. 212 (2017) 100.</li>
+<li>H. W. Lilliefors, <em>On the KS test for normality with mean and variance
+    unknown</em>, J. Am. Stat. Assoc. 62 (1967) 399.</li>
+<li>R. Quey, P. R. Dawson, F. Barbe, <em>Large-scale 3D random polycrystals …</em>,
+    CMAME 200 (2011) 1729 (Neper — state-of-practice comparison).</li>
+<li>R. N. Goldman, <em>Curvature formulas for implicit curves and surfaces</em>,
+    Computer Aided Geometric Design 22, 632–658 (2005).</li>
+<li>M. Miodownik, A. W. Godfrey, E. A. Holm, D. A. Hughes, <em>On boundary
+    misorientation distribution functions and how to incorporate them into
+    three-dimensional models of microstructural evolution</em>, Acta Mater. 47
+    (1999) 2661–2668.</li>
+<li>D. M. Saylor, J. Fridy, B. S. El-Dasher, K. Y. Jung, A. D. Rollett,
+    <em>Statistically representative three-dimensional microstructures based on
+    orthogonal observation sections</em>, Metall. Mater. Trans. A 35 (2004)
+    1969–1979.</li>
+</ol>
+<div class="prevnext">
+<a class="prev" href="geometry.html"><span>← Previous</span><strong>Grain geometry</strong></a>
+<a class="next" href="config_reference.html"><span>Next →</span><strong>Configuration reference</strong></a>
+</div>
+</article>
+<aside class="toc" aria-label="On this page"><div class="toc-title">On this page</div><ul>
+<li class="toc-l2"><a href="#1-orientations-quaternions-and-bunge-euler-angles">1. Orientations: quaternions and Bunge Euler angles</a></li>
+<li class="toc-l2"><a href="#2-disorientation-csl-and-boundary-character">2. Disorientation, CSL, and boundary character</a></li>
+<li class="toc-l2"><a href="#3-tessellation">3. Tessellation</a></li>
+<li class="toc-l2"><a href="#4-texture-odf-and-boundary-angle-statistics">4. Texture (ODF) and boundary-angle statistics</a></li>
+<li class="toc-l2"><a href="#5-self-affine-boundary-roughness">5. Self-affine boundary roughness</a></li>
+<li class="toc-l2"><a href="#5b-self-affine-gb-morphology-why-warp-cannot-deliver-it-and-how-perturbed_distance-does">5b. Self-affine GB morphology: why warp cannot deliver it, and how perturbed_distance does</a></li>
+<li class="toc-l2"><a href="#6-multiphase-polycrystals">6. Multiphase polycrystals</a></li>
+<li class="toc-l2"><a href="#7-estimator-biases-stated-not-silently-corrected">7. Estimator biases (stated, not silently corrected)</a></li>
+<li class="toc-l2"><a href="#8-grain-boundary-curvature">8. Grain-boundary curvature</a></li>
+<li class="toc-l2"><a href="#9-dopant-insertion">9. Dopant insertion</a></li>
+<li class="toc-l2"><a href="#references">References</a></li>
+</ul></aside>
+</div>
+</main>
+</body>
+</html>

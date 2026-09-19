@@ -1,0 +1,100 @@
+# ===================== grainsmith run configuration =====================
+# FCC Cu with a LOG-NORMAL grain-size distribution.
+#
+# WHAT THIS TEACHES
+#   * grains.size_distribution — the flat Voronoi backend is replaced by a
+#     power (Laguerre) diagram whose per-grain weights are fitted by
+#     semi-discrete optimal transport (damped Newton on the Kantorovich
+#     dual) so that cell volumes match per-grain targets sampled from a
+#     log-normal law in equivalent-sphere DIAMETER (V ∝ d³) — the
+#     canonical grain-growth size law that Poisson–Voronoi cannot produce.
+#   * You prescribe the SHAPE (sigma_log = std of ln d); the scale is set
+#     by V_box / N.  Gate G11 re-measures the final cells and hard-fails
+#     above vol_tol; summary.csv records the Newton iteration count and
+#     the achieved max relative volume error (typically < 1e-4 in < 10
+#     iterations — quadratic convergence).
+#   * Compare grains.csv volume_fraction spread with the same config
+#     minus the size_distribution block.
+#   * Works as the warp BASE too: set boundaries.geometry: curved with
+#     method: warp to get curved boundaries AND prescribed volumes.
+#   * statistics.csv closes the loop: it re-fits a log-normal to the
+#     ACHIEVED equivalent diameters (grain_size section: mu_hat,
+#     sigma_hat, KS) — compare sigma_hat with the prescribed sigma_log.
+#     analysis.section below adds an EBSD-like midplane slice
+#     (slice_z0.5.csv: x, y, grain_id, Bunge Euler angles) for MTEX;
+#     METHODS.md is the auto-generated, citation-numbered methods
+#     paragraph of exactly this run.
+#
+# HOW TO RUN
+#   grainsmith validate examples/grain_geometry/cu_lognormal_sizes.yaml
+#   grainsmith generate examples/grain_geometry/cu_lognormal_sizes.yaml
+#   Check summary.csv for the SDOT iteration count and achieved volume
+#   error, statistics.csv's grain_size section, and slice_z0.5.csv.
+
+meta:
+  title: "FCC Cu, 12 grains, lognormal size distribution (SDOT-fitted)"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 192021
+
+box:
+  lengths: [60.0, 60.0, 60.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 12
+  min_seed_distance: auto
+  lloyd_iterations: 0
+  size_distribution:
+    type: lognormal
+    sigma_log: 0.35          # std of ln(diameter): broad, realistic spread
+    vol_tol: 1.0e-3          # gate G11 threshold (max rel. volume error)
+    max_iter: 30
+    centroidal_iterations: 0 # >0: equiaxed shapes WITH prescribed volumes
+
+crystal:
+  space_group:
+    number: 225              # Fm-3m
+  lattice:
+    a: 3.615                 # Cu, Å
+  wyckoff_sites:
+    - {element: Cu, coords: [0.0, 0.0, 0.0], letter: a}
+
+orientation:
+  scheme: random_uniform
+
+boundaries:
+  geometry: flat
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false
+  per_atom_margin: false
+  statistics: true           # statistics.csv + microstructure.json (default)
+  section: {axis: z, position: 0.5}   # EBSD-like slice_z0.5.csv
+
+output:
+  directory: ./out_cu_lognormal
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

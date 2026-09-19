@@ -1,0 +1,100 @@
+# ===================== grainsmith run configuration =====================
+# TiNi (B19 martensite) — crystal structure read DIRECTLY from a Materials
+# Project CIF file (examples/assets/TiNi.cif), a monoclinic 6-grain
+# polycrystal.
+#
+# WHAT THIS TEACHES
+#   * crystal.cif: {file: ...} replaces the whole manual space_group /
+#     lattice / wyckoff_sites trio.  grainsmith reads the CIF with ASE,
+#     detects the TRUE space group with spglib (never just trusting the
+#     file's own header — see below), and expands the symmetry-
+#     inequivalent Wyckoff sites from spglib's own standardized cell.
+#     'crystal.cif' and the manual trio are MUTUALLY EXCLUSIVE (a config
+#     with both raises G1).
+#   * Declared-vs-detected cross-check: TiNi.cif declares
+#     _symmetry_Int_Tables_number 11 (P2_1/m) AND spglib independently
+#     detects SG 11 at the default symprec = 1e-4 — they agree here, but
+#     grainsmith always uses the spglib-DETECTED number; a CIF that
+#     under- or over-states its own symmetry only gets a WARN (see
+#     cif/tini3_cif_polycrystal.yaml for a CIF that disagrees).
+#   * MONOCLINIC crystal, ORTHOGONAL box: TiNi's own unit cell has
+#     beta = 105.23° (not 90°) and is built with the full 6-parameter
+#     cell matrix (cell_matrix() — the SAME general formula used for
+#     every crystal family), so atoms are placed at their true monoclinic
+#     positions. The simulation BOX itself stays axis-aligned/orthogonal —
+#     the polycrystal tessellation core is orthogonal-box only (box.cells
+#     instead builds a TRICLINIC lattice-multiple box, but only for
+#     single-crystal builds; see cif/tini_cif_triclinic_single.yaml) — the
+#     two are independent: a non-orthogonal crystal lattice does not
+#     require a non-orthogonal simulation cell, since grains are placed
+#     and oriented freely inside an orthogonal box.
+#   * Traceability: the detected space group (number + H-M symbol), the
+#     symprec used, the resolved lattice parameters, and every Wyckoff
+#     letter are written to summary.csv (section "crystal") AND spelled
+#     out in METHODS.md — no silently-assumed symmetry.
+#   * Gate G7 (hard, overlap removal) still runs exactly as with the
+#     manual path: some of the ~16k raw-filled atoms sit inside the
+#     0.85*d_nn cutoff of a neighbouring grain and are deleted.
+#
+# HOW TO RUN
+#   grainsmith validate examples/cif/tini_cif_polycrystal.yaml
+#   grainsmith generate examples/cif/tini_cif_polycrystal.yaml
+#   Check summary.csv's crystal section (detected SG, symprec, resolved
+#   lattice) and METHODS.md for the same information written out in prose.
+
+meta:
+  title: "TiNi (B19 martensite), 6 grains, crystal read from CIF"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 271828
+
+box:
+  lengths: [60.0, 60.0, 60.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 6
+  min_seed_distance: auto
+  lloyd_iterations: 0
+
+crystal:
+  cif:
+    file: ../assets/TiNi.cif   # resolved relative to this file
+    symprec: 1.0e-4           # spglib symmetry-detection tolerance (default)
+
+orientation:
+  scheme: random_uniform
+
+boundaries:
+  geometry: flat
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"       # d_nn resolved from the CIF-derived basis
+    policy: delete_shallower
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false                  # P2_1/m is not cubic — CSL is undefined here
+  per_atom_margin: false
+
+output:
+  directory: ./out_tini_cif_polycrystal
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

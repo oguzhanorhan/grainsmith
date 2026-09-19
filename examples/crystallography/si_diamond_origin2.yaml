@@ -1,0 +1,94 @@
+# ===================== grainsmith run configuration =====================
+# Example: diamond-cubic Si with the ORIGIN CHOICE 2 setting + diagnostics.
+#
+# WHAT THIS TEACHES
+#   * space_group.setting — some groups have several standard settings.
+#     SG 227 (Fd-3m) has two origin choices; the SAME crystal needs
+#     DIFFERENT representative coordinates in each:
+#       origin choice 1:  8a at (0, 0, 0)
+#       origin choice 2:  8a at (1/8, 1/8, 1/8)   <- used here
+#     Mixing them up does NOT trip the G2 round-trip: feeding [0,0,0] under
+#     setting "2" expands to 16 atoms that are STILL Fd-3m-symmetric, so
+#     spglib detects SG 227 and G2 passes — the error surfaces downstream as
+#     a doubled atom count (gate G8 atom-count drift). The G2 number
+#     round-trip catches a wrong space-group NUMBER, not a same-group wrong
+#     origin; the Wyckoff-letter check is the intended origin guard, and for
+#     non-default settings it only WARNS (SCIENCE_AUDIT #2).
+#   * meta.verbose: 3 — DEBUG logging plus diagnostic dumps into
+#     <outdir>/diagnostics/ (per-grain atom counts; voxel histogram and
+#     warp statistics when applicable).
+#   * Open-structure d_nn: diamond Si has d_nn = (sqrt(3)/4)·a ≈ 2.35 Å,
+#     much shorter than the 5.43 Å lattice parameter — the "0.85*d_nn"
+#     cutoff resolves it from the actual basis, never from a.
+#
+# HOW TO RUN
+#   grainsmith validate examples/crystallography/si_diamond_origin2.yaml
+#   grainsmith generate examples/crystallography/si_diamond_origin2.yaml
+#   Check summary.csv for the detected space group and Wyckoff letters,
+#   and out_si_diamond/diagnostics/ for the verbose-3 dumps.
+
+meta:
+  title: "Diamond Si, 4 grains, SG 227 origin choice 2"
+  verbose: 3                 # DEBUG + diagnostics/ dumps
+
+seed:
+  mode: fixed
+  value: 173205
+
+box:
+  lengths: [50.0, 50.0, 50.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 4
+  min_seed_distance: auto
+  lloyd_iterations: 0
+
+crystal:
+  space_group:
+    number: 227              # Fd-3m
+    setting: "2"             # origin choice 2 (inversion at the origin)
+  lattice:
+    a: 5.431                 # Si, Å
+  wyckoff_sites:
+    # The ITA letter of this orbit is 8a IN ORIGIN CHOICE 2.  The letter
+    # field is omitted here on purpose: spglib reports letters in its own
+    # standardized description of Fd-3m, which labels this orbit 'b' —
+    # grainsmith therefore only WARNS about letter mismatches when a
+    # non-default setting is selected (and hard-fails otherwise).
+    - {element: Si, coords: [0.125, 0.125, 0.125]}
+
+orientation:
+  scheme: random_uniform
+
+boundaries:
+  geometry: flat
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false
+  per_atom_margin: false
+
+output:
+  directory: ./out_si_diamond
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

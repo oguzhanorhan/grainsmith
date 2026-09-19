@@ -1,0 +1,53 @@
+{
+  "config": "tests/data/golden/golden_config.yaml",
+  "config_sha256": "64094ae52ba2ee43630882f2a3d5196eb0262c829e653b2266a10818e69ab47d",
+  "environment": {
+    "blas_detection": "pkgconfig",
+    "blas_name": "scipy-openblas",
+    "blas_openblas_config": "OpenBLAS 0.3.31.188.0  USE64BITINT DYNAMIC_ARCH NO_AFFINITY Haswell MAX_THREADS=64",
+    "blas_version": "0.3.31.188.0",
+    "jobs_effective": "1",
+    "jobs_requested": "1",
+    "libc": "glibc 2.39",
+    "machine": "x86_64",
+    "numba": "absent",
+    "os": "Linux",
+    "os_release": "6.17.0-1022-azure",
+    "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+    "processor": "x86_64",
+    "python_implementation": "CPython",
+    "python_version": "3.11.16"
+  },
+  "files": {
+    "METHODS.md": "9934538aaa22e979e497cd7207445eba0df7c75d17aa03fe610f2b61193ddddb",
+    "boundaries.csv": "73a71557cf6f19f63e7a37fdbc777429b316c194d02031dd6586ce1cae3e4ba5",
+    "box.dat": "20feff2857eeb9a48c7ecf6eab89cd48dea5d448781dfd7a5f8f6cde5ed1d59a",
+    "edges.dat": "96f6a817484a58d1c403a8f81fb739d62025a81c02f658cad66c4325934f0589",
+    "grains.csv": "5f3f0ab9db2d1a1bcad9976db5d5e14092401a6e543f1680b6d6d29e401a2db4",
+    "mdf.csv": "8d467b56d10764ed68836e20d1282c2b0b41862368b8b9bfe7f2293c08fb2e29",
+    "odf_mtex.txt": "a51fb560e1ef5c5b35421dce691223f7448c09eef776cf33e6e91d2c64040a16",
+    "polycrystal.data": "2c38ca5580cf970ef42885c2290df4867cf0ebc79d39041b5ee2f9dcda7b20b2",
+    "polycrystal.extxyz": "9a90fd87fbd25c17590ca44604111780fa54aad1492a8733b1d31ce94df26655",
+    "resolved_config.yaml": "16ded3873c7037d0c873c16ce3272ab1f3c09bcdb1ff7ddcc960e9e597816bf3",
+    "seeds.dat": "4d8aa08d18ac2bf2393670e4f37cef33244f366dca6ab606de7bfd016671622a",
+    "statistics.csv": "29c615dbf9860ca53690fe02660122df0228468ca6656261ec83b0e944886ec7",
+    "vertices.csv": "fffbd28874ff79d4003531eb404da9e03998671f074bc776b6f3f3816e5096af",
+    "view.plt": "f7e7f6b70be620b270973b68672204fac6b904dd6293b2cb4a5cb6168bcd2f08"
+  },
+  "fingerprint": {
+    "blas_detection": "pkgconfig",
+    "blas_name": "scipy-openblas",
+    "blas_version": "0.3.31.188.0",
+    "machine": "x86_64",
+    "numpy": "2.4.6",
+    "os": "Linux",
+    "python_implementation": "CPython",
+    "python_version": "3.11.16",
+    "scipy": "1.17.1",
+    "spglib": "2.7.0"
+  },
+  "grainsmith_version": "1.1.0",
+  "provenance_sha256": "9b3527e46ec32c3dce0f650bfbf6a32cc04a731eae4c118af445aeb935625732",
+  "schema": "grainsmith/golden-hashes/v1",
+  "source_date_epoch": 1700000000
+}

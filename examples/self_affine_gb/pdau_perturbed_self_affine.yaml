@@ -1,0 +1,162 @@
+# ===================== grainsmith run configuration =====================
+# Example: Pd90-Au10 nanocrystalline, PERTURBED-DISTANCE (level-set) grain
+# boundaries — the genuinely self-affine alternative to `warp`.
+#
+# WHAT THIS TEACHES
+#   * boundaries.curved.method: perturbed_distance — grain membership is
+#         grain_of(x) = argmin_i [ d_pbc(x, s_i) - amplitude * eta_i(x) ]
+#     with an INDEPENDENT per-grain scalar field eta_i (same
+#     spectrum/hurst/l_min/l_max/amplitude keys as `warp`, reused
+#     verbatim). Unlike `warp` — a coordinate DIFFEOMORPHISM
+#     (grain_of(x) = base.grain_of(x + u(x)), bijective by the G6 guard) —
+#     perturbing the assignment rule itself is NOT a diffeomorphism: a
+#     bijective map cannot change the box-counting dimension of the base
+#     Voronoi surface (it only relabels which point maps to which facet,
+#     so a planar section still box-counts to D_b ~= 1.0 regardless of
+#     the field's Hurst exponent — see the worked comparison and the
+#     "why warp can't do this" argument in docs/physics.md §5b). The
+#     level-set rule folds space near the boundary instead, so its
+#     zero-set genuinely responds to the roughness spectrum of
+#     eta_i - eta_j. `warp` no longer accepts spectrum: self_affine at
+#     all (removed, not deprecated — see docs/physics.md §5b and
+#     examples/grain_geometry/fcc_cu_curved_warp.yaml for warp's own
+#     gaussian-only roughness); this method is the sole self_affine-capable
+#     replacement. See docs/geometry.md section 4b for the full
+#     parameter reference.
+#   * Experimental motivation (the same target as the flagship,
+#     examples/advanced/adv_pdau_perturbed.yaml — itself converted
+#     from a `warp`-based predecessor for the same reason): Braun et al.
+#     discovered that thermally coarsened nanocrystalline Pd90Au10
+#     develops abnormally growing grains with dendritic, highly convoluted
+#     boundaries [Braun 2018, Sci. Rep. 8:1592,
+#     doi:10.1038/s41598-018-19588-4]. A dedicated box-counting protocol
+#     [Braun 2020, J. Appl. Phys. 128:105102, doi:10.1063/5.0029832]
+#     measured the section-perimeter fractal dimension D_b = 1.174 +/-
+#     0.004 (mean over 57 grains; individual grains ranged 1.10-1.24),
+#     versus D_b ~= 1.029 for conventionally cast, smooth boundaries.
+#   * G6 (warp bijectivity) does NOT apply here — there is no coordinate
+#     map to check invertibility of. Instead: a seed-containment guard
+#     (amplitude <= 0.5*min_seed_distance/(2*ETA_CLIP), i.e.
+#     min_seed_distance/12) is checked at config-resolve time, and an
+#     EXACT seed-ownership check runs at construction (every grain's own
+#     seed must still map to itself under the perturbed rule) — see
+#     docs/gates.md G6 note and docs/physics.md §5b.
+#   * G5 (connectivity) is a REPAIR-AND-REPORT gate for this method, not
+#     a hard failure: any voxel-scale fragmentation the level-set folding
+#     produces is repaired by majority-vote reassignment, and gate G19
+#     (warn-only) reports what fraction of voxels needed it
+#     (reassigned_fraction; warn above 2%). Gate G20 (warn-only) reports
+#     the box-counting D_b estimate itself, the G13 analogue for this
+#     method — see docs/gates.md.
+#   * HONEST CALIBRATION STATUS (read before treating this as a
+#     turnkey D_b=1.174 generator). A dedicated H-amplitude sweep on a
+#     60-grain/300 A test geometry (independent of this file's own
+#     20-grain/200 A geometry) found the box-counting D_b estimate rises
+#     MONOTONICALLY with amplitude at every Hurst tested, saturating at
+#     the seed-containment safety ceiling (the largest amplitude the
+#     guard allows) around D_b ~= 1.11-1.12 — inside Braun's reported
+#     per-grain RANGE (1.10-1.24) but only at its LOWER edge, short of
+#     the 1.174 mean. This run uses hurst: 0.7 (the schema's own
+#     "typical metal surfaces/GBs: 0.7-0.9" range) at ~95% of ITS OWN
+#     geometry's seed-containment ceiling; the CLI run this file was
+#     validated against measured d_b_estimated = 1.085 and
+#     reassigned_fraction = 0.088% (summary.csv, tessellation section;
+#     G20/G19) — slightly BELOW even the 60-grain calibration's ceiling
+#     reading, since a smaller/sparser 20-grain geometry samples fewer
+#     (and smaller) grain cross-sections for the box-counting fit. Do
+#     not expect a different grain count or box size to reproduce this
+#     exact number — the conflict-graph coloring and section sampling
+#     both change with geometry. Reaching the upper part of the Braun
+#     band with a larger safety margin is open follow-up work, not
+#     something this example claims.
+#   * Chemistry, space group and overlap policy mirror the
+#     advanced/adv_pdau_perturbed.yaml flagship exactly (Pd/Au random
+#     solid solution on the FCC 4a site, Vegard's-law lattice parameter,
+#     delete_shallower — never midpoint_merge, which is forbidden for
+#     multi-species systems).
+#
+# HOW TO RUN
+#   grainsmith validate examples/self_affine_gb/pdau_perturbed_self_affine.yaml
+#   grainsmith generate examples/self_affine_gb/pdau_perturbed_self_affine.yaml --jobs 0
+#   Check summary.csv for d_b_estimated / hurst_estimated / reassigned_fraction
+#   (gates G13, G19, G20) and slice_z0.5.csv for the EBSD-like midplane cut.
+#
+# NOTE ON THE MODEL: as with the flagship, this reproduces the self-affine
+# boundary GEOMETRY at a stated, honestly-bounded D_b, not the
+# grain-growth KINETICS that produce it experimentally — a starting
+# structure for MD, not a coarsening simulation.
+
+meta:
+  title: "Pd90-Au10 nanocrystalline, perturbed-distance (self-affine) GBs, H=0.7"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 105102               # same nod to J. Appl. Phys. 128:105102 (Braun 2020)
+
+box:
+  lengths: [200.0, 200.0, 200.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 20
+  min_seed_distance: auto
+  lloyd_iterations: 0
+
+crystal:
+  space_group:
+    number: 225              # Fm-3m (FCC)
+  lattice:
+    a: 3.909                 # Vegard Pd(3.8907)/Au(4.0782) at 90/10 at.%, A
+  wyckoff_sites:
+    - element: {Pd: 0.90, Au: 0.10}   # random solid solution on the 4a site
+      coords: [0.0, 0.0, 0.0]
+      letter: a
+
+orientation:
+  scheme: random_uniform
+
+boundaries:
+  geometry: curved
+  curved:
+    method: perturbed_distance
+    spectrum: self_affine
+    amplitude: 3.6             # A; ~95% of this geometry's seed-containment
+                                # ceiling A_max = min_seed_distance/12 (~3.81 A
+                                # here) — see the calibration note above.
+    hurst: 0.7                 # typical metal GB range (schema default band
+                                # 0.7-0.9); H's effect on D_b is weak here
+                                # relative to amplitude (see note above).
+    l_min: 12.0                # >= 2*h_field for the resolved grid
+    l_max: 40.0                # <= min(L)/2 = 100 A
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower   # midpoint_merge forbidden: multi-species alloy
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false
+  per_atom_margin: false
+  statistics: true
+  section: {axis: z, position: 0.5}   # EBSD-like midplane slice for MTEX
+
+output:
+  directory: ./out_pdau_perturbed_self_affine
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

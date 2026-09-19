@@ -1,0 +1,193 @@
+# ===================== grainsmith run configuration =====================
+# Cu, Sigma3-ANGLE-enriched boundary network on self-affine curved grain
+# boundaries. ~20.7 nm grains in a 36 nm cube, ~3.95e6 atoms.
+#
+# WHAT THIS EXAMPLE IS FOR
+# ------------------------
+# It is the reference answer to the two questions most often asked of a
+# texture-and-boundary generator, and it is built so that BOTH answers are
+# numbers in the output rather than claims in a README:
+#
+#   1. "Is the ODF preserved when you assign orientations to grains?"
+#      NO -- not the physical one. The annealer permutes WHICH grain carries
+#      WHICH orientation, so the grain-COUNT-weighted orientation
+#      distribution is invariant by construction, but the ODF as
+#      conventionally defined is weighted by VOLUME of material, and grains
+#      here are not equal in volume. Swapping orientations between grains a
+#      and b moves |V_a - V_b| / sum(V) of the volume-weighted ODF's
+#      total-variation mass. This file therefore does two things:
+#        * orientation.component_weight_basis: volume  -- the SAMPLER
+#          realises each component's weight as a volume fraction, not a
+#          grain count (gate G25 reports configured vs by-count vs
+#          by-volume, so the difference is visible);
+#        * mdf_target.odf_drift_max -- a HARD cap: every accepted swap is
+#          vetoed unless the volume-weighted drift stays below it, and
+#          gate G22 re-measures the drift independently afterwards.
+#      Gate G26 additionally reports the ATOMISTIC floor: grainsmith
+#      controls the ODF with tessellation volumes, but the structure an MD
+#      code reads is weighted by ATOMS per grain, and overlap removal
+#      strips a boundary shell whose relative cost is larger for small
+#      grains. That floor is a discretisation limit, not an error -- a
+#      drift cap tighter than it buys nothing that survives export.
+#
+#   2. "Does the Sigma3 target give you Sigma3 boundaries?"
+#      It gives you the ANGLE window, which is a NECESSARY but not
+#      sufficient condition. True CSL Sigma3 also requires the <111> AXIS,
+#      and the annealing energy never sees the axis -- it sees only the
+#      boundary-AREA-weighted marginal of the disorientation ANGLE. That is
+#      why the target is named `sigma3_angle_enriched` and not
+#      `csl_enriched` (still accepted, deprecated). Gate G23 prints both
+#      numbers side by side: the Brandon-window area fraction the objective
+#      optimises, and the TRUE Sigma3 area fraction with the axis condition
+#      applied. Expect the second to be well below the first.
+#      The two ODF components below are Sigma3-TWIN-related on purpose: an
+#      angle-only objective cannot CREATE twin pairs, it can only exploit
+#      pairs the orientation set already contains.
+#
+# GEOMETRY (verified against the installed code, not quoted from memory)
+# ----------------------------------------------------------------------
+#   * N=10 grains in a 360.0 A cube -> Wigner-Seitz radius
+#     r_ws = (3V/(4*pi*N))^(1/3) = 103.66 A, i.e. d_eq = 2*r_ws = 20.7 nm.
+#     min_seed_distance: auto resolves to this same r_ws.
+#   * Cu FCC a = 3.615 A -> 4 atoms/cell, d_nn = 2.5562 A, 8.935 g/cm3,
+#     24 proper point-group rotations. 3,950,414 atoms before overlap
+#     removal (~0.14 GB for the atom arrays themselves).
+#   * l_min = 5.11 A = 2*d_nn -- the shortest roughness wavelength still at
+#     least two nearest-neighbour spacings. The self_affine grid heuristic
+#     (h = l_min/4, capped at 384/axis) lands on 282^3, UNCAPPED, so
+#     h_field = 360/282 = 1.277 A and the Nyquist floor l_min >= 2*h_field
+#     clears with +100.1% margin.
+#   * l_max = 103.7 A ~= r_ws (the grain radius itself), well under the hard
+#     cap min(L)/2 = 180 A. Band = log2(103.7/5.11) = 4.34 octaves.
+#   * amplitude 7.34 A = 85% of the seed-containment ceiling
+#     a_max = PERTURBED_DISTANCE_SAFETY*min_seed_distance/(2*ETA_CLIP)
+#           = 0.5*103.66/6 = 8.638 A.
+#     Default `total_rms` convention: the number IS the total RMS of the
+#     perturbation field, so it is directly comparable to a_max.
+#
+# COST
+# ----
+#   ~4e6 atoms, a 282^3 analysis grid and ~12 self-affine colour fields
+#   (~1.1 GB of field workspace, converted one colour at a time). Minutes,
+#   not hours, on a laptop. `--jobs N` fans the per-grain fill out over N
+#   processes; each worker allocates its own lattice grid, so the driver
+#   clamps N to what runtime.memory_limit_gb and free RAM allow and says so.
+#
+# Run:
+#   grainsmith validate examples/texture/cu_sigma3_angle_enriched_curved.yaml
+#   grainsmith generate examples/texture/cu_sigma3_angle_enriched_curved.yaml --jobs 4
+# =========================================================================
+
+meta:
+  title: "Cu, Sigma3-angle-enriched MDF on self-affine curved GBs, ~20.7 nm grains"
+  verbose: 1
+
+runtime:
+  # Per-ALLOCATION memory guard (Section 13). Not a total-RSS cap: it bounds
+  # any SINGLE array the run tries to build -- the analysis voxel grid, a
+  # self-affine colour field, one grain's lattice grid in the fill. The
+  # largest single allocation here is ~1.1 GB, so 8 GB is generous headroom
+  # that still fails fast and with an actionable message if a parameter is
+  # mistyped into something enormous. It is also what the parallel fill
+  # divides by the worker count when it decides how many workers fit.
+  memory_limit_gb: 8.0
+
+seed:
+  mode: fixed
+  value: 314159
+
+box:
+  lengths: [360.0, 360.0, 360.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 10
+  min_seed_distance: auto     # -> r_ws = 103.66 A
+  lloyd_iterations: 0
+
+crystal:
+  space_group:
+    number: 225               # Fm-3m (FCC)
+  lattice:
+    a: 3.615                  # Cu, A
+  wyckoff_sites:
+    - element: Cu
+      coords: [0.0, 0.0, 0.0]
+      letter: a
+
+orientation:
+  scheme: odf_components
+  # THE POINT OF THIS KEY: 'volume' makes each weight below a VOLUME
+  # fraction of material -- the physical definition of an ODF. Under the
+  # alternative 'count' the weights are grain-COUNT fractions, which for
+  # unequal grains is a different distribution answering a different
+  # question. Gate G25 reports both realisations so the gap is measured.
+  component_weight_basis: volume
+  components:
+    # Cube and its Sigma3 twin: 60 deg about <111>. True CSL Sigma3
+    # boundaries are only POSSIBLE because this pair is in the set.
+    - euler_bunge_deg: [0.0, 0.0, 0.0]
+      weight: 0.5
+      spread_deg: 5.0
+    - euler_bunge_deg: [45.0, 70.528779365509308, 45.0]
+      weight: 0.5
+      spread_deg: 5.0
+  mdf_target:
+    # Canonical name. 'csl_enriched' is a deprecated alias for exactly this
+    # target and warns; the rename is the honest one, because the objective
+    # below enforces only the Sigma3 Brandon ANGULAR window, never the
+    # <111> axis condition that CSL classification also requires.
+    type: sigma3_angle_enriched
+    sigma3_fraction: 0.35     # mixture coefficient, NOT the resulting
+                              # window fraction: the Haar-random reference
+                              # already carries mass in that window.
+    annealing_steps: 40000
+    t0: 0.05
+    cooling: 0.9995
+    # The volume-weighted ODF trust region. Every ACCEPTED swap satisfies
+    # d_TV(f_V(pi), f_V(pi_0)) <= this, and because kernel smoothing is a
+    # total-variation contraction the same bound holds for the smoothed ODF
+    # at every half-width. Leave it unset and drift is only MEASURED, not
+    # bounded. Loosen it if the anneal cannot move (the veto fraction rises
+    # sharply as the grain count falls, since one swap moves O(1/N) of the
+    # ODF mass).
+    odf_drift_max: 0.03
+
+boundaries:
+  geometry: curved
+  curved:
+    method: perturbed_distance
+    spectrum: self_affine
+    hurst: 0.7                # rougher at small scales for lower H
+    amplitude: 7.34           # A, total RMS; 85% of a_max = 8.638 A
+    l_min: 5.11               # = 2*d_nn; clears Nyquist by +100.1%
+    l_max: 103.7              # ~= r_ws; <= min(L)/2 = 180 A
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower
+
+analysis:
+  voxel_grid: auto            # -> 282^3, uncapped at this l_min
+  gb_character: true
+  csl: true                   # REQUIRED for the angle-vs-axis comparison
+  statistics: true
+  per_atom_margin: false
+  section: {axis: z, position: 0.5}
+
+output:
+  directory: ./out_cu_sigma3_angle_enriched_curved
+  lammps:
+    filename: polycrystal.data
+    atom_style: atomic
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    summary: summary.csv
+    grains: grains.csv
+    boundaries: boundaries.csv
+  gnuplot:
+    enabled: true
+  methods_snippet: true

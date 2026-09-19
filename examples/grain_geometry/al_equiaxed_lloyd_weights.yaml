@@ -1,0 +1,90 @@
+# ===================== grainsmith run configuration =====================
+# Example: equiaxed FCC Al microstructure — Lloyd relaxation + curved GBs
+# via the additive-weight (Johnson-Mehl / Apollonius) method.
+#
+# WHAT THIS TEACHES
+#   * grains.lloyd_iterations: centroidal (Lloyd) relaxation moves each
+#     seed to its cell's centroid before tessellating — grain volumes
+#     equalize and shapes become equiaxed.  Compare volume_fraction spread
+#     in grains.csv with lloyd_iterations: 0.
+#   * boundaries.curved.method: additive_weights — per-grain random weight
+#     w_i shifts the bisector toward the lighter grain, giving gently
+#     curved (spherical-cap) boundaries.  The empty-cell guard requires
+#     weight_sigma <= min_seed_distance/6 (G1 hard rule; try 10.0 to see
+#     the ConfigError).
+#   * analysis.voxel_grid: explicit integer — voxels along the SHORTEST
+#     box edge (other axes scale).  Curved volumes/areas/normals come from
+#     this grid; G3 then checks the volume sum to one voxel layer.
+#   * output.mesh: marching-cubes PLY of every boundary; needs the
+#     optional extra (pip install ".[mesh]") — flip to true if you
+#     have scikit-image installed.
+#
+# HOW TO RUN
+#   grainsmith validate examples/grain_geometry/al_equiaxed_lloyd_weights.yaml
+#   grainsmith generate examples/grain_geometry/al_equiaxed_lloyd_weights.yaml
+#   Check grains.csv's volume_fraction spread (narrower than lloyd_iterations:
+#   0) and gb_points.dat / view.plt for the curved boundary surfaces.
+
+meta:
+  title: "FCC Al, 8 equiaxed grains, Lloyd + additive-weight curved GBs"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 161803
+
+box:
+  lengths: [60.0, 60.0, 60.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 8
+  min_seed_distance: auto
+  lloyd_iterations: 3        # 0 = Poisson-Voronoi; 3 ≈ well equiaxed
+
+crystal:
+  space_group:
+    number: 225              # Fm-3m
+  lattice:
+    a: 4.046                 # Al, Å
+  wyckoff_sites:
+    - {element: Al, coords: [0.0, 0.0, 0.0], letter: a}
+
+orientation:
+  scheme: random_uniform
+
+boundaries:
+  geometry: curved
+  curved:
+    method: additive_weights
+    weight_sigma: 2.5        # Å; guard: <= min_seed_distance/6 ≈ 3.1 here
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower
+
+analysis:
+  voxel_grid: 48             # explicit resolution (48 voxels / shortest edge)
+  gb_character: true
+  csl: false
+  per_atom_margin: false
+
+output:
+  directory: ./out_al_equiaxed
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv   # note: flat-only; skipped for curved geometry
+    summary: summary.csv
+  gnuplot:
+    enabled: true            # curved → gb_points.dat instead of edges.dat
+  mesh:
+    enabled: false           # true requires: pip install ".[mesh]"
+    format: ply

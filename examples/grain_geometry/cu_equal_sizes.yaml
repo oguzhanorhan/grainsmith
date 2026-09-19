@@ -1,0 +1,92 @@
+# ===================== grainsmith run configuration =====================
+# FCC Cu with EQUAL-VOLUME grains (SDOT-fitted, size_distribution: equal).
+#
+# WHAT THIS TEACHES
+#   * grains.size_distribution.type: equal — every grain is fitted to the
+#     SAME target volume V_box / N (here 60³/12 = 18 000 Å³), removing the
+#     natural Poisson–Voronoi volume spread. Gate G11 re-measures the
+#     final cells and hard-fails above vol_tol, exactly as for the
+#     log-normal sibling (cu_lognormal_sizes.yaml).
+#   * The COMMON SLIP this example exists to prevent: `type:` lives
+#     INSIDE the `size_distribution:` block. Writing it directly under
+#     `grains:` (grains: {type: equal}) is rejected by gate G1 with
+#     "grains.type — Extra inputs are not permitted".
+#   * grains.csv closes the loop: volume_fraction is 1/12 = 0.0833 for
+#     every grain to within vol_tol. statistics.csv's log-normal re-fit
+#     is DEGENERATE here by design (equal volumes ⇒ sigma_hat ≈ 0, KS
+#     reported as NaN) — that is the honest signature of an equal-volume
+#     structure, not an error.
+#   * centroidal_iterations > 0 would additionally move seeds to their
+#     power-cell centroids between refits — equiaxed SHAPES on top of the
+#     equal volumes (a centroidal power diagram).
+#
+# HOW TO RUN
+#   grainsmith validate examples/grain_geometry/cu_equal_sizes.yaml
+#   grainsmith generate examples/grain_geometry/cu_equal_sizes.yaml
+#   Check grains.csv volume_fraction (all ≈ 0.0833) and summary.csv's
+#   size_distribution section (sdot_iterations, max_rel_volume_error).
+
+meta:
+  title: "FCC Cu, 12 grains, equal volumes (SDOT-fitted)"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 192022
+
+box:
+  lengths: [60.0, 60.0, 60.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 12
+  min_seed_distance: auto
+  lloyd_iterations: 0
+  size_distribution:
+    type: equal              # every grain targets V_box / N
+    vol_tol: 1.0e-3          # gate G11 threshold (max rel. volume error)
+    max_iter: 30
+    centroidal_iterations: 0 # >0: equiaxed shapes WITH equal volumes
+
+crystal:
+  space_group:
+    number: 225              # Fm-3m
+  lattice:
+    a: 3.615                 # Cu, Å
+  wyckoff_sites:
+    - {element: Cu, coords: [0.0, 0.0, 0.0], letter: a}
+
+orientation:
+  scheme: random_uniform
+
+boundaries:
+  geometry: flat
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false
+  per_atom_margin: false
+
+output:
+  directory: ./out_cu_equal
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

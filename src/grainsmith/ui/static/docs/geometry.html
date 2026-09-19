@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grain geometry · grainsmith</title>
+<style>
+
+:root{
+  --sidebar-w: 300px; --toc-w: 240px;
+  --accent:#b5651d; --accent-2:#1f6f8b;
+  --ink:#1a1f24; --ink-soft:#4a545e; --line:#e3e7ea;
+  --bg:#ffffff; --bg-side:#1c2530; --bg-side-2:#243040;
+  --code-bg:#f5f7f9; --side-ink:#c9d3de; --side-ink-soft:#8a97a6;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:Georgia,"Times New Roman",Times,serif;
+  color:var(--ink); background:var(--bg); line-height:1.68; font-size:16px;
+}
+/* ---- full-screen layout: fixed sidebar + fluid content ---- */
+.sidebar{
+  position:fixed; top:0; left:0; width:var(--sidebar-w); height:100vh;
+  overflow-y:auto; background:var(--bg-side); color:var(--side-ink);
+  padding:22px 0 40px; z-index:20;
+}
+.brand{padding:6px 24px 20px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:14px;}
+.brand a{color:#fff;font-weight:700;font-size:1.35rem;text-decoration:none;letter-spacing:.5px;}
+.brand-sub{display:block;color:var(--side-ink-soft);font-size:.8rem;margin-top:2px;}
+.nav-group{margin:0 0 6px;}
+.nav-group-title{
+  padding:12px 24px 5px;font-size:.72rem;text-transform:uppercase;
+  letter-spacing:.09em;color:var(--side-ink-soft);font-weight:700;
+}
+.nav-group ul{list-style:none;margin:0;padding:0;}
+.nav-group li a{
+  display:block;padding:6px 24px 6px 28px;color:var(--side-ink);
+  text-decoration:none;font-size:.92rem;border-left:3px solid transparent;
+}
+.nav-group li a:hover{background:var(--bg-side-2);color:#fff;}
+.nav-group li.active a{
+  color:#fff;border-left-color:var(--accent);background:var(--bg-side-2);font-weight:600;
+}
+.content{margin-left:var(--sidebar-w);min-height:100vh;}
+.content-inner{
+  display:grid;grid-template-columns:minmax(0,1fr) var(--toc-w);
+  gap:48px;max-width:1500px;margin:0 auto;padding:52px 64px 96px;
+}
+article{min-width:0;}
+/* ---- in-page TOC (sticky, right rail) ---- */
+.toc{position:sticky;top:36px;align-self:start;font-size:.86rem;
+  border-left:1px solid var(--line);padding-left:18px;max-height:calc(100vh-72px);overflow-y:auto;}
+.toc-title{font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--ink-soft);margin-bottom:10px;}
+.toc ul{list-style:none;margin:0;padding:0;}
+.toc li{margin:3px 0;}
+.toc li a{color:var(--ink-soft);text-decoration:none;display:block;line-height:1.4;}
+.toc li a:hover{color:var(--accent);}
+.toc-l3{padding-left:14px;font-size:.82rem;}
+/* ---- typography ---- */
+article h1{font-size:2.05rem;line-height:1.2;margin:.1em 0 .7em;font-weight:750;letter-spacing:-.01em;}
+article h2{font-size:1.5rem;margin:1.9em 0 .6em;padding-bottom:.28em;
+  border-bottom:2px solid var(--line);font-weight:700;}
+article h3{font-size:1.18rem;margin:1.6em 0 .5em;font-weight:650;}
+article h4{font-size:1.02rem;margin:1.3em 0 .4em;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;}
+article p{margin:.85em 0;}
+article a{color:var(--accent-2);text-decoration:none;}
+article a:hover{text-decoration:underline;}
+article strong{font-weight:650;}
+article img{max-width:100%;height:auto;display:block;margin:1.4em auto;
+  border:1px solid var(--line);border-radius:8px;background:#fff;}
+article ul,article ol{padding-left:1.5em;margin:.7em 0;}
+article li{margin:.32em 0;}
+article blockquote{
+  margin:1.3em 0;padding:.7em 1.2em;border-left:4px solid var(--accent);
+  background:#fbf6f0;color:var(--ink);border-radius:0 6px 6px 0;
+}
+article blockquote p{margin:.4em 0;}
+/* ---- display math (MathJax typesets these; this is the no-JS/offline fallback) ---- */
+.math-display{
+  margin:1.5em 0;padding:.9em 1.2em;text-align:center;overflow-x:auto;
+  font-family:"Cambria Math","STIX Two Math",Cambria,"Times New Roman",serif;
+  font-size:1.05rem;color:var(--ink);
+}
+/* ---- code ---- */
+code{font-family:"SF Mono",SFMono-Regular,ui-monospace,Menlo,Consolas,monospace;
+  font-size:.88em;background:var(--code-bg);padding:.12em .38em;border-radius:4px;
+  color:#b03a2e;border:1px solid var(--line);}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;
+  padding:16px 18px;overflow-x:auto;margin:1.2em 0;line-height:1.5;}
+pre code{background:none;border:none;padding:0;color:var(--ink);font-size:.86rem;}
+/* ---- tables (wide, striped, scrollable) ---- */
+article table{border-collapse:collapse;width:100%;margin:1.3em 0;font-size:.9rem;display:block;overflow-x:auto;}
+article thead th{background:#2c3844;color:#fff;text-align:left;padding:9px 12px;font-weight:600;white-space:nowrap;}
+article tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top;}
+article tbody tr:nth-child(even){background:#f8fafb;}
+article tbody code{white-space:nowrap;}
+/* ---- prev/next ---- */
+.prevnext{display:flex;justify-content:space-between;gap:16px;margin-top:3.5em;
+  padding-top:1.6em;border-top:1px solid var(--line);}
+.prevnext a{flex:1;max-width:48%;padding:14px 18px;border:1px solid var(--line);
+  border-radius:8px;text-decoration:none;color:var(--ink);background:#fcfdfe;}
+.prevnext a:hover{border-color:var(--accent);background:#fbf6f0;}
+.prevnext .next{text-align:right;}
+.prevnext span{display:block;font-size:.78rem;color:var(--ink-soft);margin-bottom:3px;}
+.prevnext strong{font-size:.98rem;color:var(--accent-2);font-weight:600;}
+/* ---- mobile ---- */
+.menu-toggle{display:none;position:fixed;top:12px;left:12px;z-index:30;
+  background:var(--bg-side);color:#fff;border:none;border-radius:6px;
+  width:42px;height:42px;font-size:1.3rem;cursor:pointer;}
+@media (max-width:1080px){
+  .content-inner{grid-template-columns:minmax(0,1fr);}
+  .toc{display:none;}
+}
+@media (max-width:820px){
+  .menu-toggle{display:block;}
+  .sidebar{transform:translateX(-100%);transition:transform .2s ease;}
+  body.nav-open .sidebar{transform:translateX(0);}
+  .content{margin-left:0;}
+  .content-inner{padding:64px 22px 72px;}
+}
+
+</style>
+<script>
+window.MathJax = {
+  tex: { displayMath: [['\\[', '\\]']], processEscapes: true },
+  options: { enableMenu: false }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</head>
+<body>
+<button class="menu-toggle" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+<nav class="sidebar" aria-label="Documentation navigation">
+<div class="brand"><a href="index.html">grainsmith</a><span class="brand-sub">documentation</span></div>
+<div class="nav-group"><div class="nav-group-title">Getting started</div><ul>
+<li><a href="index.html">Overview</a></li>
+<li><a href="manual.html">User manual</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Concepts &amp; physics</div><ul>
+<li><a href="architecture.html">Architecture</a></li>
+<li class="active"><a href="geometry.html">Grain geometry</a></li>
+<li><a href="physics.html">Physics &amp; conventions</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Reference</div><ul>
+<li><a href="config_reference.html">Configuration reference</a></li>
+<li><a href="gates.html">QA gates (G1–G26)</a></li>
+<li><a href="outputs.html">Outputs</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Developer</div><ul>
+<li><a href="developer.html">Developer guide</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Help</div><ul>
+<li><a href="faq.html">FAQ &amp; troubleshooting</a></li>
+</ul></div>
+</nav>
+<main class="content">
+<div class="content-inner">
+<article>
+<h1>Grain geometry</h1>
+<p>grainsmith partitions the simulation box into grains using a <strong>tessellation
+backend</strong>. This page is the single reference for every backend: what it does,
+the exact config parameters that control it, the construction conditions it must
+satisfy (the QA gates), and a worked config snippet. It is the page to read when
+you are deciding <em>which geometry to use and how to tune it</em>.</p>
+<p>The math behind each method is in <a href="physics.html">physics &amp; conventions</a>; the field
+descriptions are auto-generated in the <a href="config_reference.html">configuration
+reference</a>; the QA gates are in <a href="gates.html">QA gates</a>. This
+page ties them together per geometry.</p>
+<h2 id="choosing-a-backend">Choosing a backend</h2>
+<p>The top-level switch is <code>boundaries.geometry</code>, with one refinement
+(<code>grains.size_distribution</code>) that upgrades the flat backend to a volume-fitted
+diagram:</p>
+<table>
+<thead>
+<tr>
+<th>You want</th>
+<th><code>boundaries.geometry</code></th>
+<th>Extra block</th>
+<th>Backend</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Planar grain boundaries (default)</td>
+<td><code>flat</code></td>
+<td>—</td>
+<td>flat Voronoi</td>
+</tr>
+<tr>
+<td>Grains with <strong>prescribed sizes</strong></td>
+<td><code>flat</code></td>
+<td><code>grains.size_distribution</code></td>
+<td>power / Laguerre (SDOT)</td>
+</tr>
+<tr>
+<td><strong>Curved</strong> (wavy) boundaries, gaussian roughness</td>
+<td><code>curved</code></td>
+<td><code>curved: {method: warp}</code></td>
+<td>domain-warped Voronoi (spectrum: gaussian ONLY — self_affine is a <code>ConfigError</code> here, see §4 below)</td>
+</tr>
+<tr>
+<td>Johnson–Mehl / weighted (also <strong>curved</strong>)</td>
+<td><code>curved</code></td>
+<td><code>curved: {method: additive_weights}</code></td>
+<td>Apollonius (additive weights)</td>
+</tr>
+<tr>
+<td>Elongated / textured grains (also <strong>curved</strong>)</td>
+<td><code>curved</code></td>
+<td><code>curved: {method: anisotropic}</code></td>
+<td>ellipsoidal-metric diagram</td>
+</tr>
+<tr>
+<td>Genuinely <strong>SELF-AFFINE</strong> boundaries (box-counting <code>D_b</code> responds to the field)</td>
+<td><code>curved</code></td>
+<td><code>curved: {method: perturbed_distance, spectrum: self_affine}</code></td>
+<td>level-set / perturbed-distance — the ONLY method that accepts <code>spectrum: self_affine</code></td>
+</tr>
+<tr>
+<td>An externally-produced microstructure</td>
+<td><code>voxel_import</code></td>
+<td><code>voxel_import: {…}</code></td>
+<td>imported voxel label field</td>
+</tr>
+<tr>
+<td>A single crystal (no boundaries)</td>
+<td><code>flat</code> + <code>grains.number: 1</code></td>
+<td>—</td>
+<td>single-crystal fast path</td>
+</tr>
+</tbody>
+</table>
+<p>grainsmith's user-facing GB-morphology taxonomy is three-tiered: <strong>flat</strong>
+(the first two rows above), <strong>curved</strong> (the next three — smoothly curved,
+Voronoi-topology-preserving), and <strong>self-affine</strong> (<code>perturbed_distance</code> alone —
+the only method whose as-built boundary genuinely responds to a self-affine
+roughness spectrum; see <code>docs/physics.md</code> §5b for why the other three
+curved methods cannot).</p>
+<p>All backends implement the same <code>Tessellation</code> interface, so the atom fill,
+overlap removal, and analysis behave identically regardless of geometry — only
+the grain shapes change.</p>
+<h2 id="1-flat--planar-voronoi-default">1. Flat — planar Voronoi (default)</h2>
+<p><strong>What it does.</strong> Standard periodic Voronoi tessellation of the seed points:
+every point of space belongs to the grain whose seed is nearest, giving
+<strong>planar</strong> grain-boundary faces computed exactly with Qhull. This is the default
+and the base for most other backends.</p>
+<p><strong>Parameters.</strong> None beyond the seeds themselves — the geometry is fully
+determined by <code>grains.number</code> (or an explicit seed list) and the seeding mode.
+Seed placement is controlled by <code>grains.seeding</code> (Poisson-disc vs Lloyd
+relaxation) and the box periodicity <code>box.periodic</code>.</p>
+<p><strong>Construction conditions (gates).</strong></p>
+<ul>
+<li><strong>G3 — volume closure.</strong> The Voronoi cell volumes must sum to the box volume to
+  a relative tolerance <code>VOL_REL_TOL = 1e-6</code> (<code>|Σ Vᵢ − V_box| / V_box ≤ 1e-6</code>; the
+  tight bound is safe because Qhull volumes use exact-adaptive arithmetic). A
+  failure means the periodic tessellation did not tile the torus.</li>
+<li><strong>G4 — Euler characteristic.</strong> Each cell must be a topologically valid convex
+  polyhedron (<code>V − E + F = 2</code>); degenerate vertices closer than <code>EULER_TOL ×
+  max(L) = 1e-9 × max(L)</code> are merged first.</li>
+<li><strong>G5 — connectivity.</strong> Each grain is a single connected region; discretization
+  slivers below <code>G5_SPURIOUS_VOXEL_FRACTION = 0.5 %</code> of cell volume are ignored,
+  so G5 fails only on macroscopic fragmentation.</li>
+</ul>
+<pre><code class="language-yaml"># examples/basics/b2_nial_flat.yaml — planar Voronoi, B2 NiAl
+box: {lengths: [80.0, 80.0, 80.0]}
+grains: {number: 16}
+boundaries: {geometry: flat}      # (default — may be omitted)
+</code></pre>
+<h2 id="2-power--laguerre--grains-of-prescribed-size">2. Power / Laguerre — grains of prescribed size</h2>
+<p><strong>What it does.</strong> When you add a <code>grains.size_distribution</code> block, the flat
+backend is replaced by a <strong>power (Laguerre) diagram</strong>: each seed gets a scalar
+<em>weight</em>, and cells are bounded by weighted (power-distance) bisectors instead of
+perpendicular bisectors. The weights are fitted by <strong>semi-discrete optimal
+transport (SDOT)</strong> — a damped-Newton solve on the Kantorovich dual — so that each
+grain's volume matches a sampled target. This is how you prescribe a grain-size
+distribution rather than accepting whatever Voronoi produces.</p>
+<p><strong>Parameters</strong> (<code>grains.size_distribution</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>type</code></td>
+<td><code>lognormal</code> (prescribe the <em>shape</em>, scale fixed by <code>V_box/N</code>), <code>equal</code> (all <code>V_box/N</code>), or <code>volumes</code> (explicit list)</td>
+<td><code>lognormal</code></td>
+</tr>
+<tr>
+<td><code>sigma_log</code></td>
+<td>log-normal shape parameter — std of <code>ln(d)</code>; larger = broader size spread</td>
+<td><code>0.35</code></td>
+</tr>
+<tr>
+<td><code>volumes</code></td>
+<td>explicit relative-volume list (length = <code>grains.number</code>), used with <code>type: volumes</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>vol_tol</code></td>
+<td><strong>gate G11</strong> threshold: max relative per-grain volume error on the fitted diagram</td>
+<td><code>1e-3</code></td>
+</tr>
+<tr>
+<td><code>max_iter</code></td>
+<td>maximum damped-Newton iterations of the SDOT fit</td>
+<td><code>30</code></td>
+</tr>
+<tr>
+<td><code>centroidal_iterations</code></td>
+<td>outer centroidal loop (Kuhn 2020): alternate volume-fitting with moving seeds to cell centroids → equiaxed grains <strong>with</strong> prescribed volumes</td>
+<td><code>0</code> (off)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Construction conditions.</strong> The flat gates (G3–G5) still apply. Additionally:</p>
+<ul>
+<li><strong>G11 — volume accuracy.</strong> After the SDOT fit, <code>max_i |V_i − V_iᵗᵃʳᵍᵉᵗ| /
+  V_iᵗᵃʳᵍᵉᵗ ≤ vol_tol</code>. If the Newton solve does not reach <code>vol_tol</code> within
+  <code>max_iter</code>, the gate fails — raise <code>max_iter</code> or relax <code>vol_tol</code>.</li>
+</ul>
+<blockquote>
+<p><strong>Scope note.</strong> The SDOT volume guarantee holds on the <em>flat power base</em>. If
+you then wrap it in a curved warp (below), the realised per-grain volumes
+drift from the targets, and G11 measures only the unwarped base. Use
+prescribed sizes <strong>or</strong> strong warping, and read <a href="physics.html">physics.md</a>
+before combining them.</p>
+</blockquote>
+<pre><code class="language-yaml"># examples/grain_geometry/cu_lognormal_sizes.yaml — log-normal grain sizes via SDOT
+box: {lengths: [60.0, 60.0, 60.0]}
+grains:
+  number: 12
+  size_distribution: {type: lognormal, sigma_log: 0.35, vol_tol: 1.0e-3}
+boundaries: {geometry: flat}
+</code></pre>
+<h2 id="3-curved--domain-warped-voronoi-gaussian-spectrum">3. Curved — domain-warped Voronoi (Gaussian spectrum)</h2>
+<p><strong>What it does.</strong> The <code>curved</code> geometry with <code>method: warp</code> (the default curved
+method) takes a flat (or power) base tessellation and <strong>displaces space</strong> by a
+smooth, periodic, divergence-free Gaussian random field (GRF). Straight Voronoi
+faces become gently curved surfaces, mimicking the wavy grain boundaries seen in
+real microstructures — without changing grain topology or adjacency.</p>
+<p><strong>Parameters</strong> (<code>boundaries.curved</code>, <code>method: warp</code>, <code>spectrum: gaussian</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>method</code></td>
+<td><code>warp</code> (domain-warped Voronoi via periodic GRF)</td>
+<td><code>warp</code></td>
+</tr>
+<tr>
+<td><code>base</code></td>
+<td>base tessellation to warp: <code>flat</code>, <code>power</code>, <code>additive_weights</code>, <code>anisotropic</code></td>
+<td><code>flat</code></td>
+</tr>
+<tr>
+<td><code>amplitude</code></td>
+<td>warp-field RMS displacement per component, Å. <strong>Hard cap:</strong> <code>≤ min_seed_distance / 4</code></td>
+<td><code>4.0</code></td>
+</tr>
+<tr>
+<td><code>correlation_length</code></td>
+<td>Gaussian correlation length ℓ (Å) — the boundary "waviness wavelength"; larger ℓ = smoother, more gently curved boundaries</td>
+<td><code>15.0</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Construction conditions.</strong></p>
+<ul>
+<li><strong>G6 — bijectivity (seed containment).</strong> The warp must remain invertible — no
+  folded or self-intersecting boundaries. This is enforced two ways: the
+  amplitude is hard-capped at <code>min_seed_distance / 4</code> (so a displaced point never
+  crosses into a non-neighbouring cell), and the field gradient is bounded by
+  <code>WARP_GRAD_MAX = 0.5</code> (<code>max‖∇u‖ &lt; 0.5</code>). Requesting a larger <code>amplitude</code> than
+  the cap raises at construction.</li>
+</ul>
+<pre><code class="language-yaml"># examples/grain_geometry/fcc_cu_curved_warp.yaml — curved boundaries, Gaussian spectrum
+box: {lengths: [80.0, 80.0, 80.0]}
+grains: {number: 12}
+boundaries:
+  geometry: curved
+  curved: {method: warp, amplitude: 4.0, correlation_length: 15.0}
+</code></pre>
+<h2 id="4-self-affine-spectrum--why-warp-cannot-use-it-the-rough-boundary-backend-lives-in-4b">4. Self-affine spectrum — why <code>warp</code> cannot use it (the rough-boundary backend lives in §4b)</h2>
+<p><strong>History.</strong> Earlier versions of grainsmith let <code>warp</code> take <code>spectrum:
+self_affine</code> — a <strong>band-limited power law</strong> amplitude spectrum in place of
+the single Gaussian scale, giving the displacement field a controllable
+field fractal dimension <code>D = 3 − hurst</code>. <strong>That combination has been
+REMOVED, not deprecated:</strong> <code>method: warp</code> + <code>spectrum: self_affine</code> is now
+a hard <code>ConfigError</code>, raised both at config-resolve time
+(<code>config/resolve.py</code> Rule 8a) and at the <code>WarpTessellation.__init__</code> API
+level.</p>
+<blockquote>
+<p><strong>Why it was removed, not just discouraged.</strong> <code>warp</code> is a coordinate
+diffeomorphism (<code>grain_of(x) = base.grain_of(x + u(x))</code>, bijective under
+the G6 guard), and a bijective map cannot change the box-counting
+dimension of the surface it displaces — see the Lipschitz argument in
+<a href="physics.html#5b-self-affine-gb-morphology-why-warp-cannot-deliver-it-and-how-perturbed_distance-does">physics.md §5b</a>.
+A <code>hurst</code> exponent on <code>warp</code>'s field only ever set a <strong>roughness-color</strong>
+knob (how the waviness is distributed across scales within the band), not
+a <strong>fractal-dimension</strong> knob — a 2D box-counting measurement of the
+actual grain-boundary contour stayed pinned near the flat-Voronoi value
+(<code>D_b ≈ 1.0</code>–<code>1.1</code>, depending on geometry) at <em>every</em> Hurst exponent,
+statistically indistinguishable across H. Since a self-affine spectrum on a
+non-self-affine boundary is scientifically hollow for its one stated purpose,
+grainsmith removes the combination outright rather than keeping a
+misleading knob alive with a caveat. <strong>If you want a grain boundary whose
+box-counting dimension itself responds to a roughness parameter — e.g.
+reproducing Braun et al.'s measured D_b ≈ 1.17 nanocrystalline PdAu grain
+boundaries — use <code>method: perturbed_distance</code> (§4b below), the only
+method that still accepts <code>spectrum: self_affine</code>.</strong></p>
+</blockquote>
+<p><code>warp</code>'s own boundary waviness is still fully tunable — via <code>spectrum:
+gaussian</code> (the only spectrum it accepts) and <code>correlation_length</code> (§3
+above). Everything below this point — the self-affine spectrum's field
+math, its parameters, the narrow-band trap, and a worked example — now
+lives entirely in §4b, since <code>perturbed_distance</code> is its only consumer.</p>
+<h2 id="4b-perturbed-distance--genuinely-self-affine-grain-boundaries">4b. Perturbed-distance — genuinely self-affine grain boundaries</h2>
+<p><strong>What it does.</strong> <code>method: perturbed_distance</code> replaces the flat-Voronoi
+membership test itself with a perturbed-distance argmin, using an
+<strong>independent per-grain scalar field</strong> <code>η_i</code> rather than a single shared
+displacement field:</p>
+<div class="math-display">\[ \mathrm{grain\_of}(x) = \operatorname*{argmin}_i \left[ d_{\mathrm{pbc}}(x, s_i) - \mathrm{amplitude} \cdot \eta_i(x) \right] \]</div>
+<p>Each <code>η_i</code> is drawn from the same <code>synthesize_grf</code> machinery <code>warp</code> uses for
+its displacement field (<code>tessellation/warp.py</code>, shared verbatim) with either
+a single Gaussian scale (<code>spectrum: gaussian</code>) or a <strong>band-limited power
+law</strong> (<code>spectrum: self_affine</code>):</p>
+<div class="math-display">\[ \sqrt{\Phi(k)} \propto k^{-(3+2H)/2}, \qquad k \in \left[\frac{2\pi}{l_{\max}}, \frac{2\pi}{l_{\min}}\right] \]</div>
+<p>giving the field a controllable fractal dimension <code>D = 3 − hurst</code>. Because
+this perturbs the ASSIGNMENT RULE rather than the coordinate frame, it is
+<strong>not</strong> a coordinate diffeomorphism (§4's <code>warp</code> is; this is not) — it can
+fold space near the boundary and produce a genuinely self-affine grain-boundary
+contour whose box-counting dimension responds to the field's Hurst exponent
+and amplitude, which <code>warp</code> can never deliver regardless of Hurst (§4; full
+argument in
+<a href="physics.html#5b-self-affine-gb-morphology-why-warp-cannot-deliver-it-and-how-perturbed_distance-does">physics.md §5b</a>).
+<code>perturbed_distance</code> is therefore the <strong>only</strong> method that accepts
+<code>spectrum: self_affine</code> at all. This is the backend for reproducing an
+experimentally measured section-perimeter fractal dimension, e.g. the
+nanocrystalline Pd₉₀Au₁₀ abnormal-grain-growth boundaries of Braun et al.
+2018/2020 (D_b = 1.174 ± 0.004).</p>
+<p><strong>Parameters</strong> (<code>boundaries.curved</code>, <code>method: perturbed_distance</code>) — the
+<em>exact same</em> <code>spectrum</code> / <code>hurst</code> / <code>l_min</code> / <code>l_max</code> / <code>amplitude</code> schema
+keys <code>warp</code> also declares, reused verbatim; there is no <code>base</code> or
+<code>correlation_length</code> role for this method beyond what those keys already
+cover:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>spectrum</code></td>
+<td><code>gaussian</code> (single scale) or <code>self_affine</code>: <code>√Φ(k) ∝ k^(−(3+2H)/2)</code> for <code>k ∈ [2π/l_max, 2π/l_min]</code></td>
+<td><code>gaussian</code></td>
+</tr>
+<tr>
+<td><code>hurst</code></td>
+<td>Hurst exponent <code>H ∈ (0, 1]</code> (self_affine only); field fractal dimension <code>D = 3 − H</code>. Typical metal GBs: 0.7–0.9</td>
+<td><code>0.8</code></td>
+</tr>
+<tr>
+<td><code>l_min</code></td>
+<td>shortest roughness wavelength (Å, self_affine only); band upper k-limit <code>2π/l_min</code></td>
+<td><code>8.0</code></td>
+</tr>
+<tr>
+<td><code>l_max</code></td>
+<td>longest roughness wavelength (Å, self_affine only); band lower k-limit <code>2π/l_max</code></td>
+<td><code>60.0</code></td>
+</tr>
+<tr>
+<td><code>amplitude_convention</code></td>
+<td><code>total_rms</code> (default) or <code>reference_wavelength</code> (opt-in) — see below</td>
+<td><code>total_rms</code></td>
+</tr>
+<tr>
+<td><code>reference_wavelength</code></td>
+<td>reference-octave anchor (Å, self_affine + <code>reference_wavelength</code> convention only); <code>null</code> means "use <code>l_max</code>"</td>
+<td><code>null</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong><code>amplitude_convention</code> (opt-in, backward-compatible).</strong> The
+default <code>total_rms</code> fixes <code>amplitude</code> as the field's <strong>total RMS over the
+whole synthesis band</strong> <code>[l_min, l_max]</code>. This has a counter-intuitive
+consequence: because the band-integrated variance of a <code>k^(−(3+2H))</code>
+spectrum is dominated by its longest wavelengths, WIDENING the band (more
+octaves — smaller <code>l_min</code>, larger <code>l_max</code>) <em>redistributes</em> the same total
+budget across more scales rather than adding to it. At fixed <code>amplitude</code>,
+adding a coarse octave can therefore <strong>reduce</strong> short-wavelength (<code>l_min</code>
+-scale) roughness — the opposite of the physically expected direction (see
+<a href="physics.html#5b-self-affine-gb-morphology-why-warp-cannot-deliver-it-and-how-perturbed_distance-does">physics.md §5b</a>
+for the measured reversal in grain-boundary area this causes).</p>
+<p>Setting <code>amplitude_convention: reference_wavelength</code> instead fixes the RMS
+power contributed by <strong>one reference octave</strong>,
+<code>[reference_wavelength/2, reference_wavelength]</code> (default anchor:
+<code>l_max</code>), letting every other resolved octave accumulate its own
+contribution independently on top. <code>amplitude</code> then has a stable physical
+meaning — Å-RMS at a named wavelength — independent of how many octaves
+the band spans.</p>
+<p><strong>Caveat on the default anchor.</strong> With the <strong>default</strong> anchor
+(<code>reference_wavelength: null</code> → <code>l_max</code>, which MOVES as the band widens),
+a sign-test found the small-scale roughness suppression above is
+NOT fully corrected — the local-roughness trend still decreases as
+octaves are added, just less steeply than under <code>total_rms</code>. Only an
+explicit, <strong>fixed absolute</strong> <code>reference_wavelength</code> (anchored near
+<code>l_min</code>, not moving with <code>l_max</code>) inverts the trend to the physically
+expected monotonic increase. The default (moving) anchor is intended for
+the common case where <code>l_max</code> itself represents a physical scale (e.g.
+the grain radius) that should stay the roughness reference as other
+settings change — not as a fix for a controlled band-width scan. See
+<a href="physics.html#5b-self-affine-gb-morphology-why-warp-cannot-deliver-it-and-how-perturbed_distance-does">physics.md §5b(f)</a>
+for the measurement and the two anchor modes' different intended uses.</p>
+<p>The two conventions are related by one exact,
+invertible scale factor (<code>tessellation.warp.reference_shell_kappa</code>):</p>
+<div class="math-display">\[ \kappa = \frac{\sigma(\text{reference octave})}{\sigma(\text{whole band})} \quad (\kappa \le 1), \qquad
+\mathrm{amplitude}_{\text{reference\_wavelength}} = \mathrm{amplitude}_{\text{total\_rms}} \cdot \kappa \]</div>
+<p>The seed-containment guard always binds the <strong>realized total-RMS-
+equivalent amplitude</strong>, regardless of which convention supplied
+<code>amplitude</code> — since <code>κ ≤ 1</code>, converting a <code>reference_wavelength</code> amplitude
+back to its total-RMS equivalent (<code>÷ κ</code>) only ever makes the guard
+<em>stricter</em>, never weaker. <code>reference_wavelength</code> requires <code>spectrum:
+self_affine</code> and, when given explicitly, must lie within <code>[l_min,
+l_max]</code>; it cannot be set under <code>amplitude_convention: total_rms</code> (a
+silently-ignored field is treated as a config error, not a no-op). The
+selected convention and (under <code>reference_wavelength</code>) the resolved
+<code>reference_wavelength</code>/<code>κ</code>/equivalent total-RMS amplitude are reported in
+<code>summary.csv</code> (<code>PerturbedDistanceTessellation.kappa</code> /
+<code>.amplitude_total_rms</code> properties); <code>resolved_config.yaml</code> — a plain dump
+of the config's OWN fields — carries <code>amplitude_convention</code> and
+<code>reference_wavelength</code> as given, not the derived <code>κ</code> (which is computed
+during tessellation construction, not resolved onto the config).</p>
+<p><strong>Construction conditions (gates).</strong> G6 does <strong>not</strong> apply (no
+diffeomorphism to check); a different guard set takes its place:</p>
+<ul>
+<li><strong>Seed-containment guard (hard, pre-flight).</strong> <code>amplitude ≤
+  PERTURBED_DISTANCE_SAFETY · min_seed_distance / (2 · ETA_CLIP)</code>, i.e.
+  <code>min_seed_distance / 12</code> — a <em>sufficient</em> (not tight) bound checked at
+  config-resolve time, cheap insurance before paying for field synthesis.</li>
+<li><strong>Exact seed-ownership check (hard, post-hoc).</strong> At construction, every
+  grain's own seed must still evaluate to itself under the perturbed rule;
+  a <code>ConfigError</code> if a competing grain's field captured it.</li>
+<li><strong><code>l_min &lt; l_max ≤ min(L)/2</code></strong> (self_affine only) — the longest wavelength
+  must fit in the box.</li>
+<li><strong><code>l_min ≥ 2·h_field</code></strong> (self_affine only) — the shortest wavelength must
+  be resolvable on the field grid (Nyquist).</li>
+<li><strong>G5 → repair-and-report, not hard-fail.</strong> Any voxel-scale fragmentation
+  the folding causes is repaired by majority-vote reassignment rather than
+  raising; <strong>G19</strong> (warn) reports the <code>reassigned_fraction</code> this took.</li>
+<li><strong>G13 — Hurst back-estimate (warn, self_affine only).</strong> After synthesis,
+  grainsmith re-estimates the Hurst exponent <code>Ĥ</code> from the generated
+  per-color fields and warns if <code>|Ĥ − hurst| &gt; HURST_G13_TOL = 0.15</code>.</li>
+<li><strong>G20 (warn, self_affine only) — box-counting roughness index, not a
+  fractal-dimension certificate.</strong> <code>d_b_estimated</code> is a box-counting fit
+  of the actual generated boundary (Braun et al. 2020 protocol, 2D in-box
+  cross-sections, fit window restricted to the synthesis band <code>[l_min,
+  l_max]</code>) — the direct measurement G13 cannot provide, since G13 only
+  characterizes the FIELD, not the resulting boundary. Box-counting's
+  ability to statistically separate the Hurst exponent's effect from
+  finite-band noise is a GRADIENT with octave count, not a sharp cliff:
+  it is already significant (p ≪ 0.01) by ~3.2 octaves, but only reaches
+  a conventionally LARGE effect size (η² &gt; 80%) at ≈50 nm grain diameter
+  (~5.5 octaves) — treat <code>d_b_estimated</code> below that regime as a
+  local-roughness diagnostic, not a converged, large-effect-size fractal
+  dimension comparable to Braun's D_b band — see
+  <a href="gates.html">gates.md</a> for the gate's exact framing, and
+  <a href="physics.html#5b-self-affine-gb-morphology-why-warp-cannot-deliver-it-and-how-perturbed_distance-does">physics.md §5b</a>
+  for the estimator's documented resolution bias, the octave/decade
+  budget this depends on, and this backend's honest calibration status
+  against the Braun D_b band.</li>
+</ul>
+<blockquote>
+<p><strong>Convention caution.</strong> grainsmith reports the <strong>field</strong> fractal dimension
+<code>D = 3 − H</code>. If you compare against a 2D box-counting dimension from an
+EBSD section, that is the <strong>contour</strong> dimension — a different, and for
+this method independently <em>measured</em> (via G20's <code>d_b_estimated</code>), number.
+Do not conflate them; see <a href="physics.html">physics.md</a>.</p>
+</blockquote>
+<pre><code class="language-yaml"># examples/self_affine_gb/pdau_perturbed_self_affine.yaml — genuinely self-affine GBs
+box: {lengths: [200.0, 200.0, 200.0]}
+grains: {number: 20}
+boundaries:
+  geometry: curved
+  curved:
+    method: perturbed_distance
+    spectrum: self_affine
+    amplitude: 3.6
+    hurst: 0.7
+    l_min: 12.0
+    l_max: 40.0
+</code></pre>
+<p><strong>Narrow-band trap.</strong> The Hurst exponent's effect on the field is a
+within-band <em>tilt</em> of the power spectrum — it only becomes statistically
+detectable when <code>l_max/l_min</code> spans a wide enough range for that tilt to
+accumulate. This is a property of <code>synthesize_grf</code> itself (the function
+<code>perturbed_distance</code> now exclusively consumes for self_affine fields,
+since <code>warp</code> can no longer be configured with <code>spectrum: self_affine</code> at
+all). At <code>l_max/l_min ≈ 2</code> (a factor-of-2 band, roughly what <code>l_min: 12,
+l_max: 30</code>-scale settings give), same-seed fields synthesized at H = 0.5
+and H = 0.9 are nearly indistinguishable — their scalar-field spatial
+correlation exceeds 0.99 (measured directly on an actual
+<code>WarpTessellation</code> object built while <code>spectrum: self_affine</code> was still
+accepted, for this check: 0.995 on this exact narrow band, and the
+resulting boundary's cross-section grain assignment differs on 0.0475 %
+of sampled points between H = 0.5 and H = 0.9). Widening the band by an
+order of magnitude (e.g. <code>l_min: 12, l_max: 150</code>, ≈ 1 decade) drops that
+field correlation to 0.975 and raises the cross-section assignment
+difference to 0.1125 % of sampled points (both measured the same way)
+— still small.
+<strong>If you want the Hurst exponent's effect to be more pronounced</strong> (for a
+demonstration, a G13 back-estimation exercise, or a genuine
+roughness-color study), budget <strong>at least one decade</strong> of <code>l_max/l_min</code>,
+not a factor of ~2.</p>
+<h2 id="5-additive-weights--anisotropic">5. Additive weights &amp; anisotropic</h2>
+<p>Two further <code>curved</code> methods target different microstructures. They warp nothing
+— they change the <em>distance</em> used to assign points to grains.</p>
+<p><strong>Additive weights</strong> (<code>method: additive_weights</code>) — a Johnson–Mehl / Apollonius
+diagram: each seed carries an additive radius, so cells meet on hyperbolic
+(rather than planar) surfaces, modelling grains nucleated at different times.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>weight_sigma</code></td>
+<td>weight spread σ_w (Å). <strong>Constraint:</strong> <code>σ_w ≤ min_seed_distance / 6</code></td>
+<td><code>0.0</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Anisotropic</strong> (<code>method: anisotropic</code>) — a per-grain ellipsoidal metric
+(grain-boundary power-diagram family), producing <strong>elongated</strong> grains for
+columnar or rolled textures.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>aspect_ratio_range</code></td>
+<td>allowed <code>[min, max]</code> per-grain aspect ratios (both &gt; 0, min ≤ max)</td>
+<td><code>[1.0, 1.0]</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Scope note.</strong> The anisotropic metric is a <em>Voronoi-class</em> backend (its
+per-grain metric is not volume-normalised), so it is <strong>not</strong> a volume-targeted
+anisotropic power diagram — it has <strong>no volume handle at all</strong>, and combining
+it with <code>grains.size_distribution</code> is refused as a config error (G1): volume
+targeting exists only for flat geometry or the <code>warp</code> method, whose base is
+the SDOT-fitted power diagram. To get curved boundaries <em>with</em> prescribed
+volumes, use <code>method: warp</code> over <code>base: power</code>
+(<code>examples/grain_geometry/cu_curved_sizes.yaml</code>). See
+<a href="physics.html#3-tessellation">physics.md §3</a> for why only the power/SDOT
+backend targets volumes exactly.</p>
+</blockquote>
+<pre><code class="language-yaml"># examples/grain_geometry/fe_bcc_anisotropic.yaml — elongated grains
+boundaries:
+  geometry: curved
+  curved: {method: anisotropic, aspect_ratio_range: [1.0, 3.0]}
+</code></pre>
+<pre><code class="language-yaml"># examples/grain_geometry/al_equiaxed_lloyd_weights.yaml — Johnson–Mehl weights
+boundaries:
+  geometry: curved
+  curved: {method: additive_weights, weight_sigma: 2.0}
+</code></pre>
+<h2 id="6-voxel-import--externally-produced-microstructures">6. Voxel import — externally-produced microstructures</h2>
+<p><strong>What it does.</strong> <code>boundaries.geometry: voxel_import</code> bypasses seed-based
+tessellation entirely and reads a <strong>voxel label field</strong> (one integer grain id per
+voxel) produced elsewhere — e.g. a DREAM.3D synthetic microstructure or an
+experimental reconstruction. grainsmith then fills each labelled region with an
+oriented crystal exactly as for a computed tessellation.</p>
+<p><strong>Parameters</strong> (<code>boundaries.voxel_import</code>): the label-field path/dataset, the
+voxel size, and how per-grain orientations are supplied (from the file or
+sampled). See the <a href="config_reference.html">configuration reference</a> for the full
+<code>VoxelImportConfig</code> fields. HDF5 import requires the <code>[import]</code> extra (h5py).</p>
+<p><strong>Construction conditions.</strong> A voxel discretisation of a <code>(111)</code>-type plane
+over-counts boundary voxels by a <code>√3</code> geometric factor; the analysis accounts for
+this. The <code>analysis.voxel_grid</code> resolution is capped at
+<code>VOXEL_GRID_MAX = 384³</code>.</p>
+<pre><code class="language-yaml"># examples/voxel_import/fe_voxel_import.yaml — import a label field
+boundaries:
+  geometry: voxel_import
+  voxel_import: {path: microstructure.h5, ...}
+</code></pre>
+<h2 id="7-single-crystal">7. Single crystal</h2>
+<p>Setting <code>grains.number: 1</code> with <code>geometry: flat</code> selects the single-crystal fast
+path (<code>SingleCrystalTessellation</code>): no boundaries, one orientation, and a
+commensurability check that reports the lattice/box misfit so you can pick a box
+that tiles the crystal exactly.</p>
+<pre><code class="language-yaml"># examples/basics/cu_single_crystal.yaml
+box: {lengths: [36.15, 36.15, 36.15]}
+grains: {number: 1}
+boundaries: {geometry: flat}
+</code></pre>
+<h2 id="parameter--gate-quick-reference">Parameter → gate quick reference</h2>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Backend</th>
+<th>Bound / gate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>size_distribution.vol_tol</code></td>
+<td>power</td>
+<td>G11: <code>max rel. volume error ≤ vol_tol</code></td>
+</tr>
+<tr>
+<td><code>curved.amplitude</code></td>
+<td>warp</td>
+<td>G6: <code>≤ min_seed_distance / 4</code></td>
+</tr>
+<tr>
+<td><code>curved.spectrum</code></td>
+<td>warp</td>
+<td>must be <code>gaussian</code> — <code>self_affine</code> is a <code>ConfigError</code> (Rule 8a)</td>
+</tr>
+<tr>
+<td><code>curved.hurst</code></td>
+<td>perturbed_distance + self_affine</td>
+<td>G13 (warn): <code>|Ĥ − H| ≤ 0.15</code></td>
+</tr>
+<tr>
+<td><code>curved.l_min</code></td>
+<td>perturbed_distance + self_affine</td>
+<td><code>≥ 2·h_field</code> (grid Nyquist), <code>&lt; l_max</code></td>
+</tr>
+<tr>
+<td><code>curved.l_max</code></td>
+<td>perturbed_distance + self_affine</td>
+<td><code>≤ min(L)/2</code></td>
+</tr>
+<tr>
+<td><code>curved.weight_sigma</code></td>
+<td>additive weights</td>
+<td><code>≤ min_seed_distance / 6</code></td>
+</tr>
+<tr>
+<td><code>curved.aspect_ratio_range</code></td>
+<td>anisotropic</td>
+<td>both <code>&gt; 0</code>, <code>min ≤ max</code></td>
+</tr>
+<tr>
+<td>warp field gradient</td>
+<td>warp (gaussian spectrum only)</td>
+<td>G6: <code>max‖∇u‖ &lt; 0.5</code></td>
+</tr>
+<tr>
+<td><code>curved.amplitude</code></td>
+<td>perturbed_distance</td>
+<td>seed-containment guard: <code>≤ min_seed_distance / 12</code> (n/a for G6); under <code>amplitude_convention: reference_wavelength</code>, the REALIZED total-RMS-equivalent amplitude (<code>amplitude / κ</code>) is what is actually checked — Rule 29(d)</td>
+</tr>
+<tr>
+<td><code>curved.reference_wavelength</code></td>
+<td>perturbed_distance + self_affine + <code>amplitude_convention: reference_wavelength</code></td>
+<td><code>∈ [l_min, l_max]</code> when given; must be unset under <code>amplitude_convention: total_rms</code> — Rule 29(a)–(c)</td>
+</tr>
+<tr>
+<td>perturbed_distance connectivity</td>
+<td>perturbed_distance</td>
+<td>G19 (warn): <code>reassigned_fraction ≤ REASSIGNED_FRACTION_WARN_TOL = 0.02</code></td>
+</tr>
+<tr>
+<td>perturbed_distance box-counting roughness index</td>
+<td>perturbed_distance</td>
+<td>G20 (warn, reported only; NOT a converged, large-effect-size fractal-dimension certificate below ~5.5 synthesis-band octaves): <code>d_b_estimated</code>, fit restricted to <code>ε ∈ [l_min, l_max]</code></td>
+</tr>
+<tr>
+<td><code>analysis.gb_curvature</code></td>
+<td>any (voxel-sampled on curved)</td>
+<td>G16 (warn): <code>dropped_fraction ≤ CURV_G16_DROP_TOL = 0.05</code>; G21 (warn): per-grain <code>|Σ K·dA| ≤ CURV_G21_GAUSS_BONNET_TOL = 4π</code></td>
+</tr>
+</tbody>
+</table>
+<p>See <a href="gates.html">gates.md</a> for the full G1–G26 gate definitions and
+<a href="config_reference.html">config_reference.md</a> for every field with its type and
+default.</p>
+<div class="prevnext">
+<a class="prev" href="architecture.html"><span>← Previous</span><strong>Architecture</strong></a>
+<a class="next" href="physics.html"><span>Next →</span><strong>Physics &amp; conventions</strong></a>
+</div>
+</article>
+<aside class="toc" aria-label="On this page"><div class="toc-title">On this page</div><ul>
+<li class="toc-l2"><a href="#choosing-a-backend">Choosing a backend</a></li>
+<li class="toc-l2"><a href="#1-flat--planar-voronoi-default">1. Flat — planar Voronoi (default)</a></li>
+<li class="toc-l2"><a href="#2-power--laguerre--grains-of-prescribed-size">2. Power / Laguerre — grains of prescribed size</a></li>
+<li class="toc-l2"><a href="#3-curved--domain-warped-voronoi-gaussian-spectrum">3. Curved — domain-warped Voronoi (Gaussian spectrum)</a></li>
+<li class="toc-l2"><a href="#4-self-affine-spectrum--why-warp-cannot-use-it-the-rough-boundary-backend-lives-in-4b">4. Self-affine spectrum — why warp cannot use it (the rough-boundary backend lives in §4b)</a></li>
+<li class="toc-l2"><a href="#4b-perturbed-distance--genuinely-self-affine-grain-boundaries">4b. Perturbed-distance — genuinely self-affine grain boundaries</a></li>
+<li class="toc-l2"><a href="#5-additive-weights--anisotropic">5. Additive weights &amp; anisotropic</a></li>
+<li class="toc-l2"><a href="#6-voxel-import--externally-produced-microstructures">6. Voxel import — externally-produced microstructures</a></li>
+<li class="toc-l2"><a href="#7-single-crystal">7. Single crystal</a></li>
+<li class="toc-l2"><a href="#parameter--gate-quick-reference">Parameter → gate quick reference</a></li>
+</ul></aside>
+</div>
+</main>
+</body>
+</html>

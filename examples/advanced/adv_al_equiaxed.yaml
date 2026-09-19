@@ -1,0 +1,111 @@
+# ===================== grainsmith run configuration =====================
+# ADVANCED example (~1M atoms) — fully equiaxed FCC Al polycrystal.
+# Lloyd (centroidal Voronoi) relaxation + additive-weights (Johnson-Mehl /
+# Apollonius) curved boundaries, ~1e6 atoms.
+#
+# WHAT THIS TEACHES
+#   * The two independent ways grainsmith produces realistic, compact
+#     grains, combined:
+#       - lloyd_iterations: 4 relaxes seeds to their Voronoi-cell
+#         centroids (centroidal Voronoi tessellation) -> narrow,
+#         well-equiaxed grain-size distribution, characteristic of a fully
+#         recrystallized metal (contrast a raw Poisson-Voronoi diagram,
+#         lloyd_iterations: 0, which has a broad size spread and many
+#         small slivers).
+#       - additive_weights builds a Johnson-Mehl / Apollonius diagram
+#         (curved GBs from per-seed additive weights) — a nucleation-and-
+#         growth boundary model, distinct from the domain-warp route.  The
+#         weight spread weight_sigma is bounded by min_seed_distance/6 (a
+#         bijectivity/positivity guard); here min_seed_distance resolves to
+#         ~39.5 A so the bound is ~6.6 A and weight_sigma: 3.0 A is safe.
+#   * RESOURCE NOTE (measured, this box/grain count on a 32 GB machine):
+#     the additive-weights fill allocates a LATTICE BOUNDING-BOX grid per
+#     grain, and a few heavily-weighted seeds get large Apollonius cells
+#     with large boxes.  Peak RSS therefore scales with the number of
+#     concurrent fill workers.  Run THIS example with a capped worker
+#     count: --jobs 6 uses ~5.4 GB peak and finishes in ~140 s;
+#     --jobs 0 (all cores) can exceed 32 GB and be OOM-killed in
+#     the fill stage.  (The flat/warp/power examples do not need this —
+#     their per-grain boxes are compact.)
+#   * Al is the second reference FCC metal in this tier — the Al
+#     counterpart to the Cu curved example, and a clean GB-energy
+#     benchmark case (random-texture FCC GB network; the FCC GB-energy
+#     literature puts Al around 0.3-0.6 J/m^2, e.g. Olmsted 2009 — a
+#     literature value, NOT verified here).  NOTE: no interatomic
+#     potential ships with grainsmith, so an Al run
+#     needs a potential you supply yourself (e.g. a published Al
+#     eam/alloy); grainsmith writes the structure, not the force field.
+#   * Scale: ~1e6 atoms of Al, 255^3 A (~25.5 nm) periodic.
+#
+# HOW TO RUN
+#   grainsmith validate examples/advanced/adv_al_equiaxed.yaml
+#   grainsmith generate examples/advanced/adv_al_equiaxed.yaml --jobs 6
+#     (see RESOURCE NOTE above — cap worker count for the additive-weights fill)
+#   Check grains.csv's narrow volume_fraction spread (Lloyd relaxation)
+#   and gb_points.dat / view.plt for the curved boundary surfaces.
+
+meta:
+  title: "FCC Al equiaxed (Lloyd) + additive-weights curved GBs, ~1M atoms"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 271828
+
+box:
+  lengths: [255.0, 255.0, 255.0]     # ~25.5 nm cube; ~1e6 Al atoms
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 64
+  min_seed_distance: auto
+  lloyd_iterations: 4                # centroidal relaxation -> equiaxed grains
+
+crystal:
+  space_group:
+    number: 225                      # Fm-3m (FCC)
+  lattice:
+    a: 4.046                         # Al, A
+  wyckoff_sites:
+    - element: Al
+      coords: [0.0, 0.0, 0.0]
+      letter: a
+
+orientation:
+  scheme: random_uniform
+
+boundaries:
+  geometry: curved
+  curved:
+    method: additive_weights
+    weight_sigma: 3.0                # A; guard weight_sigma <= min_seed_distance/6
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: true                          # elemental cubic -> Sigma labels meaningful
+  statistics: true
+  section: {axis: z, position: 0.5}
+
+output:
+  directory: ./out_adv_al_equiaxed
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

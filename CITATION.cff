@@ -1,0 +1,273 @@
+cff-version: 1.2.0
+message: >-
+  If you use grainsmith in published work, please cite it together with the
+  references below (Voronoi construction ancestry, uniform SO(3) sampling,
+  misorientation statistics, the CSL angular criterion, self-affine
+  grain-boundary roughness, and grain-boundary curvature).
+title: "grainsmith: A Generator of Polycrystalline Models for Atomistic
+  Simulations with Statistical and Grain-Boundary Morphology Control"
+authors:
+  - family-names: Orhan
+    given-names: Oğuzhan
+    email: oguzhan.orhan@firat.edu.tr
+    affiliation: "Department of Physics, Fırat University, Elazığ, Türkiye"
+    orcid: "https://orcid.org/0000-0003-2049-053X"
+  - family-names: Özgen
+    given-names: Soner
+    affiliation: "Department of Physics, Fırat University, Elazığ, Türkiye"
+    orcid: "https://orcid.org/0000-0003-4292-9187"
+type: software
+version: 1.1.0
+date-released: 2026-09-19
+license: MIT
+repository-code: "https://github.com/oguzhanorhan/grainsmith"
+abstract: >-
+  grainsmith builds periodic or slab polycrystalline (and multiphase and
+  single-crystal) atomistic models for molecular dynamics, with statistically
+  controlled microstructure. It supports all 230 space groups via spglib; flat
+  (Qhull Voronoi), volume-targeted Laguerre/power (semi-discrete optimal
+  transport), curved (domain-warped, additive-weight, anisotropic) and
+  self-affine (fractal) grain boundaries; ODF texture components and MDF
+  boundary-network targeting; multiphase volume-fraction partitioning;
+  voxel-field (DREAM.3D/.npy) import; deterministic seeded generation with
+  construction-time QA gates; and publication-grade outputs (statistics,
+  machine-readable record, auto-generated methods) including grain-boundary
+  character and cubic CSL sigma assignment under the Brandon criterion.
+keywords:
+  - molecular-dynamics
+  - polycrystal
+  - voronoi
+  - laguerre-tessellation
+  - optimal-transport
+  - texture
+  - grain-boundary
+  - space-group
+  - LAMMPS
+references:
+  - type: book
+    title: Computer Simulation of Liquids
+    authors:
+      - family-names: Allen
+        given-names: M. P.
+      - family-names: Tildesley
+        given-names: D. J.
+    publisher:
+      name: Oxford University Press
+    year: 1987
+    notes: >-
+      Program F.35 (Voronoi construction) is the ancestor of the legacy
+      Fortran core that grainsmith supersedes.
+  - type: article
+    title: "Spglib: a software library for crystal symmetry search"
+    authors:
+      - family-names: Togo
+        given-names: Atsushi
+      - family-names: Tanaka
+        given-names: Isao
+    year: 2018
+    notes: arXiv:1808.01590; spglib performs all space-group operations.
+  - type: generic
+    title: Uniform random rotations
+    authors:
+      - family-names: Shoemake
+        given-names: Ken
+    year: 1992
+    notes: "Graphics Gems III — uniform SO(3) orientation sampling."
+  - type: article
+    title: Second paper on statistics associated with the random
+      disorientation of cubes
+    authors:
+      - family-names: Mackenzie
+        given-names: J. K.
+    journal: Biometrika
+    volume: 45
+    year: 1958
+    start: 229
+    notes: Random-misorientation (Mackenzie) distribution.
+  - type: article
+    title: The structure of high-angle grain boundaries
+    authors:
+      - family-names: Brandon
+        given-names: D. G.
+    journal: Acta Metallurgica
+    volume: 14
+    year: 1966
+    start: 1479
+    notes: Brandon criterion for CSL sigma assignment.
+  - type: article
+    title: "Geometric modelling of polycrystalline materials: Laguerre
+      tessellations and periodic semi-discrete optimal transport"
+    authors:
+      - family-names: Bourne
+        given-names: D. P.
+      - family-names: Pearce
+        given-names: M.
+      - family-names: Roper
+        given-names: S. M.
+    journal: Mechanics Research Communications
+    volume: 127
+    year: 2023
+    start: 104023
+    notes: Periodic SDOT — the volume-targeted Laguerre fitting (gate G11).
+  - type: article
+    title: Convergence of a Newton algorithm for semi-discrete optimal transport
+    authors:
+      - family-names: Kitagawa
+        given-names: J.
+      - family-names: Mérigot
+        given-names: Q.
+      - family-names: Thibert
+        given-names: B.
+    journal: Journal of the European Mathematical Society
+    volume: 21
+    year: 2019
+    start: 2603
+    notes: Damped-Newton SDOT convergence (the solver grainsmith uses).
+  - type: article
+    title: "Fast methods for computing centroidal Laguerre tessellations for
+      prescribed volume fractions with applications to microstructure
+      generation of polycrystalline materials"
+    authors:
+      - family-names: Kuhn
+        given-names: J.
+      - family-names: Schneider
+        given-names: M.
+      - family-names: Sonnweber-Ribic
+        given-names: P.
+      - family-names: Böhlke
+        given-names: T.
+    journal: Computer Methods in Applied Mechanics and Engineering
+    volume: 369
+    year: 2020
+    start: 113175
+    notes: Optional centroidal loop on top of the SDOT fit for equiaxed grains
+      with prescribed volumes.
+  - type: article
+    title: Quantitative characterization of surface topography using spectral
+      analysis
+    authors:
+      - family-names: Jacobs
+        given-names: T. D. B.
+      - family-names: Junge
+        given-names: T.
+      - family-names: Pastewka
+        given-names: L.
+    journal: "Surface Topography: Metrology and Properties"
+    volume: 5
+    year: 2017
+    start: 013001
+    notes: Self-affine PSD conventions (gate G13 roughness).
+  - type: article
+    title: Abnormal grain growth mediated by fractal boundary migration at the
+      nanoscale
+    authors:
+      - family-names: Braun
+        given-names: C.
+      - family-names: Dake
+        given-names: J. M.
+      - family-names: Krill
+        given-names: C. E.
+        name-suffix: III
+      - family-names: Birringer
+        given-names: R.
+    journal: Scientific Reports
+    volume: 8
+    year: 2018
+    start: 1592
+    notes: >-
+      Experimental basis for self-affine grain-boundary roughness at the
+      nanoscale (motivates boundaries.curved.spectrum: self_affine).
+  - type: article
+    title: "Orientation mapping linked to fractal analysis: a method for
+      studying abnormal grain growth in nanocrystalline PdAu"
+    authors:
+      - family-names: Braun
+        given-names: C.
+      - family-names: Zeller
+        given-names: R. A.
+      - family-names: Menzel
+        given-names: H.
+      - family-names: Schmauch
+        given-names: J.
+      - family-names: Krill
+        given-names: C. E.
+        name-suffix: III
+      - family-names: Birringer
+        given-names: R.
+    journal: Journal of Applied Physics
+    volume: 128
+    year: 2020
+    start: 185109
+    notes: >-
+      Box-counting fractal-dimension protocol that gate G13's self-affine
+      validation replicates.
+  - type: article
+    title: Methods for atomistic abrasion simulations of laterally periodic
+      polycrystalline substrates with fractal surfaces
+    authors:
+      - family-names: Eder
+        given-names: S. J.
+      - family-names: Bianchi
+        given-names: D.
+      - family-names: Cihak-Bayr
+        given-names: U.
+      - family-names: Gkagkas
+        given-names: K.
+    journal: Computer Physics Communications
+    volume: 212
+    year: 2017
+    start: 100
+    notes: Fractal-surface construction route the self-affine boundary method follows.
+  - type: article
+    title: Curvature formulas for implicit curves and surfaces
+    authors:
+      - family-names: Goldman
+        given-names: R.
+    journal: Computer Aided Geometric Design
+    volume: 22
+    year: 2005
+    start: 632
+    notes: Mean/Gaussian curvature of implicit surfaces used by analysis.gb_curvature.
+  - type: article
+    title: On the Kolmogorov–Smirnov test for normality with mean and variance
+      unknown
+    authors:
+      - family-names: Lilliefors
+        given-names: H. W.
+    journal: Journal of the American Statistical Association
+    volume: 62
+    year: 1967
+    start: 399
+    notes: KS-with-fitted-parameters caveat (statistics.csv goodness-of-fit).
+  - type: article
+    title: "Large-scale 3D random polycrystals for the finite element method:
+      generation, meshing and remeshing"
+    authors:
+      - family-names: Quey
+        given-names: R.
+      - family-names: Dawson
+        given-names: P. R.
+      - family-names: Barbe
+        given-names: F.
+    journal: Computer Methods in Applied Mechanics and Engineering
+    volume: 200
+    year: 2011
+    start: 1729
+    notes: Neper — state-of-practice tessellation/meshing comparison.
+preferred-citation:
+  type: article
+  title: "grainsmith: A Generator of Polycrystalline Models for Atomistic
+    Simulations with Statistical and Grain-Boundary Morphology Control"
+  authors:
+    - family-names: Orhan
+      given-names: Oğuzhan
+      email: oguzhan.orhan@firat.edu.tr
+      affiliation: "Department of Physics, Fırat University, Elazığ, Türkiye"
+      orcid: "https://orcid.org/0000-0003-2049-053X"
+    - family-names: Özgen
+      given-names: Soner
+      affiliation: "Department of Physics, Fırat University, Elazığ, Türkiye"
+      orcid: "https://orcid.org/0000-0003-4292-9187"
+  journal: Computer Physics Communications
+  year: 2026
+  status: in-preparation

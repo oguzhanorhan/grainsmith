@@ -1,0 +1,42 @@
+grainsmith — NOTICE
+===================
+
+grainsmith is distributed under the MIT License (see LICENSE).
+
+This package bundles the static frontend assets of the interactive UI
+"grainsmith studio", which is not enabled in this release. The studio's
+frontend is a React single-page application whose pre-built static bundle
+ships inside the wheel under `grainsmith/ui/static/`.
+That bundle embeds third-party software and fonts; their full license texts are
+reproduced in THIRD_PARTY_LICENSES.
+
+Bundled third-party components (shipped in grainsmith/ui/static/)
+-----------------------------------------------------------------
+  - React, React DOM, scheduler — MIT — © Meta Platforms, Inc. and affiliates
+  - lucide-react (icon set)      — ISC — © Lucide Icons and Contributors
+        (a subset of icons is derived from Feather — MIT — © Cole Bemis)
+  - Spectral (display serif)     — SIL Open Font License 1.1 — © The Spectral Project Authors
+  - Hanken Grotesk (UI sans)     — SIL Open Font License 1.1 — © The Hanken Grotesk Project Authors
+  - Cousine (monospace)          — SIL Open Font License 1.1 — © Google Inc.
+
+The full text of each license is in THIRD_PARTY_LICENSES.
+
+Bundled crystal structure data (examples/assets/)
+-------------------------------------------------
+The four CIF files used by the `examples/cif/` configs are Materials Project
+crystal structures, redistributed under the Creative Commons Attribution 4.0
+International License (CC BY 4.0, https://creativecommons.org/licenses/by/4.0/):
+
+  - Ti2Ni.cif
+  - TiNi.cif
+  - TiNi3.cif
+  - TiO2_mp-390_conventional_standard.cif
+
+  A. Jain, S. P. Ong, G. Hautier, W. Chen, W. D. Richards, S. Dacek,
+  S. Cholia, D. Gunter, D. Skinner, G. Ceder, K. A. Persson,
+  "Commentary: The Materials Project: A materials genome approach to
+  accelerating materials innovation", APL Materials 1, 011002 (2013).
+  https://doi.org/10.1063/1.4812323
+
+They are example input only: grainsmith reads them with ase and detects their
+symmetry with spglib, and no part of the engine depends on them.

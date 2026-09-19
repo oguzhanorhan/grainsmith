@@ -1,0 +1,83 @@
+# ===================== grainsmith run configuration =====================
+# <111>-fiber-textured FCC Cu thin film (periodic xy, free z).
+#
+# WHAT THIS TEACHES
+#   * orientation.scheme: fiber — every grain's <111> crystal axis points
+#     along lab z with a Gaussian angular spread, while the azimuthal
+#     rotation stays uniform.  This is the texture FCC films typically
+#     develop during deposition.
+#   * Slab geometry: periodic in-plane, free surfaces in z with vacuum.
+#   * analysis.per_atom_margin — the extended XYZ gains a per-atom signed
+#     distance to the nearest grain boundary (Å); color by it in OVITO to
+#     see the GB network without any structure analysis.
+#
+# HOW TO RUN
+#   grainsmith validate examples/texture/fcc_cu_fiber_film.yaml
+#   grainsmith generate examples/texture/fcc_cu_fiber_film.yaml
+#   Check grains.csv: every z_plane_hkl row should rationalize to a
+#   {111}-type plane with small z_plane_dev_deg (the fiber spread);
+#   euler/axis-angle columns differ per grain (azimuth is random).
+
+meta:
+  title: "FCC Cu thin film, <111> fiber texture, 5 columnar grains"
+  verbose: 1
+
+seed:
+  mode: fixed          # try `mode: entropy` for a fresh microstructure on
+  value: 314159        # every run — the harvested seed lands in summary.csv
+
+box:
+  lengths: [60.0, 60.0, 30.0]
+  periodic: [true, true, false]   # film: free z surfaces
+  vacuum: 10.0                    # Å of vacuum padding on the z surfaces
+
+grains:
+  number: 5
+  min_seed_distance: auto
+  lloyd_iterations: 0
+
+crystal:
+  space_group:
+    number: 225            # Fm-3m
+  lattice:
+    a: 3.615               # Cu, Å
+  wyckoff_sites:
+    - {element: Cu, coords: [0.0, 0.0, 0.0], letter: a}
+
+orientation:
+  scheme: fiber
+  fiber:
+    crystal_axis: [1, 1, 1]   # <111> ...
+    sample_direction: z       # ... aligned with the film normal
+    spread_deg: 8.0           # Gaussian tilt spread about the fiber axis
+
+boundaries:
+  geometry: flat
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false
+  per_atom_margin: true    # adds gb_margin:R:1 to the extended XYZ
+
+output:
+  directory: ./out_cu_fiber_film
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

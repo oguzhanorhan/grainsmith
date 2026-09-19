@@ -1,0 +1,90 @@
+# ===================== grainsmith run configuration =====================
+# TiNi3 (D0_24, hexagonal) — crystal structure read DIRECTLY from a
+# Materials Project CIF file (examples/assets/TiNi3.cif) whose header
+# UNDER-STATES its own symmetry.
+#
+# WHAT THIS TEACHES
+#   * The declared-vs-detected space-group cross-check, the interesting
+#     case: TiNi3.cif declares _symmetry_Int_Tables_number 1 ('P 1') and
+#     lists every one of its 16 atoms individually with no symmetry
+#     operations (a common pymatgen/CIF-export habit — "safe" but
+#     symmetry-blind) — yet the ATOM POSITIONS are fully P6_3/mmc (SG
+#     194) symmetric. spglib's independent detection finds SG 194 at the
+#     default symprec, grainsmith uses that (never the CIF's own P1
+#     claim), logs a WARNING naming both numbers, and expands only the
+#     4 symmetry-inequivalent Wyckoff sites (Ti 2a + 2c, Ni 6g + 6h) —
+#     NOT 16 independent manual sites. Check run.log / stderr for the
+#     "declares space group 1 but spglib detects 194" warning.
+#   * Hexagonal family (a, c free; gamma fixed at 120 deg): the box stays
+#     an axis-aligned ORTHOGONAL simulation cell (v1 design) even though
+#     the crystal's own in-plane lattice vectors meet at 120 deg — atoms
+#     are placed by the general 6-parameter cell_matrix() at their true
+#     hexagonal positions inside that orthogonal box.
+#   * Atom-count traceability: 16 atoms/cell (4 Ti + 12 Ni) matches the
+#     CIF's own _chemical_formula_sum 'Ti4 Ni12' at Z=4 exactly — the
+#     loader's internal round-trip (re-expand the Wyckoff orbits, re-run
+#     spglib) asserts this before the pipeline ever sees the structure.
+#
+# HOW TO RUN
+#   grainsmith validate examples/cif/tini3_cif_polycrystal.yaml
+#   grainsmith generate examples/cif/tini3_cif_polycrystal.yaml
+#   Check run.log / stderr for the declared-vs-detected space-group
+#   WARNING, and summary.csv's crystal section for the detected SG 194.
+
+meta:
+  title: "TiNi3 (P6_3/mmc, hexagonal), 5 grains, crystal read from CIF (CIF under-declares SG 1)"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 173205081
+
+box:
+  lengths: [55.0, 55.0, 55.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 5
+  min_seed_distance: auto
+  lloyd_iterations: 0
+
+crystal:
+  cif:
+    file: ../assets/TiNi3.cif   # resolved relative to this file
+    symprec: 1.0e-4            # default; loosen if a differently-refined
+                                # CIF's coordinate roundoff needs more slack
+
+orientation:
+  scheme: random_uniform
+
+boundaries:
+  geometry: flat
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false                   # hexagonal, not cubic — CSL is undefined
+  per_atom_margin: false
+
+output:
+  directory: ./out_tini3_cif_polycrystal
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

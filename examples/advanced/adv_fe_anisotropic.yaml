@@ -1,0 +1,108 @@
+# ===================== grainsmith run configuration =====================
+# ADVANCED example (~1M atoms) — BCC alpha-Fe with ANISOTROPIC (elongated)
+# grains, ~1e6 atoms.  Completes the curved-boundary trio:
+#   warp (adv_pdau / adv_cu_lognormal_curved) |
+#   additive_weights (adv_al_equiaxed) |
+#   anisotropic (THIS file).
+#
+# WHAT THIS TEACHES
+#   * boundaries.curved.method: anisotropic — each grain measures distance
+#     through its OWN random ellipsoidal metric (a grain-boundary-plane-
+#     distribution / GBPD-family construction), producing elongated,
+#     flattened grains as in ROLLED or COLUMNAR microstructures.
+#     aspect_ratio_range bounds the per-grain ellipsoid axis ratios;
+#     [1.0, 2.0] below gives up to 2:1 elongation — a realistic rolled-sheet
+#     grain shape.
+#   * overlap_removal.policy: midpoint_merge — an overlapping inter-grain
+#     pair is REPLACED by one atom at the (minimum-image) midpoint rather
+#     than deleting one side.  This is allowed for ELEMENTAL systems only
+#     (a two-species merge would change composition -> ConfigError); Fe is
+#     elemental, so it is legal here.  Gate G7 still proves the final
+#     minimum interatomic distance >= cutoff afterwards.
+#   * BCC via SG 229 (Im-3m): the 2a site expands to the body-centered
+#     pair; d_nn = (sqrt(3)/2)*a ≈ 2.48 A drives the "0.85*d_nn" cutoff.
+#   * Fe is the reference BCC metal of this tier — the BCC counterpart to
+#     the FCC Cu/Al curved examples.  No interatomic potential ships
+#     with grainsmith, so an Fe
+#     run needs a potential you supply yourself (e.g. a published Fe
+#     eam/fs); grainsmith writes the structure, not the force field.
+#   * Scale: ~1e6 atoms of Fe, 228^3 A (~22.8 nm) periodic.
+#
+#   * RESOURCE NOTE (measured, this box/grain count on a 32 GB machine):
+#     like additive_weights, the anisotropic fill allocates a lattice
+#     BOUNDING-BOX grid per grain, and ELONGATED grains have especially
+#     large boxes along their long axis.  Peak RSS scales with the number
+#     of concurrent fill workers, so run THIS example with a capped worker
+#     count (--jobs 6); --jobs 0 (all cores) can be OOM-killed
+#     in the fill stage at 1e6 atoms.
+#
+# HOW TO RUN
+#   grainsmith validate examples/advanced/adv_fe_anisotropic.yaml
+#   grainsmith generate examples/advanced/adv_fe_anisotropic.yaml --jobs 6
+#     (see RESOURCE NOTE above — cap worker count for the anisotropic fill)
+#   Check grains.csv for the elongated grain volumes and gate G7's final
+#   minimum-distance report.
+
+meta:
+  title: "BCC Fe anisotropic (elongated) grains, ~1M atoms"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 57721
+
+box:
+  lengths: [228.0, 228.0, 228.0]      # ~22.8 nm cube; ~1e6 BCC-Fe atoms
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 48
+  min_seed_distance: auto
+  lloyd_iterations: 0                 # elongation is the point; no equiaxing
+
+crystal:
+  space_group:
+    number: 229                       # Im-3m (BCC)
+  lattice:
+    a: 2.866                          # alpha-Fe, A
+  wyckoff_sites:
+    - {element: Fe, coords: [0.0, 0.0, 0.0], letter: a}
+
+orientation:
+  scheme: random_uniform
+
+boundaries:
+  geometry: curved
+  curved:
+    method: anisotropic
+    aspect_ratio_range: [1.0, 2.0]    # up to 2:1 elongated (rolled/columnar)
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"               # d_nn_Fe = 2.482 A
+    policy: midpoint_merge            # elemental only; legal for Fe
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: true                           # elemental cubic -> Sigma labels meaningful
+  statistics: true
+  section: {axis: z, position: 0.5}
+
+output:
+  directory: ./out_adv_fe_anisotropic
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

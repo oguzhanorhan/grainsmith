@@ -1,0 +1,84 @@
+# ===================== grainsmith run configuration =====================
+# Example: A7 bismuth in the RHOMBOHEDRAL (R) axis setting.
+#
+# WHAT THIS TEACHES
+#   * space_group.setting: "R" — trigonal R-groups can be described either
+#     on hexagonal axes (free a, c; the default) or on the primitive
+#     rhombohedral cell (free a, alpha; one edge length, one inter-axial
+#     angle shared by all three pairs).  grainsmith switches the lattice
+#     family rule automatically when setting is "R": supplying (a, c)
+#     here is a G1 error, (a, alpha) is required.
+#   * The SAME structure, different cell: hexagonal Bi (a=4.546,
+#     c=11.862, 6 atoms/cell) becomes the primitive rhombohedral cell
+#     below with only 2 atoms/cell — orbit sizes in summary.csv reflect
+#     the setting you chose.
+#   * Representative coordinates are setting-dependent too: the hexagonal
+#     6c site (0, 0, z) becomes (x, x, x) on rhombohedral axes.
+#
+# HOW TO RUN
+#   grainsmith validate examples/crystallography/bi_rhombohedral_R.yaml
+#   grainsmith generate examples/crystallography/bi_rhombohedral_R.yaml
+#   Check summary.csv's crystal section for the resolved (a, alpha) and
+#   the 2-atom-per-cell orbit size.
+
+meta:
+  title: "A7 bismuth, 4 grains, rhombohedral R setting"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 223606
+
+box:
+  lengths: [60.0, 60.0, 60.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 4
+  min_seed_distance: auto
+  lloyd_iterations: 0
+
+crystal:
+  space_group:
+    number: 166              # R-3m
+    setting: "R"             # rhombohedral (primitive) axes
+  lattice:
+    a: 4.746                 # rhombohedral edge length, Å
+    alpha: 57.23             # inter-axial angle, degrees
+  wyckoff_sites:
+    - {element: Bi, coords: [0.234, 0.234, 0.234]}   # 2c (x,x,x)
+
+orientation:
+  scheme: random_uniform
+
+boundaries:
+  geometry: flat
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false
+  per_atom_margin: false
+
+output:
+  directory: ./out_bi_rhombohedral
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

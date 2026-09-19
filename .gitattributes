@@ -1,0 +1,10 @@
+# Normalise line endings in the repository; check out native on Windows.
+* text=auto
+
+# Shell and SLURM job scripts must keep LF even on a Windows checkout.
+*.sh     text eol=lf
+*.sbatch text eol=lf
+
+# Binary assets — never transform.
+*.png binary
+*.npy binary

@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User manual · grainsmith</title>
+<style>
+
+:root{
+  --sidebar-w: 300px; --toc-w: 240px;
+  --accent:#b5651d; --accent-2:#1f6f8b;
+  --ink:#1a1f24; --ink-soft:#4a545e; --line:#e3e7ea;
+  --bg:#ffffff; --bg-side:#1c2530; --bg-side-2:#243040;
+  --code-bg:#f5f7f9; --side-ink:#c9d3de; --side-ink-soft:#8a97a6;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:Georgia,"Times New Roman",Times,serif;
+  color:var(--ink); background:var(--bg); line-height:1.68; font-size:16px;
+}
+/* ---- full-screen layout: fixed sidebar + fluid content ---- */
+.sidebar{
+  position:fixed; top:0; left:0; width:var(--sidebar-w); height:100vh;
+  overflow-y:auto; background:var(--bg-side); color:var(--side-ink);
+  padding:22px 0 40px; z-index:20;
+}
+.brand{padding:6px 24px 20px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:14px;}
+.brand a{color:#fff;font-weight:700;font-size:1.35rem;text-decoration:none;letter-spacing:.5px;}
+.brand-sub{display:block;color:var(--side-ink-soft);font-size:.8rem;margin-top:2px;}
+.nav-group{margin:0 0 6px;}
+.nav-group-title{
+  padding:12px 24px 5px;font-size:.72rem;text-transform:uppercase;
+  letter-spacing:.09em;color:var(--side-ink-soft);font-weight:700;
+}
+.nav-group ul{list-style:none;margin:0;padding:0;}
+.nav-group li a{
+  display:block;padding:6px 24px 6px 28px;color:var(--side-ink);
+  text-decoration:none;font-size:.92rem;border-left:3px solid transparent;
+}
+.nav-group li a:hover{background:var(--bg-side-2);color:#fff;}
+.nav-group li.active a{
+  color:#fff;border-left-color:var(--accent);background:var(--bg-side-2);font-weight:600;
+}
+.content{margin-left:var(--sidebar-w);min-height:100vh;}
+.content-inner{
+  display:grid;grid-template-columns:minmax(0,1fr) var(--toc-w);
+  gap:48px;max-width:1500px;margin:0 auto;padding:52px 64px 96px;
+}
+article{min-width:0;}
+/* ---- in-page TOC (sticky, right rail) ---- */
+.toc{position:sticky;top:36px;align-self:start;font-size:.86rem;
+  border-left:1px solid var(--line);padding-left:18px;max-height:calc(100vh-72px);overflow-y:auto;}
+.toc-title{font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--ink-soft);margin-bottom:10px;}
+.toc ul{list-style:none;margin:0;padding:0;}
+.toc li{margin:3px 0;}
+.toc li a{color:var(--ink-soft);text-decoration:none;display:block;line-height:1.4;}
+.toc li a:hover{color:var(--accent);}
+.toc-l3{padding-left:14px;font-size:.82rem;}
+/* ---- typography ---- */
+article h1{font-size:2.05rem;line-height:1.2;margin:.1em 0 .7em;font-weight:750;letter-spacing:-.01em;}
+article h2{font-size:1.5rem;margin:1.9em 0 .6em;padding-bottom:.28em;
+  border-bottom:2px solid var(--line);font-weight:700;}
+article h3{font-size:1.18rem;margin:1.6em 0 .5em;font-weight:650;}
+article h4{font-size:1.02rem;margin:1.3em 0 .4em;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;}
+article p{margin:.85em 0;}
+article a{color:var(--accent-2);text-decoration:none;}
+article a:hover{text-decoration:underline;}
+article strong{font-weight:650;}
+article img{max-width:100%;height:auto;display:block;margin:1.4em auto;
+  border:1px solid var(--line);border-radius:8px;background:#fff;}
+article ul,article ol{padding-left:1.5em;margin:.7em 0;}
+article li{margin:.32em 0;}
+article blockquote{
+  margin:1.3em 0;padding:.7em 1.2em;border-left:4px solid var(--accent);
+  background:#fbf6f0;color:var(--ink);border-radius:0 6px 6px 0;
+}
+article blockquote p{margin:.4em 0;}
+/* ---- display math (MathJax typesets these; this is the no-JS/offline fallback) ---- */
+.math-display{
+  margin:1.5em 0;padding:.9em 1.2em;text-align:center;overflow-x:auto;
+  font-family:"Cambria Math","STIX Two Math",Cambria,"Times New Roman",serif;
+  font-size:1.05rem;color:var(--ink);
+}
+/* ---- code ---- */
+code{font-family:"SF Mono",SFMono-Regular,ui-monospace,Menlo,Consolas,monospace;
+  font-size:.88em;background:var(--code-bg);padding:.12em .38em;border-radius:4px;
+  color:#b03a2e;border:1px solid var(--line);}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;
+  padding:16px 18px;overflow-x:auto;margin:1.2em 0;line-height:1.5;}
+pre code{background:none;border:none;padding:0;color:var(--ink);font-size:.86rem;}
+/* ---- tables (wide, striped, scrollable) ---- */
+article table{border-collapse:collapse;width:100%;margin:1.3em 0;font-size:.9rem;display:block;overflow-x:auto;}
+article thead th{background:#2c3844;color:#fff;text-align:left;padding:9px 12px;font-weight:600;white-space:nowrap;}
+article tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top;}
+article tbody tr:nth-child(even){background:#f8fafb;}
+article tbody code{white-space:nowrap;}
+/* ---- prev/next ---- */
+.prevnext{display:flex;justify-content:space-between;gap:16px;margin-top:3.5em;
+  padding-top:1.6em;border-top:1px solid var(--line);}
+.prevnext a{flex:1;max-width:48%;padding:14px 18px;border:1px solid var(--line);
+  border-radius:8px;text-decoration:none;color:var(--ink);background:#fcfdfe;}
+.prevnext a:hover{border-color:var(--accent);background:#fbf6f0;}
+.prevnext .next{text-align:right;}
+.prevnext span{display:block;font-size:.78rem;color:var(--ink-soft);margin-bottom:3px;}
+.prevnext strong{font-size:.98rem;color:var(--accent-2);font-weight:600;}
+/* ---- mobile ---- */
+.menu-toggle{display:none;position:fixed;top:12px;left:12px;z-index:30;
+  background:var(--bg-side);color:#fff;border:none;border-radius:6px;
+  width:42px;height:42px;font-size:1.3rem;cursor:pointer;}
+@media (max-width:1080px){
+  .content-inner{grid-template-columns:minmax(0,1fr);}
+  .toc{display:none;}
+}
+@media (max-width:820px){
+  .menu-toggle{display:block;}
+  .sidebar{transform:translateX(-100%);transition:transform .2s ease;}
+  body.nav-open .sidebar{transform:translateX(0);}
+  .content{margin-left:0;}
+  .content-inner{padding:64px 22px 72px;}
+}
+
+</style>
+<script>
+window.MathJax = {
+  tex: { displayMath: [['\\[', '\\]']], processEscapes: true },
+  options: { enableMenu: false }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</head>
+<body>
+<button class="menu-toggle" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+<nav class="sidebar" aria-label="Documentation navigation">
+<div class="brand"><a href="index.html">grainsmith</a><span class="brand-sub">documentation</span></div>
+<div class="nav-group"><div class="nav-group-title">Getting started</div><ul>
+<li><a href="index.html">Overview</a></li>
+<li class="active"><a href="manual.html">User manual</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Concepts &amp; physics</div><ul>
+<li><a href="architecture.html">Architecture</a></li>
+<li><a href="geometry.html">Grain geometry</a></li>
+<li><a href="physics.html">Physics &amp; conventions</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Reference</div><ul>
+<li><a href="config_reference.html">Configuration reference</a></li>
+<li><a href="gates.html">QA gates (G1–G26)</a></li>
+<li><a href="outputs.html">Outputs</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Developer</div><ul>
+<li><a href="developer.html">Developer guide</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Help</div><ul>
+<li><a href="faq.html">FAQ &amp; troubleshooting</a></li>
+</ul></div>
+</nav>
+<main class="content">
+<div class="content-inner">
+<article>
+<h1>grainsmith user manual</h1>
+<p>grainsmith generates <strong>space-group-aware atomistic polycrystals</strong> for molecular
+dynamics, with statistically controlled microstructure (grain size, texture,
+boundary network, boundary roughness), construction-time QA gates, and
+reproducible, publication-grade outputs.</p>
+<p>This manual is the quickstart and the conceptual map. See also:
+<code>docs/architecture.md</code> (how the pipeline and modules fit together),
+<code>docs/geometry.md</code> (grain-geometry backends and their parameters),
+<code>docs/developer.md</code> (programmatic API and extension points),
+<code>docs/config_reference.md</code> (every config field), <code>docs/gates.md</code> (the QA gates),
+<code>docs/outputs.md</code> (every output file + columns), <code>docs/physics.md</code> (conventions
+and math), <code>docs/faq.md</code> (troubleshooting).</p>
+<h2 id="install">Install</h2>
+<p>Requires Python ≥ 3.10. From the repository root:</p>
+<pre><code>pip install .
+</code></pre>
+<p>Runtime dependencies: numpy, scipy, spglib, pyyaml, pydantic. Optional extras:</p>
+<pre><code>pip install &quot;.[mesh]&quot;     # scikit-image — boundary .ply mesh output
+pip install &quot;.[import]&quot;   # h5py — DREAM.3D HDF5 voxel import
+pip install &quot;.[cif]&quot;      # ase — read crystal structures directly from a CIF file
+pip install &quot;.[monitor]&quot;  # psutil — best-effort total-RSS monitor (--max-rss)
+pip install &quot;.[perf]&quot;     # numba — JIT-accelerated owns()/margin()/grain_of()
+                           #   kernels for the additive-weights, anisotropic and
+                           #   perturbed_distance backends; pure NumPy is the
+                           #   default and always available (GRAINSMITH_NO_NUMBA=1
+                           #   forces it even when numba is installed) — results
+                           #   are bit-identical either way, so this is a pure
+                           #   speed-up, never a correctness dependency.
+pip install &quot;.[test]&quot;     # pytest, ase — run the test suite
+</code></pre>
+<p>Verify the install:</p>
+<pre><code>grainsmith --version              # confirm which grainsmith is on PATH
+grainsmith info --sg 225          # inspect a space group (FCC here)
+grainsmith --help
+</code></pre>
+<h2 id="quickstart">Quickstart</h2>
+<p>Generate your first polycrystal from a shipped example:</p>
+<pre><code>grainsmith validate examples/basics/b2_nial_flat.yaml    # schema (G1) + crystal (G2) only
+grainsmith generate examples/basics/b2_nial_flat.yaml    # full run → ./out_*/
+grainsmith verify ./out_b2_flat                          # re-check the outputs' digests
+</code></pre>
+<p><code>generate</code> prints <code>OK: N/N QA gates passed</code> (or <code>WARN: …</code> with the failed warn
+gates). Then read <code>summary.csv</code> first, then <code>grains.csv</code> / <code>boundaries.csv</code>, and
+visualize with <code>gnuplot view.plt</code> → <code>view.png</code> or by loading <code>polycrystal.data</code>
+in OVITO (colour by molecule-id = grain).</p>
+<p><code>b2_nial_flat.yaml</code> also demonstrates <code>analysis.gb_curvature</code> (writes
+<code>gb_curvature.csv</code>; flat geometry ⇒ exact zeros).</p>
+<p>A minimal config looks like:</p>
+<pre><code class="language-yaml">seed: {mode: fixed, value: 42}
+box: {lengths: [60.0, 60.0, 60.0]}
+grains: {number: 12}
+crystal:
+  space_group: {number: 225}        # Fm-3m (FCC)
+  lattice: {a: 3.615}               # Cu
+  wyckoff_sites: [{element: Cu, coords: [0.0, 0.0, 0.0]}]
+orientation: {scheme: random_uniform}
+</code></pre>
+<p>The <code>examples/</code> directory is a guided tour from this baseline up to multiphase,
+textured, self-affine and 9-million-atom production runs — see
+<code>examples/README.md</code>.</p>
+<h3 id="crystal-input-manual-wyckoff-sites-or-directly-from-a-cif-file">Crystal input: manual Wyckoff sites, or directly from a CIF file</h3>
+<p>The <code>crystal</code> block above (<code>space_group</code> + <code>lattice</code> + <code>wyckoff_sites</code>) is one
+of two mutually exclusive ways to define the crystal structure. The other
+reads a CIF file directly — no manual space-group number, lattice parameters,
+or Wyckoff coordinates:</p>
+<pre><code class="language-yaml">crystal:
+  cif:
+    file: ../assets/TiNi.cif   # any file ase.io.read accepts; relative to
+                               # the CWD first, else to this YAML's own dir
+    symprec: 1.0e-4           # spglib symmetry-detection tolerance (default)
+</code></pre>
+<p>The file is parsed with <a href="https://wiki.fysik.dtu.dk/ase/">ASE</a> and its symmetry
+is <em>independently detected</em> with spglib at <code>symprec</code> — the file's own
+<code>_symmetry_Int_Tables_number</code> (if present) is only cross-checked, never
+trusted outright: a CIF that under-declares its symmetry (e.g. exporting every
+atom under <code>P 1</code>, a common pymatgen/CIF-export habit) still resolves to its
+true, higher-symmetry space group, with a WARNING logged naming both numbers.
+spglib's own standardized cell then supplies the space group, family-reduced
+lattice parameters, and one representative Wyckoff site per symmetry orbit —
+exactly the same internal representation the manual path builds, so every
+downstream stage (orientation, tessellation, fill, LAMMPS output) is
+unaffected by which input form was used. <code>crystal.cif</code> requires the optional
+<code>ase</code> extra (<code>pip install ".[cif]"</code>); only full site occupancy is supported
+(partial/mixed occupancy needs the manual <code>wyckoff_sites</code> path with an
+explicit occupancy dict).</p>
+<p>Traceability: the detected space-group number + Hermann–Mauguin symbol, the
+<code>symprec</code> used, and the per-site Wyckoff letters are written to
+<code>summary.csv</code> (section <code>crystal</code>, rows <code>cif_file</code> / <code>cif_symprec</code> alongside
+the usual <code>detected_sg</code> / <code>international</code> / <code>wyckoff_letters</code> rows); the
+resolved lattice parameters are spelled out in <code>METHODS.md</code> and echoed in
+the run log — nothing about the CIF-derived structure is a silent
+assumption. See <code>examples/cif/tini_cif_polycrystal.yaml</code>,
+<code>examples/cif/ti2ni_cif_single_crystal.yaml</code>, and
+<code>examples/cif/tini3_cif_polycrystal.yaml</code> for worked examples (the last
+demonstrates the declared-vs-detected mismatch WARNing).</p>
+<h3 id="triclinic-boxes-for-single-crystals-boxcells">Triclinic boxes for single crystals (<code>box.cells</code>)</h3>
+<p><code>box</code> normally takes <code>lengths: [Lx, Ly, Lz]</code> for an axis-aligned orthogonal
+box. For a <strong>single crystal</strong> (<code>grains.number: 1</code>) whose own conventional
+cell is NOT orthogonal (monoclinic, hexagonal, triclinic, …), an
+axis-aligned box can never exactly match the crystal's periodicity — the
+box faces become genuine (if often small) self-boundary defects, which
+gate G14 reports as a nonzero commensurability strain and which overlap
+removal then cleans up by deleting atoms along the faces.</p>
+<p><code>box.cells: [n1, n2, n3]</code> sidesteps this: it replaces <code>lengths</code> with an
+integer triple, and the box vectors are built AS the crystal's own
+conventional-cell vectors scaled by <code>[n1, n2, n3]</code> — the box literally IS
+<code>n1 × n2 × n3</code> repeats of the true unit cell, so it is exactly periodic
+<strong>by construction</strong>, for any crystal family. Gate G14 then reports a
+misfit of 0 (to float64 roundoff) rather than "small but nonzero".</p>
+<pre><code class="language-yaml">box:
+  cells: [6, 5, 4]          # box = 6x5x4 exact repeats of the crystal cell
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 1                  # box.cells is single-crystal only
+
+orientation:
+  scheme: fixed
+  fixed:
+    euler_bunge_deg: [0.0, 0.0, 0.0]   # box.cells REQUIRES identity
+</code></pre>
+<p>Preconditions (enforced at config-resolve time with a clear <code>ConfigError</code>
+naming the violated rule):</p>
+<ul>
+<li><code>box.cells</code> and <code>box.lengths</code> are mutually exclusive — exactly one must
+  be given.</li>
+<li><code>grains.number: 1</code> — the polycrystal tessellation core stays
+  orthogonal-box only; an arbitrarily-oriented grain-boundary network has
+  no natural lattice-multiple box shape (see README "Known limits").</li>
+<li><code>box.periodic: [true, true, true]</code> and <code>box.vacuum: 0.0</code> — the box is
+  exactly periodic by construction, so there is no meaningful free/vacuum
+  axis.</li>
+<li><code>orientation.scheme: fixed</code> with an <strong>identity</strong> rotation (Euler
+  <code>[0,0,0]</code>, zero-angle axis-angle, or the identity quaternion) — the box
+  vectors are built directly from the crystal's own UNROTATED cell, so any
+  other orientation would misalign the lattice with the box/lab frame.</li>
+<li>Not combined with <code>phases</code>, <code>doping</code>, <code>analysis.section</code>, or
+  <code>analysis.gb_curvature</code> (each assumes either multiple crystals, an
+  orthogonal-box neighbor search, or a boundary that a single crystal does
+  not have).</li>
+</ul>
+<p>The resolved box matrix — in the LAMMPS <strong>restricted-triclinic</strong>
+convention (<code>a</code> along <code>+x</code>, <code>b</code> in the <code>xy</code>-plane with <code>+y</code>, <code>c</code> with
+<code>+z</code>) — is written back onto <code>config.box.resolved_h</code> and echoed in
+<code>summary.csv</code> (section <code>box</code>, rows <code>cell_matrix_a_A</code> / <code>_b_A</code> / <code>_c_A</code> /
+<code>tilt_xy_xz_yz_A</code>) and <code>METHODS.md</code>. If the raw <code>A @ diag(n1,n2,n3)</code>
+product has an off-diagonal tilt factor exceeding the LAMMPS bound
+(<code>|xy|, |xz| &lt;= ax/2</code>, <code>|yz| &lt;= by/2</code>), grainsmith automatically applies an
+integer lattice-vector reduction (subtracting an integer multiple of one
+box vector from another — the same represented lattice, just a
+differently-shaped fundamental domain) to bring it back into bounds; this
+is exact and requires no changes to the atom basis. The LAMMPS data file
+then carries an <code>xy xz yz</code> tilt line instead of a plain orthogonal box,
+and the extended-XYZ <code>Lattice=</code> string carries the full 3×3 matrix
+(row-major) instead of just the diagonal. See
+<code>examples/cif/tini_cif_triclinic_single.yaml</code> (monoclinic, xz tilt) and
+<code>examples/cif/tini3_cif_hexagonal_single.yaml</code> (hexagonal, xy tilt) for worked
+examples.</p>
+<h2 id="the-four-subcommands">The four subcommands</h2>
+<ul>
+<li><strong><code>grainsmith info --sg &lt;N&gt; [--setting S] [--site "x,y,z"]</code></strong> — inspect a space
+  group: point group, and (with <code>--site</code>) the Wyckoff orbit of a position. No
+  config needed.</li>
+<li><strong><code>grainsmith validate &lt;config.yaml&gt;</code></strong> — run only the cheap gates G1 (schema +
+  cross-field rules) and G2 (crystal symmetry round-trip). Use it to check a
+  config before a long run.</li>
+<li><strong><code>grainsmith generate &lt;config.yaml&gt; [--jobs N] [--max-rss GB]</code></strong> — the full
+  pipeline. <code>--jobs</code> parallelizes the per-grain atom fill and the GB-curvature
+  analysis stage (<code>0</code> = all cores available to the process — the
+  cgroup/affinity mask, e.g. a SLURM <code>--cpus-per-task</code> allocation), and also
+  sets the thread count for the overlap-removal neighbour search and gate G7's
+  fresh query; outputs are bit-identical for every <code>--jobs</code> value (see
+  <em>Determinism</em>).
+  <code>--max-rss</code> sets a soft WARN ceiling (GB) for the best-effort total-RSS
+  monitor (needs the optional <code>psutil</code> extra); it only logs a warning and never
+  changes the output (see <em>Performance notes</em>).</li>
+<li><strong><code>grainsmith verify &lt;outdir&gt; [--strict] [--expect-version X.Y.Z] [--quiet]</code></strong>
+  — check an output directory against its own <code>MANIFEST.txt</code>: recompute every
+  file digest, re-derive the config hash from the shipped
+  <code>resolved_config.yaml</code>, and confirm the recorded grainsmith version is the one
+  cryptographically bound to the run. Exits 0 (OK), 1 (mismatch) or 2 (cannot
+  verify). See <em>Determinism and provenance</em> below.</li>
+</ul>
+<p><code>grainsmith --version</code> prints the installed version and exits.</p>
+<h3 id="running-on-a-cluster-slurm">Running on a cluster (SLURM)</h3>
+<p>grainsmith is a <strong>single-node</strong> program: one run = one node = one task, and
+all parallelism is <code>--jobs</code> worker processes inside that task — nothing spans
+nodes, so never request <code>--nodes &gt; 1</code> or <code>--ntasks &gt; 1</code> for a single run
+(each extra task would run the full pipeline again into the same output
+directory). For the best parallelism on a single node set
+<code>--jobs = grains.number</code> — the fill stage hands each grain its own worker
+process, so every grain fills simultaneously — and pair <code>--cpus-per-task</code>
+with it (more cores than grains speed up only the per-boundary-pair analysis
+stage):</p>
+<pre><code class="language-bash">#SBATCH --nodes=1 --ntasks=1 --cpus-per-task=10   # == grains.number
+export OMP_NUM_THREADS=1
+grainsmith generate config.yaml --jobs $SLURM_CPUS_PER_TASK
+</code></pre>
+<p>The numba kernels are disk-cached (<code>cache=True</code>) inside the installed
+package, so a single small warm-up run after installation compiles them once
+for every node sharing the filesystem. <code>examples/hpc/</code> carries ready-made
+cluster-scale configs, a submit-ready <code>job.sbatch</code> template, and the full
+cluster guide (<code>examples/hpc/README.md</code>: setup + warm-up, <code>sbatch</code>, the
+<code>salloc</code> interactive case, job arrays, pitfalls).</p>
+<h2 id="how-a-run-is-built-the-pipeline-stages">How a run is built (the pipeline stages)</h2>
+<p>A <code>generate</code> run is a fixed sequence of stages; <code>summary.csv</code> records the timing
+of each:</p>
+<ol>
+<li><strong>crystal</strong> — expand the Wyckoff sites to a unit cell; verify symmetry (G2).</li>
+<li><strong>seeding</strong> — place grain seeds (RSA with <code>min_seed_distance</code>; optional Lloyd
+   relaxation).</li>
+<li><strong>tessellation</strong> — build the grain geometry: flat Voronoi, a volume-fitted
+   power/Laguerre diagram (if <code>size_distribution</code> is set, via SDOT — G11), a
+   domain-warp curved variant (G6), a level-set <code>perturbed_distance</code> variant
+   for genuinely self-affine boundaries (G19/G20; see <code>docs/geometry.md</code> and
+   <code>docs/physics.md</code> §5b), or an imported voxel field. Gates G3–G6.</li>
+<li><strong>orientation</strong> — assign each grain an orientation (random, fixed, fiber,
+   explicit list, or ODF components); optional MDF assignment annealing (G12).</li>
+<li><strong>fill</strong> — fill each grain with atoms by tiling the rotated lattice into its
+   cell (the <code>owns()</code> torus-tiling rule — no wrap-and-dedupe). Parallelized by
+   <code>--jobs</code>.</li>
+<li><strong>overlap</strong> — remove atoms that overlap across boundaries (G7).</li>
+<li><strong>doping</strong> (optional) — substitutional/interstitial dopants placed after
+   overlap removal (<code>doping:</code>), gates G17/G18. Interstitial sublattices come
+   from a preset (SG 225/229/194) or explicit <code>sites.coords</code> for any of the
+   230 space groups — coords are expanded to their full symmetry orbit by
+   default (<code>expand_orbit</code>), so one representative per orbit suffices.</li>
+<li><strong>analysis</strong> — grains, boundaries, GB character, CSL, statistics (G8, G9,
+   G16 + G21 when <code>analysis.gb_curvature</code> is on, and the publication outputs).</li>
+<li><strong>write</strong> — all output files + the SHA-256 <code>MANIFEST.txt</code>.</li>
+</ol>
+<p>For the full dataflow, the data objects passed between stages, and the module
+dependency graph, see <a href="architecture.html"><code>architecture.md</code></a>. For how to choose and
+tune the grain geometry in stage 3, see <a href="geometry.html"><code>geometry.md</code></a>. To drive
+this pipeline from Python instead of the CLI, see <a href="developer.html"><code>developer.md</code></a>.</p>
+<h2 id="gates-are-the-user-interface">Gates are the user interface</h2>
+<p>Every physics constraint is a <strong>QA gate</strong>. Hard gates abort with an actionable
+message (e.g. G6 → "reduce amplitude / increase correlation_length"); warn gates
+complete the run but flag a quality concern in <code>summary.csv</code>. When something
+"doesn't work", the gate message names the check, the measured value, and the
+fix. The full catalogue with thresholds and remedies is <code>docs/gates.md</code>.</p>
+<h2 id="determinism-and-provenance">Determinism and provenance</h2>
+<p>A fixed <code>seed.value</code> makes the <strong>scientific payload</strong> byte-for-byte reproducible
+— including for any <code>--jobs</code> value (each grain draws from its own deterministic
+RNG sub-stream, so the worker count never changes the result). <code>seed.mode:
+entropy</code> draws a fresh seed and records it in <code>summary.csv</code> so the run can be
+reproduced later.</p>
+<h3 id="what-is-byte-identical-and-when">What is byte-identical, and when</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>same machine, default</th>
+<th>same machine, <code>SOURCE_DATE_EPOCH</code> set</th>
+<th>different machine, same versions</th>
+<th>different library versions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>data CSVs (<code>grains</code>, <code>boundaries</code>, <code>vertices</code>, <code>statistics</code>, <code>mdf</code>, <code>gb_curvature</code>)</td>
+<td>identical</td>
+<td>identical</td>
+<td>last-bit differences possible</td>
+<td>no guarantee</td>
+</tr>
+<tr>
+<td>files with a provenance header (<code>polycrystal.data</code>, <code>.extxyz</code>, <code>resolved_config.yaml</code>, <code>METHODS.md</code>, gnuplot bundle, …)</td>
+<td>identical except the header timestamp</td>
+<td>identical</td>
+<td>last-bit differences possible</td>
+<td>no guarantee</td>
+</tr>
+<tr>
+<td><code>summary.csv</code></td>
+<td>differs (<code>timings</code> + <code>memory</code> rows)</td>
+<td>differs (<code>timings</code> + <code>memory</code> rows only)</td>
+<td><code>environment</code> section differs</td>
+<td>no guarantee</td>
+</tr>
+<tr>
+<td><code>microstructure.json</code></td>
+<td>differs (timestamp)</td>
+<td>identical</td>
+<td><code>environment</code> section differs</td>
+<td>no guarantee</td>
+</tr>
+<tr>
+<td><code>MANIFEST.txt</code></td>
+<td>differs (hashes the above)</td>
+<td>differs in its <code>summary.csv</code> line only</td>
+<td>differs</td>
+<td>no guarantee</td>
+</tr>
+<tr>
+<td><code>run.log</code></td>
+<td>differs (it is a log)</td>
+<td>differs</td>
+<td>differs</td>
+<td>differs</td>
+</tr>
+</tbody>
+</table>
+<p><code>SOURCE_DATE_EPOCH</code> is the standard <a href="https://reproducible-builds.org/docs/source-date-epoch/">reproducible-builds</a> environment
+variable: an integer count of seconds since the Unix epoch, interpreted as UTC.
+When it is set, grainsmith stamps that instant into every provenance header
+instead of the wall clock. An unparseable value is an error, not a silent
+fallback.</p>
+<p>It does <strong>not</strong> freeze the two row families in <code>summary.csv</code> that are a
+measurement of the run itself: the wall-clock stage timings (<code>timings,*_s</code>)
+and the peak driver RSS (<code>memory,peak_driver_rss_gb</code>, <code>memory,rss_warn_tripped</code>).
+Those keep their real values, so <code>summary.csv</code> differs between two otherwise
+identical runs — and, because <code>MANIFEST.txt</code> hashes <code>summary.csv</code>, so does that
+one manifest line. Every other manifest digest, and every scientific output
+byte, is identical. The trade is deliberate: an archived run stays honest about
+how long it took and how much memory it needed, which is exactly what a reader
+of an archive wants to know, and the checks that must ignore it say so
+explicitly — see <code>tests/test_end_to_end.py::test_byte_identical_rerun_source_date_epoch</code>
+and <code>tools/golden_hashes.py</code>'s <code>double_run</code>, which compare <code>summary.csv</code> with
+those rows stripped and <code>MANIFEST.txt</code> with that line dropped.</p>
+<h3 id="cross-machine-scope-honest">Cross-machine scope (honest)</h3>
+<p>Byte-identity across machines needs three things to match, not one: the library
+versions, the BLAS build behind NumPy, and the CPU architecture. The atom-fill
+hot path multiplies matrices through BLAS <code>dgemm</code>, so switching OpenBLAS ↔ MKL ↔
+a generic reference BLAS, or x86 ↔ ARM, shifts a measurable fraction of atom
+coordinates by about one unit in the last place. The <em>physics</em> is unaffected —
+grain ownership, atom counts, species and every gate value are identical — but
+the digests in <code>MANIFEST.txt</code> are not. A different NumPy/SciPy/spglib <strong>version</strong>
+is a stronger break: <code>numpy.random.Generator</code> explicitly disclaims cross-version
+bit-stream stability, so a version bump can change the structure entirely.</p>
+<p>Two things make this auditable rather than a leap of faith. First, every run
+records what produced it: the <code>environment</code> section of <code>summary.csv</code> (and the
+<code>environment</code> object of <code>microstructure.json</code>) carries the BLAS name and version,
+the OS, kernel release and CPU architecture, the C library, whether the optional
+numba kernel was active, and both the requested and effective <code>--jobs</code> values.
+Second, <code>constraints-repro.txt</code> in the repository root pins the exact dependency
+versions grainsmith was developed against:</p>
+<pre><code class="language-bash">python -m venv .venv-repro &amp;&amp; . .venv-repro/bin/activate
+pip install -c constraints-repro.txt -e &quot;.[test]&quot;
+</code></pre>
+<p>That file pins versions; it cannot pin the Python interpreter or the BLAS a
+NumPy build links against, and it says so in its own header comments.</p>
+<h3 id="the-version-is-bound-to-the-hash">The version is bound to the hash</h3>
+<p>Each output records two SHA-256 digests:</p>
+<ul>
+<li><strong><code>config_sha256</code></strong> — of the canonical resolved config alone. It identifies
+  the <em>input</em>: two grainsmith versions run on the same config produce the same
+  value.</li>
+<li><strong><code>provenance_sha256</code></strong> — of a payload that <strong>contains the grainsmith version
+  string</strong> alongside <code>config_sha256</code>. It identifies <em>input + producer</em>, so an
+  output's claim to have been "produced with 1.1.0" is cryptographically bound
+  to its digest and cannot be edited after the fact without detection.</li>
+</ul>
+<p>Both are stored full-length (64 hex) in <code>MANIFEST.txt</code>, <code>summary.csv</code> and
+<code>microstructure.json</code>; the one-line provenance header at the top of every
+commented file shows the first 12 hex of each:</p>
+<pre><code># grainsmith 1.1.0 | 2026-09-01T12:00:00Z | seed=555666 | config sha256=fd1c4ecb04ac | provenance sha256=9a3f0c1d2e4b
+</code></pre>
+<h3 id="checking-an-archived-run">Checking an archived run</h3>
+<pre><code class="language-bash">grainsmith verify ./out
+</code></pre>
+<p><code>verify</code> works from the shipped files alone — no config, no network, no re-run.
+It re-reads <code>MANIFEST.txt</code>, recomputes the SHA-256 of every listed file,
+re-derives <code>config_sha256</code> from the shipped <code>resolved_config.yaml</code>, recomputes
+<code>provenance_sha256</code> from that digest plus the recorded version string, and
+checks that the version agrees across <code>MANIFEST.txt</code>, <code>resolved_config.yaml</code>,
+<code>summary.csv</code> and <code>microstructure.json</code>. It exits <strong>0</strong> when everything checks
+out, <strong>1</strong> on any mismatch, and <strong>2</strong> when the directory cannot be verified at
+all (no <code>MANIFEST.txt</code>, or an unreadable one).</p>
+<p>Files left over in a reused output directory are reported as a warning, not a
+failure, because <code>MANIFEST.txt</code> deliberately lists only the files <em>this</em> run
+wrote; <code>--strict</code> promotes that warning to a failure. <code>--expect-version X.Y.Z</code>
+turns "was this produced by version X?" into a hard check.</p>
+<h2 id="reading-the-outputs">Reading the outputs</h2>
+<p>Start with <code>summary.csv</code> (gates, composition, timings, versions). Then:</p>
+<ul>
+<li><strong>per-grain / per-boundary</strong>: <code>grains.csv</code>, <code>boundaries.csv</code>.</li>
+<li><strong>statistics for the paper</strong>: <code>statistics.csv</code> (with the estimator-bias notes),
+  <code>microstructure.json</code> (machine-readable), <code>METHODS.md</code> (auto methods text).</li>
+<li><strong>texture</strong>: <code>odf_mtex.txt</code> (→ MTEX), <code>mdf.csv</code> (misorientation histogram).</li>
+<li><strong>GB curvature</strong> (<code>analysis.gb_curvature</code> only): <code>gb_curvature.csv</code>
+  (per-sample H/K), plus <code>curvature_hist.plt</code> when gnuplot output is enabled.</li>
+<li><strong>dopants</strong> (<code>doping.dopants</code> non-empty only): <code>doping.csv</code> (per-grain,
+  per-dopant placement counts and achieved shell/bulk fractions),
+  <code>doping_profile.csv</code> (dopant–GB distance proxigram) and its plot script
+  <code>doping_profile.plt</code> (gnuplot bundle) — the visual check that GB
+  segregation landed where requested.</li>
+<li><strong>visualize</strong>: <code>gnuplot view.plt</code>, or OVITO on <code>polycrystal.data</code> / <code>.extxyz</code>.</li>
+</ul>
+<p>Every file and column is documented in <code>docs/outputs.md</code>.</p>
+<h2 id="performance-notes">Performance notes</h2>
+<p>Single-core SDOT fits scale with the grain count (measured): small N is
+seconds; large N (≳ 1000 grains) can take noticeably longer on a given machine
+— these are honest, hardware-dependent numbers, not a fixed target. Atom fill
+parallelizes well to ~8 workers (measured); the warp tessellation, overlap
+removal and I/O are serial and dominate very large runs. The flagship
+9.2-million-atom example peaks around 13 GB RAM — budget <strong>≥ 16 GB</strong> for
+production sizes (see <code>docs/faq.md</code>).</p>
+<p><strong>Memory guards.</strong> Two independent layers protect against out-of-memory
+failures — keep them separate. (1) A <em>per-allocation</em> hard guard refuses any
+single allocation whose estimated size exceeds the effective §13 budget — the
+per-grain lattice fill (<code>atoms/fill.py</code>), the analysis voxel grid
+(<code>tessellation/voxel.py</code>), and the imported-label EDT margin
+(<code>tessellation/voxel_import.py</code>). The nominal budget is
+<code>runtime.memory_limit_gb</code> (config-file only, <strong>16 GB by default</strong>, raised from
+a hard-coded 8 GB); the EFFECTIVE budget actually enforced is
+<code>min(runtime.memory_limit_gb, detected physical RAM)</code> — a hard clamp, so
+setting the knob above the machine's own RAM does not raise the ceiling.
+Physical RAM is detected best-effort (<code>psutil</code> if installed, else
+<code>os.sysconf</code>, <code>/proc/meminfo</code>, the Windows <code>GlobalMemoryStatusEx</code> API, or
+macOS's <code>sysctl hw.memsize</code>); if every path fails, the configured value is
+used unclamped and a warning is logged. The resulting error names whichever
+bound actually tripped: when physical RAM is the smaller, binding bound, it
+states that the machine does not have enough RAM, names the detected RAM, and
+advises reducing the box size / grain count or moving to a bigger machine
+(raising <code>runtime.memory_limit_gb</code> would just be re-clamped); when the
+configured value binds with RAM to spare, it advises raising
+<code>runtime.memory_limit_gb</code> instead. Only the fill stage runs inside a <code>--jobs
+N</code> worker pool — there, up to N grains fill concurrently, each allocating its
+own grid, so the machine needs headroom for N times the limit in the worst
+case; the voxel-grid and voxel-import guards each build exactly one whole-box
+grid on the single-threaded driver and are unaffected by <code>--jobs</code>. (2) Because
+the cumulative resident set of the driver can exceed any single allocation
+(the flagship 9.2-million-atom run peaked ~13.1 GB while every per-allocation
+estimate stayed under the — then lower — per-allocation guard in effect at the
+time; a measurement, not today's 16 GB default, which now happens to
+numerically coincide with it), an optional <em>total-RSS</em> monitor (<code>--max-rss
+GB</code>, needs <code>pip install ".[monitor]"</code>) samples the process RSS on a
+background thread and logs a WARN when the ceiling — explicit, or an
+auto-fraction of physical RAM — is crossed. The monitor is best-effort and
+<strong>WARN-only</strong>: it never aborts a run and never alters a single output byte
+(RSS is non-deterministic, so the peak is reported via the log and <code>RunResult</code>
+only, never a reproducible output file). The resolved, RAM-clamped §13 budget
+is itself machine-dependent, for the same reason, and is likewise never
+written to a reproducible output file — only your own
+<code>runtime.memory_limit_gb</code> is recorded, in <code>resolved_config.yaml</code>.</p>
+<div class="prevnext">
+<a class="prev" href="index.html"><span>← Previous</span><strong>Overview</strong></a>
+<a class="next" href="architecture.html"><span>Next →</span><strong>Architecture</strong></a>
+</div>
+</article>
+<aside class="toc" aria-label="On this page"><div class="toc-title">On this page</div><ul>
+<li class="toc-l2"><a href="#install">Install</a></li>
+<li class="toc-l2"><a href="#quickstart">Quickstart</a></li>
+<li class="toc-l3"><a href="#crystal-input-manual-wyckoff-sites-or-directly-from-a-cif-file">Crystal input: manual Wyckoff sites, or directly from a CIF file</a></li>
+<li class="toc-l3"><a href="#triclinic-boxes-for-single-crystals-boxcells">Triclinic boxes for single crystals (box.cells)</a></li>
+<li class="toc-l2"><a href="#the-four-subcommands">The four subcommands</a></li>
+<li class="toc-l3"><a href="#running-on-a-cluster-slurm">Running on a cluster (SLURM)</a></li>
+<li class="toc-l2"><a href="#how-a-run-is-built-the-pipeline-stages">How a run is built (the pipeline stages)</a></li>
+<li class="toc-l2"><a href="#gates-are-the-user-interface">Gates are the user interface</a></li>
+<li class="toc-l2"><a href="#determinism-and-provenance">Determinism and provenance</a></li>
+<li class="toc-l3"><a href="#what-is-byte-identical-and-when">What is byte-identical, and when</a></li>
+<li class="toc-l3"><a href="#cross-machine-scope-honest">Cross-machine scope (honest)</a></li>
+<li class="toc-l3"><a href="#the-version-is-bound-to-the-hash">The version is bound to the hash</a></li>
+<li class="toc-l3"><a href="#checking-an-archived-run">Checking an archived run</a></li>
+<li class="toc-l2"><a href="#reading-the-outputs">Reading the outputs</a></li>
+<li class="toc-l2"><a href="#performance-notes">Performance notes</a></li>
+</ul></aside>
+</div>
+</main>
+</body>
+</html>

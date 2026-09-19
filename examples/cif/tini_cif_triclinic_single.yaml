@@ -1,0 +1,118 @@
+# ===================== grainsmith run configuration =====================
+# TiNi (B19 martensite, monoclinic P2_1/m) TRICLINIC SINGLE CRYSTAL —
+# crystal structure read directly from a Materials Project CIF file
+# (examples/assets/TiNi.cif), box built as exact lattice multiples of the
+# crystal's own (tilted) conventional cell via box.cells.
+#
+# WHAT THIS TEACHES
+#   * WHY box.cells exists: TiNi's monoclinic cell has beta = 105.2296 deg
+#     (not 90 deg). An axis-aligned ORTHOGONAL box (cif/ti2ni_cif_single_crystal.yaml's
+#     recipe) can only be exactly periodic with a crystal whose OWN cell is
+#     already orthogonal (cubic Ti2Ni) — an axis-aligned box literally cannot
+#     equal a tilted parallelepiped's shape. Forcing a monoclinic single
+#     crystal into an orthogonal box instead makes every periodic box face a
+#     genuine (if small) self-boundary defect: gate G14 reports a nonzero
+#     commensurability strain, and overlap removal quietly deletes atoms
+#     along the faces to clean it up — a real but avoidable defect.
+#   * box.cells: [n1, n2, n3] sidesteps the problem entirely: the box
+#     vectors are built AS the crystal's own conventional-cell vectors,
+#     scaled by [n1, n2, n3] integer multiples — the box IS n1 x n2 x n3
+#     repeats of the true unit cell, so it is EXACTLY periodic BY
+#     CONSTRUCTION, for ANY crystal family. Gate G14 then reports
+#     misfit = 0 (to float64 roundoff) rather than "ok, small strain".
+#   * Restricted-triclinic (LAMMPS) convention: the resolved box matrix is
+#     lower-triangular — a along +x, b in the xy-plane (+y), c with +z.
+#     For this cell the only nonzero off-diagonal is the xz TILT FACTOR
+#     (monoclinic beta tilts c into -x): with 6x5x4 cells the box matrix is
+#         a = (17.350120,  0,          0        )
+#         b = ( 0,        19.834802,  0        )
+#         c = (-5.070528,  0,         18.624622)  Å
+#     i.e. xy = 0, xz = -5.070528 Å, yz = 0 (beta > 90 deg -> cos(beta) < 0
+#     -> c_x < 0, hence the negative sign). |xz| = 5.07 << ax/2 = 8.68, well
+#     inside the LAMMPS restricted-triclinic bound (|xy|,|xz| <= ax/2,
+#     |yz| <= by/2) — no lattice-vector reduction was needed here (it would
+#     trigger automatically, via reduce_triclinic_tilts, for a smaller cell
+#     count where the raw tilt exceeds the bound).
+#   * box.cells REQUIRES: grains.number: 1 (single crystal only — the
+#     polycrystal core stays orthogonal, see README "Known limits"),
+#     box.periodic all true + box.vacuum: 0 (the box is exactly periodic,
+#     so there is no meaningful free/vacuum axis), and an IDENTITY
+#     orientation.fixed (any rotation would misalign the box vectors, which
+#     are built directly from the UNROTATED crystal cell, with the lab
+#     frame) — config/resolve.py Rule 28 enforces every one of these with a
+#     clear ConfigError if violated.
+#   * Exact atom count: 6*5*4 cells x 4 atoms/cell (TiNi.cif, Z=2 formula
+#     units x 2 atoms/formula) = 480 atoms exactly; with overlap_removal
+#     cutoff 0.85*d_nn no atom is close enough to any periodic image to be
+#     deleted (0 deleted, exact perfect-crystal reference), unlike the
+#     orthogonal-box single-crystal recipe for a non-cubic cell.
+#   * LAMMPS output: the data file's header carries the xy xz yz tilt line
+#     (restricted-triclinic data-file format) instead of a plain
+#     orthogonal box — see the "restricted-triclinic box" comment line
+#     grainsmith writes into polycrystal.data.
+#
+# HOW TO RUN
+#   grainsmith validate examples/cif/tini_cif_triclinic_single.yaml
+#   grainsmith generate examples/cif/tini_cif_triclinic_single.yaml
+#   Check summary.csv for gate G14 (misfit exactly 0) and the atom count
+#   (exactly 480); inspect the xy/xz/yz tilt line in polycrystal.data.
+
+meta:
+  title: "TiNi (P2_1/m monoclinic), triclinic single crystal, 6x5x4 cells, crystal from CIF"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 271828         # no stage consumes randomness here (single crystal)
+
+box:
+  cells: [6, 5, 4]       # box = 6x5x4 exact repeats of TiNi's own cell
+  periodic: [true, true, true]   # box.cells requires all-periodic
+  vacuum: 0.0                    # box.cells requires zero vacuum
+
+grains:
+  number: 1              # box.cells is single-crystal only (Rule 28)
+
+crystal:
+  cif:
+    file: ../assets/TiNi.cif   # resolved relative to this file
+    symprec: 1.0e-4
+
+orientation:
+  scheme: fixed
+  fixed:
+    euler_bunge_deg: [0.0, 0.0, 0.0]   # box.cells REQUIRES identity orientation
+
+boundaries:
+  geometry: flat             # required for the single-crystal backend
+  overlap_removal:
+    enabled: true             # no-op here (0 deletions); cleans the box
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false                  # P2_1/m is not cubic — CSL is undefined here
+  per_atom_margin: false
+  section: null                # NOT supported with box.cells (Rule 28) —
+                                # the EBSD slice sampler assumes an
+                                # axis-aligned orthogonal grid
+
+output:
+  directory: ./out_tini_cif_triclinic_single
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

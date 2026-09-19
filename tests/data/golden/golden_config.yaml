@@ -1,0 +1,25 @@
+# Golden reproducibility fixture. Do NOT edit without re-bootstrapping the
+# golden hashes (tools/golden_hashes.py, "Updating the golden set"): every field
+# here is inside config_sha256, so a change invalidates the recorded digests.
+# output.directory is deliberately RELATIVE — the runner chdirs into a scratch
+# directory, so an absolute path would put a machine-specific string into the
+# hashed config payload.
+meta:
+  title: golden
+  verbose: 0
+seed:
+  mode: fixed
+  value: 20260611
+box:
+  lengths: [40.0, 40.0, 40.0]
+  periodic: [true, true, true]
+grains:
+  number: 4
+crystal:
+  space_group: {number: 225}
+  lattice: {a: 3.615}
+  wyckoff_sites:
+    - {element: Cu, coords: [0.0, 0.0, 0.0]}
+output:
+  directory: ./out
+  lammps: {atom_style: molecular}

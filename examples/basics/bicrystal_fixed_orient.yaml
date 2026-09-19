@@ -1,0 +1,97 @@
+# ===================== grainsmith run configuration =====================
+# FCC Cu bicrystal (2 grains), 240³ Å, Σ5 ⟨100⟩ fixed orientations.
+# Grain 0: identity orientation (no rotation).
+# Grain 1: 36.87° rotation about [010] — the Σ5 CSL misorientation.  Any
+# ⟨100⟩-type axis gives the same Σ value (the three cube axes are
+# symmetry-equivalent in m-3m), so [010] below is the ⟨100⟩ representative
+# this file uses.
+#
+# WHAT THIS TEACHES
+#   * orientation.scheme: from_list — per-grain orientations given
+#     explicitly, one entry per grain, mixing quaternion and axis-angle
+#     specifications in the same list.
+#   * CSL Σ5 assignment: the two orientations differ by exactly the Σ5
+#     ⟨100⟩ 36.87° misorientation; analysis.csl: true recovers csl_sigma
+#     = 5 for the shared boundary in boundaries.csv.
+#   * SCALE NOTE: 240³ Å with 2 grains is ~1.2e6 atoms — the largest file
+#     in basics/ by a factor of four, and a few hundred MB of output.  The
+#     Σ5 lesson itself is box-independent: shrink box.lengths (e.g. 40³ Å,
+#     ~5.4e3 atoms) for a seconds-scale run that reports the same
+#     csl_sigma = 5.
+#   * Why a fully periodic bicrystal's mean boundary-plane normal reports
+#     as undefined: with box.periodic all true and only 2 grains, each
+#     grain touches the other across BOTH box faces symmetrically, so
+#     there is no single well-defined mean plane.
+#
+# HOW TO RUN
+#   grainsmith validate examples/basics/bicrystal_fixed_orient.yaml
+#   grainsmith generate examples/basics/bicrystal_fixed_orient.yaml
+#   Check boundaries.csv's csl_sigma column (expect 5) and mean_normal_*
+#   columns.
+
+meta:
+  title: "FCC Cu bicrystal, Σ5 ⟨100⟩ 36.87°"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 555666
+
+box:
+  lengths: [240.0, 240.0, 240.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 2
+  min_seed_distance: auto
+  lloyd_iterations: 0
+
+crystal:
+  space_group:
+    number: 225           # Fm-3m (FCC)
+    setting: null
+  lattice:
+    a: 3.615              # Cu lattice parameter, Å
+  wyckoff_sites:
+    - {element: Cu, coords: [0.0, 0.0, 0.0], letter: a}
+
+orientation:
+  scheme: from_list
+  from_list:
+    - quaternion: [1.0, 0.0, 0.0, 0.0]     # grain 0: identity (no rotation)
+    - axis_angle:                            # grain 1: Σ5 — 36.87° about [010]
+        axis: [0.0, 1.0, 0.0]
+        angle_deg: 36.87
+
+boundaries:
+  geometry: flat
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: true               # Expect Σ5 assignment (requires cubic point group)
+  per_atom_margin: false
+
+output:
+  directory: ./out_bicrystal_sigma5
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false
+    format: ply

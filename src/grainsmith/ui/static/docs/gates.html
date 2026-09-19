@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QA gates (G1–G26) · grainsmith</title>
+<style>
+
+:root{
+  --sidebar-w: 300px; --toc-w: 240px;
+  --accent:#b5651d; --accent-2:#1f6f8b;
+  --ink:#1a1f24; --ink-soft:#4a545e; --line:#e3e7ea;
+  --bg:#ffffff; --bg-side:#1c2530; --bg-side-2:#243040;
+  --code-bg:#f5f7f9; --side-ink:#c9d3de; --side-ink-soft:#8a97a6;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:Georgia,"Times New Roman",Times,serif;
+  color:var(--ink); background:var(--bg); line-height:1.68; font-size:16px;
+}
+/* ---- full-screen layout: fixed sidebar + fluid content ---- */
+.sidebar{
+  position:fixed; top:0; left:0; width:var(--sidebar-w); height:100vh;
+  overflow-y:auto; background:var(--bg-side); color:var(--side-ink);
+  padding:22px 0 40px; z-index:20;
+}
+.brand{padding:6px 24px 20px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:14px;}
+.brand a{color:#fff;font-weight:700;font-size:1.35rem;text-decoration:none;letter-spacing:.5px;}
+.brand-sub{display:block;color:var(--side-ink-soft);font-size:.8rem;margin-top:2px;}
+.nav-group{margin:0 0 6px;}
+.nav-group-title{
+  padding:12px 24px 5px;font-size:.72rem;text-transform:uppercase;
+  letter-spacing:.09em;color:var(--side-ink-soft);font-weight:700;
+}
+.nav-group ul{list-style:none;margin:0;padding:0;}
+.nav-group li a{
+  display:block;padding:6px 24px 6px 28px;color:var(--side-ink);
+  text-decoration:none;font-size:.92rem;border-left:3px solid transparent;
+}
+.nav-group li a:hover{background:var(--bg-side-2);color:#fff;}
+.nav-group li.active a{
+  color:#fff;border-left-color:var(--accent);background:var(--bg-side-2);font-weight:600;
+}
+.content{margin-left:var(--sidebar-w);min-height:100vh;}
+.content-inner{
+  display:grid;grid-template-columns:minmax(0,1fr) var(--toc-w);
+  gap:48px;max-width:1500px;margin:0 auto;padding:52px 64px 96px;
+}
+article{min-width:0;}
+/* ---- in-page TOC (sticky, right rail) ---- */
+.toc{position:sticky;top:36px;align-self:start;font-size:.86rem;
+  border-left:1px solid var(--line);padding-left:18px;max-height:calc(100vh-72px);overflow-y:auto;}
+.toc-title{font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--ink-soft);margin-bottom:10px;}
+.toc ul{list-style:none;margin:0;padding:0;}
+.toc li{margin:3px 0;}
+.toc li a{color:var(--ink-soft);text-decoration:none;display:block;line-height:1.4;}
+.toc li a:hover{color:var(--accent);}
+.toc-l3{padding-left:14px;font-size:.82rem;}
+/* ---- typography ---- */
+article h1{font-size:2.05rem;line-height:1.2;margin:.1em 0 .7em;font-weight:750;letter-spacing:-.01em;}
+article h2{font-size:1.5rem;margin:1.9em 0 .6em;padding-bottom:.28em;
+  border-bottom:2px solid var(--line);font-weight:700;}
+article h3{font-size:1.18rem;margin:1.6em 0 .5em;font-weight:650;}
+article h4{font-size:1.02rem;margin:1.3em 0 .4em;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;}
+article p{margin:.85em 0;}
+article a{color:var(--accent-2);text-decoration:none;}
+article a:hover{text-decoration:underline;}
+article strong{font-weight:650;}
+article img{max-width:100%;height:auto;display:block;margin:1.4em auto;
+  border:1px solid var(--line);border-radius:8px;background:#fff;}
+article ul,article ol{padding-left:1.5em;margin:.7em 0;}
+article li{margin:.32em 0;}
+article blockquote{
+  margin:1.3em 0;padding:.7em 1.2em;border-left:4px solid var(--accent);
+  background:#fbf6f0;color:var(--ink);border-radius:0 6px 6px 0;
+}
+article blockquote p{margin:.4em 0;}
+/* ---- display math (MathJax typesets these; this is the no-JS/offline fallback) ---- */
+.math-display{
+  margin:1.5em 0;padding:.9em 1.2em;text-align:center;overflow-x:auto;
+  font-family:"Cambria Math","STIX Two Math",Cambria,"Times New Roman",serif;
+  font-size:1.05rem;color:var(--ink);
+}
+/* ---- code ---- */
+code{font-family:"SF Mono",SFMono-Regular,ui-monospace,Menlo,Consolas,monospace;
+  font-size:.88em;background:var(--code-bg);padding:.12em .38em;border-radius:4px;
+  color:#b03a2e;border:1px solid var(--line);}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;
+  padding:16px 18px;overflow-x:auto;margin:1.2em 0;line-height:1.5;}
+pre code{background:none;border:none;padding:0;color:var(--ink);font-size:.86rem;}
+/* ---- tables (wide, striped, scrollable) ---- */
+article table{border-collapse:collapse;width:100%;margin:1.3em 0;font-size:.9rem;display:block;overflow-x:auto;}
+article thead th{background:#2c3844;color:#fff;text-align:left;padding:9px 12px;font-weight:600;white-space:nowrap;}
+article tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top;}
+article tbody tr:nth-child(even){background:#f8fafb;}
+article tbody code{white-space:nowrap;}
+/* ---- prev/next ---- */
+.prevnext{display:flex;justify-content:space-between;gap:16px;margin-top:3.5em;
+  padding-top:1.6em;border-top:1px solid var(--line);}
+.prevnext a{flex:1;max-width:48%;padding:14px 18px;border:1px solid var(--line);
+  border-radius:8px;text-decoration:none;color:var(--ink);background:#fcfdfe;}
+.prevnext a:hover{border-color:var(--accent);background:#fbf6f0;}
+.prevnext .next{text-align:right;}
+.prevnext span{display:block;font-size:.78rem;color:var(--ink-soft);margin-bottom:3px;}
+.prevnext strong{font-size:.98rem;color:var(--accent-2);font-weight:600;}
+/* ---- mobile ---- */
+.menu-toggle{display:none;position:fixed;top:12px;left:12px;z-index:30;
+  background:var(--bg-side);color:#fff;border:none;border-radius:6px;
+  width:42px;height:42px;font-size:1.3rem;cursor:pointer;}
+@media (max-width:1080px){
+  .content-inner{grid-template-columns:minmax(0,1fr);}
+  .toc{display:none;}
+}
+@media (max-width:820px){
+  .menu-toggle{display:block;}
+  .sidebar{transform:translateX(-100%);transition:transform .2s ease;}
+  body.nav-open .sidebar{transform:translateX(0);}
+  .content{margin-left:0;}
+  .content-inner{padding:64px 22px 72px;}
+}
+
+</style>
+<script>
+window.MathJax = {
+  tex: { displayMath: [['\\[', '\\]']], processEscapes: true },
+  options: { enableMenu: false }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</head>
+<body>
+<button class="menu-toggle" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+<nav class="sidebar" aria-label="Documentation navigation">
+<div class="brand"><a href="index.html">grainsmith</a><span class="brand-sub">documentation</span></div>
+<div class="nav-group"><div class="nav-group-title">Getting started</div><ul>
+<li><a href="index.html">Overview</a></li>
+<li><a href="manual.html">User manual</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Concepts &amp; physics</div><ul>
+<li><a href="architecture.html">Architecture</a></li>
+<li><a href="geometry.html">Grain geometry</a></li>
+<li><a href="physics.html">Physics &amp; conventions</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Reference</div><ul>
+<li><a href="config_reference.html">Configuration reference</a></li>
+<li class="active"><a href="gates.html">QA gates (G1–G26)</a></li>
+<li><a href="outputs.html">Outputs</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Developer</div><ul>
+<li><a href="developer.html">Developer guide</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Help</div><ul>
+<li><a href="faq.html">FAQ &amp; troubleshooting</a></li>
+</ul></div>
+</nav>
+<main class="content">
+<div class="content-inner">
+<article>
+<h1>grainsmith QA gates (G1–G26)</h1>
+<p>QA gates are the <strong>user interface of the physics constraints</strong>: every gate is a
+construction-time check that either <em>raises</em> (hard) or <em>records a WARN row</em>
+(warn) in <code>summary.csv</code>. A hard gate aborts the run with an actionable message;
+a warn gate completes the run but flags a quality concern. The CLI prints
+<code>OK: N/N QA gates passed</code> or <code>WARN: k/N ... (failed: …)</code> at the end of
+<code>generate</code>.</p>
+<p>Each gate's threshold lives in <code>constants.py</code> (no bare numeric thresholds
+elsewhere — a project mandate) or in the schema; this page names the constant so
+the value and its justification are traceable. The default ranges below are the
+shipped defaults; thresholds set per-run via the config are noted.</p>
+<h2 id="summary">Summary</h2>
+<table>
+<thead>
+<tr>
+<th>gate</th>
+<th>check</th>
+<th>kind</th>
+<th>threshold (constant / field)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>G1</td>
+<td>config schema + 29 cross-field rules</td>
+<td>hard</td>
+<td>pydantic <code>extra='forbid'</code> + <code>config/resolve.py</code></td>
+</tr>
+<tr>
+<td>G2</td>
+<td>spglib symmetry round-trip of the expanded crystal</td>
+<td>hard</td>
+<td>ITA number must round-trip (<code>symprec</code>)</td>
+</tr>
+<tr>
+<td>G3</td>
+<td>tessellation volume sum = box volume</td>
+<td>hard</td>
+<td>flat: <code>VOL_REL_TOL = 1e-6</code>; voxel: 1 surface voxel layer</td>
+</tr>
+<tr>
+<td>G4</td>
+<td>per-cell Euler characteristic V−E+F = 2</td>
+<td>hard</td>
+<td>exact (combinatorial)</td>
+</tr>
+<tr>
+<td>G5</td>
+<td>grain connectivity + no empty cells</td>
+<td>hard (warn for imports; repair-and-report for <code>perturbed_distance</code>)</td>
+<td><code>voxel_import.strict_connectivity</code>; <code>perturbed_distance</code> → see G19</td>
+</tr>
+<tr>
+<td>G6</td>
+<td>warp bijectivity guards (clip + gradient)</td>
+<td>hard (n/a for <code>perturbed_distance</code>)</td>
+<td><code>WARP_GRAD_MAX = 0.5</code>, <code>amplitude ≤ min_seed_distance/4</code></td>
+</tr>
+<tr>
+<td>G7</td>
+<td>post-overlap minimum interatomic distance</td>
+<td>hard</td>
+<td>overlap <code>cutoff</code> (default <code>0.85*d_nn</code>)</td>
+</tr>
+<tr>
+<td>G8</td>
+<td>final atom count vs theoretical</td>
+<td>warn &gt; 2 %, <strong>fail &gt; 5 %</strong></td>
+<td>hard-coded 2 % / 5 % bands</td>
+</tr>
+<tr>
+<td>G9</td>
+<td>composition drift vs nominal stoichiometry</td>
+<td>warn</td>
+<td>warn &gt; 1 % per species</td>
+</tr>
+<tr>
+<td>G10</td>
+<td>LAMMPS data file re-parses to the same system</td>
+<td>hard</td>
+<td>exact count + bounds round-trip</td>
+</tr>
+<tr>
+<td>G11</td>
+<td>re-measured grain-volume error vs SDOT target</td>
+<td>hard</td>
+<td><code>size_distribution.vol_tol</code> (default <code>1e-3</code>)</td>
+</tr>
+<tr>
+<td>G12</td>
+<td>MDF–target χ² after annealing</td>
+<td>warn</td>
+<td><code>mdf_target.chi2_max</code> (default <code>0.5</code>)</td>
+</tr>
+<tr>
+<td>G13</td>
+<td>back-estimated Hurst vs target (<code>perturbed_distance</code> only)</td>
+<td>warn</td>
+<td><code>HURST_G13_TOL = 0.15</code></td>
+</tr>
+<tr>
+<td>G14</td>
+<td>single-crystal box/lattice commensurability</td>
+<td>warn</td>
+<td><code>COMMENSURATE_TOL = 1e-8</code></td>
+</tr>
+<tr>
+<td>G15</td>
+<td>re-measured phase volume fractions</td>
+<td>warn</td>
+<td>granularity bound <code>V_max / V_box</code></td>
+</tr>
+<tr>
+<td>G16</td>
+<td>GB curvature sanity: fraction of degenerate level-set samples</td>
+<td>warn</td>
+<td><code>CURV_G16_DROP_TOL = 0.05</code></td>
+</tr>
+<tr>
+<td>G17</td>
+<td>dopant composition + enrichment vs targets</td>
+<td>warn</td>
+<td>warn &gt; 1 pp drift or E off by &gt; 15 %</td>
+</tr>
+<tr>
+<td>G18</td>
+<td>dopant min-distance re-verification</td>
+<td>hard</td>
+<td>any pair &lt; min_distance fails</td>
+</tr>
+<tr>
+<td>G19</td>
+<td><code>perturbed_distance</code> G5-repair reassigned-voxel fraction</td>
+<td>warn</td>
+<td><code>REASSIGNED_FRACTION_WARN_TOL = 0.02</code></td>
+</tr>
+<tr>
+<td>G20</td>
+<td><code>perturbed_distance</code> box-counting roughness index (diagnostic; not a converged, large-effect-size fractal-dimension certificate below ~5.5 synthesis-band octaves)</td>
+<td>diagnostic (never trips)</td>
+<td>n/a (reported; no threshold — see below)</td>
+</tr>
+<tr>
+<td>G21</td>
+<td>per-grain Gauss-Bonnet face-interior residual (<code>gb_curvature</code> only)</td>
+<td>warn</td>
+<td><code>CURV_G21_GAUSS_BONNET_TOL = 4π</code></td>
+</tr>
+<tr>
+<td>G22</td>
+<td>volume-weighted ODF fidelity (re-measured drift + kernel-smoothed bias vs. a null)</td>
+<td>warn</td>
+<td><code>mdf_target.odf_drift_max</code> (no default cap); kernel block memory-gated</td>
+</tr>
+<tr>
+<td>G23</td>
+<td>angle-window vs true-CSL Sigma3 area fraction</td>
+<td>diagnostic (never trips)</td>
+<td>n/a — informational, no threshold</td>
+</tr>
+<tr>
+<td>G24</td>
+<td>final (post-warp) per-grain volume fidelity vs. SDOT targets</td>
+<td>warn</td>
+<td><code>WARP_VOLUME_G24_TOL = 0.10</code></td>
+</tr>
+<tr>
+<td>G25</td>
+<td>texture-component fidelity: configured weight vs. realised count/volume fraction, sampler-term and annealer-term TV, by <code>component_weight_basis</code> (<code>odf_components</code> only)</td>
+<td>diagnostic (never trips)</td>
+<td>n/a — informational, no threshold</td>
+</tr>
+<tr>
+<td>G26</td>
+<td>atomistic ODF-weighting discretisation floor: tessellation-volume weight vs. atom-count weight</td>
+<td>diagnostic (never trips)</td>
+<td>n/a — informational, no threshold</td>
+</tr>
+</tbody>
+</table>
+<p><code>d_nn</code> = ideal-crystal nearest-neighbour distance.</p>
+<h2 id="g1--configuration-schema--cross-field-rules-hard">G1 — Configuration schema + cross-field rules (hard)</h2>
+<p><strong>Checks.</strong> The YAML is parsed (<code>yaml.safe_load</code> only) and validated against the
+pydantic schema (<code>docs/config_reference.md</code>). Every model is <code>extra='forbid'</code>, so
+a misspelt key is an error, not a silent no-op. Beyond single-field validation,
+<code>config/resolve.py</code> applies 29 numbered cross-field rules (e.g. <em>exactly one of
+<code>crystal</code> or <code>phases</code></em>; <em><code>vacuum</code> needs a non-periodic axis</em>; <em><code>csl</code> requires a
+cubic point group</em>; SDOT feasibility — smallest target volume above the
+floor).
+<strong>Trips when.</strong> Unknown key, wrong type, out-of-range value, or a violated
+cross-field rule. <strong>What to do.</strong> Read the message — it names the field/rule and
+the offending value. Cross-reference <code>docs/config_reference.md</code> for the field's
+type, default and constraints.</p>
+<h2 id="g2--space-group-round-trip-hard">G2 — Space-group round-trip (hard)</h2>
+<p><strong>Checks.</strong> The Wyckoff orbits are expanded to a full unit cell, then handed to
+spglib; the detected ITA space-group number must equal the requested one
+(<code>crystal/verify.py</code>). This proves the generated motif actually has the claimed
+symmetry rather than trusting the input.
+<strong>Trips when.</strong> Wrong Wyckoff coordinates, a free Wyckoff parameter left
+unsubstituted, an incompatible <code>setting</code>, or coincident sites across distinct
+Wyckoff positions (which would silently overlap atoms).
+<strong>What to do.</strong> Verify the space group number, the Wyckoff <code>coords</code> (substitute
+free parameters with numbers), and the <code>setting</code> (origin choice / R vs H). Use
+<code>grainsmith info --sg &lt;N&gt;</code> to inspect the group.</p>
+<p><strong><code>crystal.cif</code> path.</strong> A CIF-derived structure (<code>crystal.cif: {file: ...}</code>,
+<code>crystal/cif.py</code>) runs through this SAME gate: spglib detects the file's true
+space group at <code>symprec</code>, the symmetry-inequivalent Wyckoff sites are
+expanded from spglib's own standardized cell, and the result is re-verified
+right at config-resolution time. Note that the <code>requested_sg</code> shown in
+<code>summary.csv</code> is NOT the CIF's own declared number — for the CIF path it is
+set to the spglib-DETECTED group (a mismatch between the CIF header and
+spglib's detection only WARNs; it is not a G2 failure).</p>
+<h2 id="g3--volume-sum-hard">G3 — Volume sum (hard)</h2>
+<p><strong>Checks.</strong> Σ grain volumes must equal the box volume. Flat geometry enforces
+this at construction to <code>VOL_REL_TOL = 1e-6</code> (the Qhull pruning certificate);
+curved/voxel geometry compares the voxelized grain-volume sum to the box within
+one surface voxel layer (<code>gate_g3_voxel</code>).
+<strong>Trips when.</strong> A tessellation bug or (voxel) too coarse a grid near the box
+surface. <strong>What to do.</strong> For voxel geometry, raise <code>analysis.voxel_grid</code>.</p>
+<h2 id="g4--euler-characteristic-hard">G4 — Euler characteristic (hard)</h2>
+<p><strong>Checks.</strong> Every flat Voronoi cell is a closed convex polyhedron: V − E + F = 2.
+Enforced combinatorially at construction (<code>flat.py</code>). <strong>Trips when.</strong> A
+degenerate face/vertex from coincident seeds. <strong>What to do.</strong> Perturb seeds
+(change <code>seed.value</code>) or <code>min_seed_distance</code>.</p>
+<h2 id="g5--connectivity--empty-cells-hard-warn-for-imports-repair-and-report-for-perturbed_distance">G5 — Connectivity + empty cells (hard; WARN for imports; repair-and-report for <code>perturbed_distance</code>)</h2>
+<p><strong>Checks.</strong> Each grain is non-empty and (for generated tessellations) connected.
+For <code>voxel_import</code>, external microstructures may legitimately contain
+disconnected or wrap-spanning grains, so G5 is <strong>demoted to WARN</strong> by default;
+set <code>boundaries.voxel_import.strict_connectivity: true</code> to hard-fail.
+<strong>What to do (import WARN).</strong> Decide whether fragmentation is physical; if not,
+clean the label field or set strict mode.</p>
+<p><strong><code>perturbed_distance</code> path.</strong> This method's level-set assignment rule can
+locally fold space near a boundary (§5b, <code>docs/physics.md</code>), which can
+produce voxel-scale fragmentation that a hard construction-time failure
+would be too blunt an instrument for. Instead of raising, the constructor
+<strong>repairs</strong> any disconnected fragment by iterative majority-vote
+reassignment on the analysis voxel grid (converges or raises
+<code>TessellationError</code> on non-convergence — repair itself is never silently
+partial) and reports what fraction of voxels needed it as
+<code>reassigned_fraction</code>, surfaced by gate <strong>G19</strong> below. G5 itself always
+reports <code>passed=True</code> for this method (repair-and-report, not pass/fail);
+G19 is the actual severity signal to watch.</p>
+<h2 id="g6--warp-bijectivity-hard-na-for-perturbed_distance">G6 — Warp bijectivity (hard; n/a for <code>perturbed_distance</code>)</h2>
+<p><strong>Checks.</strong> The domain warp must not fold space: the displacement gradient norm
+stays below <code>WARP_GRAD_MAX = 0.5</code> and the per-grain clip <code>A_clip</code> keeps cells
+disjoint; the admissible amplitude is tied to <code>min_seed_distance/4</code>. Enforced
+at construction (<code>warp.py</code>).
+<strong>Trips when.</strong> <code>amplitude</code> too large for <code>correlation_length</code>.
+<strong>What to do.</strong> Reduce <code>boundaries.curved.amplitude</code>, or increase
+<code>correlation_length</code>.</p>
+<p><strong>Gaussian spectrum only.</strong> <code>warp</code> accepts <code>spectrum: gaussian</code> exclusively —
+<code>spectrum: self_affine</code> is a hard <code>ConfigError</code> for this method (<code>resolve.py</code>
+Rule 8a; also enforced at the <code>WarpTessellation.__init__</code> API level), not a
+G6 variant: a coordinate diffeomorphism cannot produce a genuinely self-affine
+boundary regardless of Hurst exponent, so the combination was removed
+outright rather than given its own G6 trade-off (<code>docs/physics.md</code> §5b). Use
+<code>boundaries.curved.method: perturbed_distance</code> for a self-affine boundary
+instead — see that method's own guards below.</p>
+<p><strong><code>perturbed_distance</code> path.</strong> G6 reports <code>n/a</code> for this method: there is no
+coordinate diffeomorphism to check bijectivity of — the level-set rule folds
+space by design (that is the whole point; see <code>docs/physics.md</code> §5b for why
+a bijective map like <code>warp</code> cannot produce a genuinely self-affine boundary in
+the first place). Two different guards take G6's place: a seed-containment
+pre-flight check at config-resolve time (<code>amplitude ≤
+PERTURBED_DISTANCE_SAFETY · min_seed_distance / (2 · ETA_CLIP)</code>, i.e.
+<code>min_seed_distance/12</code>, <code>resolve.py</code> Rule 7b) and an <strong>exact</strong> post-hoc
+seed-ownership check at construction (<code>ConfigError</code> if any grain's own seed
+is captured by a competing grain's perturbation) — see <code>perturbed.py</code> and
+the design note referenced in <code>docs/physics.md</code> §5b.</p>
+<h2 id="g7--post-overlap-minimum-distance-hard">G7 — Post-overlap minimum distance (hard)</h2>
+<p><strong>Checks.</strong> A fresh PBC neighbour query on the FINAL structure proves no atom
+pair is closer than the overlap <code>cutoff</code> (default <code>0.85*d_nn</code>); <code>measured</code> =
+number of violating pairs. <strong>Trips when.</strong> Overlap removal disabled/too small a
+cutoff, or a fill bug. <strong>What to do.</strong> Enable <code>boundaries.overlap_removal</code> or
+raise its <code>cutoff</code>.</p>
+<h2 id="g8--atom-count-warn--2--fail--5">G8 — Atom count (warn &gt; 2 %, fail &gt; 5 %)</h2>
+<p><strong>Checks.</strong> |N_final − N_est| / N_est with N_est = ρ_atom·V_box − N_deleted.
+WARN above 2 %, <strong>hard-fails above 5 %</strong>. <strong>Trips when.</strong> Unexpectedly large GB
+deletions, a density/occupancy mismatch, or a fill bug. <strong>What to do.</strong> Inspect
+the overlap deletion count in <code>summary.csv</code>; check occupancy and lattice
+parameters.</p>
+<h2 id="g9--composition-drift-warn">G9 — Composition drift (warn)</h2>
+<p><strong>Checks.</strong> Per-species atom-fraction drift after deletions vs the nominal
+stoichiometry; WARN above 1 % per species (never hard-fails). For alloys
+(<code>occupancy</code> dicts) and multiphase the nominal is the phase/occupancy-weighted
+mixture. <strong>What to do.</strong> If drift matters, avoid <code>midpoint_merge</code> (forbidden for
+alloys anyway) and prefer <code>delete_shallower</code>; report the drift in the paper.</p>
+<h2 id="g10--lammps-round-trip-hard">G10 — LAMMPS round-trip (hard)</h2>
+<p><strong>Checks.</strong> The written LAMMPS data file is re-parsed and must reproduce the atom
+count and in-box coordinates. <strong>Trips when.</strong> A writer/precision bug.
+<strong>What to do.</strong> File a bug — this gate guards output integrity.</p>
+<h2 id="g11--grain-volume-targeting-hard">G11 — Grain-volume targeting (hard)</h2>
+<p><strong>Checks.</strong> With <code>grains.size_distribution</code> set, the SDOT-fitted Laguerre cell
+volumes are <strong>re-measured</strong> on the final tessellation; max relative error must be
+≤ <code>vol_tol</code> (default <code>1e-3</code>). <strong>Trips when.</strong> The target spread is infeasible for
+the seed set, or too few Newton iterations. <strong>What to do.</strong> Increase
+<code>size_distribution.max_iter</code>, reduce <code>sigma_log</code>, or increase <code>grains.number</code>.
+(measured: typical convergence in 3–6 iterations.)</p>
+<h2 id="g12--mdf-target-warn">G12 — MDF target (warn)</h2>
+<p><strong>Checks.</strong> After assignment annealing, the symmetric χ² distance between the
+re-measured area-weighted misorientation distribution and the target must be
+≤ <code>chi2_max</code> (default <code>0.5</code>, covering the multinomial noise floor
+≈ n_bins/n_pairs). <strong>Trips when.</strong> Too few <code>annealing_steps</code>, or a target the
+fixed orientation set cannot reach. <strong>What to do.</strong> Increase <code>annealing_steps</code>;
+note that the attainable Σ3 area fraction is bounded by the twin content of that
+fixed orientation set (the assignment annealing is <strong>conserved-texture</strong>: the
+NUMBER-weighted orientation distribution is invariant by construction, the
+VOLUME-weighted ODF is not — see <code>docs/physics.md</code> §4).</p>
+<h2 id="g13--self-affine-hurst-warn-perturbed_distance-only">G13 — Self-affine Hurst (warn; <code>perturbed_distance</code> only)</h2>
+<p><strong>Checks.</strong> The Hurst exponent back-estimated from the generated per-color η
+field(s) (radial PSD log-log fit) must be within <code>HURST_G13_TOL = 0.15</code> of the
+target <code>hurst</code>. <strong>Trips when.</strong> The scale-free band is too narrow (a constant
+finite-band/finite-size bias of ~0.1 is expected, measured — which is why
+this gate is warn). <strong>What to do.</strong> Widen the band (<code>l_min</code>↓, <code>l_max</code>↑ within
+<code>min(L)/2</code>) and use a finer voxel grid for more scale-free octaves.</p>
+<p><strong>Owner.</strong> <code>boundaries.curved.method: perturbed_distance</code> with <code>spectrum:
+self_affine</code> is the only combination that triggers G13 — <code>warp</code> cannot accept
+<code>spectrum: self_affine</code> at all (see G6 above / <code>docs/physics.md</code> §5b), so it
+never populates this gate. G13 pairs with G20 below (both fire together,
+whenever they fire, since they share one <code>PerturbedDistanceTessellation</code>
+construction): G13 checks the synthesized FIELD's own spectral law; G20
+checks the resulting BOUNDARY's own box-counting roughness index — a
+direct read of the generated geometry that G13's field-only check cannot
+provide, though (see G20 below) not itself a converged, large-effect-size
+fractal-dimension certificate below ~5.5 synthesis-band octaves.</p>
+<h2 id="g14--single-crystal-commensurability-warn">G14 — Single-crystal commensurability (warn)</h2>
+<p><strong>Checks.</strong> For <code>grains.number: 1</code>, the box must be an integer number of
+(rotated) lattice repeats; the max residual strain must be ≤
+<code>COMMENSURATE_TOL = 1e-8</code>. <strong>Trips when.</strong> The box is not a lattice multiple, or
+the lattice is rotated off a commensurate orientation. <strong>What to do.</strong> Use a box
+of integer lattice multiples and/or an identity orientation for a perfect
+crystal; otherwise the periodic faces are self-boundary defects (which may be
+intended).</p>
+<h2 id="g15--phase-volume-fractions-warn">G15 — Phase volume fractions (warn)</h2>
+<p><strong>Checks.</strong> For <code>phases:</code>, the achieved per-phase volume fractions are
+<strong>re-measured</strong> and compared to the targets; the deviation floor is the
+granularity bound <code>V_max / V_box</code> (moving one grain shifts a fraction by at most
+that much). With ≥ 3 phases at extreme fractions and few grains the
+every-phase-≥1-grain guard can push the deviation up to ~2× the bound (still a
+WARN). <strong>What to do.</strong> Increase <code>grains.number</code> for finer
+fraction resolution.</p>
+<h2 id="g16--gb-curvature-sanity-warn-only">G16 — GB curvature sanity (warn-only)</h2>
+<p><strong>Checks.</strong> With <code>analysis.gb_curvature: true</code>, the fraction of boundary
+level-set samples dropped as degenerate (gradient magnitude <code>|∇φ| &lt; 0.1</code>,
+<code>CURV_GRAD_MIN</code>) during central-difference curvature evaluation must be
+≤ <code>CURV_G16_DROP_TOL = 0.05</code> (5 %). Flat geometries and single-crystal /
+no-boundary runs compute no curvature samples and report <code>0/0</code> (trivially
+ok). <strong>Trips when.</strong> The analysis-grid voxel spacing is too coarse relative
+to the boundary curvature, or samples fall near a triple junction/void where
+the level set is ill-conditioned. <strong>What to do.</strong> Raise <code>analysis.voxel_grid</code>
+for a finer level-set sampling.</p>
+<h2 id="g17--dopant-composition--enrichment-warn">G17 — Dopant composition + enrichment (warn)</h2>
+<p><strong>Checks.</strong> With <code>doping:</code> active, each dopant's achieved atom fraction of the
+final structure is compared to its nominal <code>concentration</code>; WARN above 1
+percentage point of drift (same rule as G9, never hard-fails). When
+<code>gb_segregation.enabled</code>, the achieved enrichment E = c_shell/c_bulk is also
+compared to the target <code>enrichment</code>; WARN when off by more than 15 % relative,
+or when it cannot be measured (<code>E=n/a</code>, e.g. an empty shell or bulk
+population). <strong>Trips when.</strong> The Bernoulli placement noise pushes a small
+dopant count off target, or the shell/bulk split is too small to measure E
+reliably. <strong>What to do.</strong> Increase <code>grains.number</code> (more candidate sites) or
+accept the statistical noise — G17 is diagnostic only, mirroring G9's honesty
+about drift rather than silently absorbing it. <strong>Rule of thumb.</strong> The achieved
+enrichment E_achieved = (d_s/c_s)/(d_b/c_b) is a ratio estimator over the
+bulk dopant count d_b, so it is only statistically reliable when the expected
+bulk dopant count E[d_b] is at least a few tens — e.g. E[d_b] ≈ 7 gives ~40 %
+seed-to-seed spread in E_achieved and an upward Jensen bias from the 1/d_b
+term; pick <code>concentration</code>, <code>shell_width</code>, and grain count so E[d_b] clears
+that floor before trusting a single-seed G17 read. <strong>Self-conflict pruning.</strong>
+For interstitial dopants, sites that collide with an already-accepted dopant
+are pruned after the per-site Bernoulli draw rather than by re-solving for
+the remaining candidates, which produces a small deterministic undershoot in
+achieved concentration (the undershoot grows with <code>enrichment × concentration</code>).</p>
+<h2 id="g18--dopant-min-distance-re-verification-hard">G18 — Dopant min-distance re-verification (hard)</h2>
+<p><strong>Checks.</strong> An independent fresh PBC neighbour query on the FINAL structure
+(G7-style) proves no dopant–atom pair is closer than that dopant's
+<code>min_distance</code>; <code>measured</code> = number of violating pairs. <strong>Trips when.</strong> A
+<code>min_distance</code> too large for the interstitial preset's site spacing, or (in
+mixed-periodicity boxes) the rare corner-wrap case the placement stage's own
+pruning does not catch (documented limitation in <code>atoms/doping.py</code>).
+<strong>What to do.</strong> Lower <code>min_distance</code>, choose a different site preset, or lower
+the dopant <code>concentration</code>.</p>
+<h2 id="g19--perturbed_distance-reassigned-voxel-fraction-warn-only">G19 — <code>perturbed_distance</code> reassigned-voxel fraction (warn-only)</h2>
+<p><strong>Checks.</strong> The fraction of analysis-grid voxels the G5 repair pass (see
+above) had to reassign to restore periodic connectivity,
+<code>reassigned_fraction</code>; WARN above <code>REASSIGNED_FRACTION_WARN_TOL = 0.02</code> (2 %).
+Unlike a hard gate, this never blocks the run — repair either converges (and
+the structure is used as repaired) or the constructor itself raises
+<code>TessellationError</code> on non-convergence, which never reaches this reporting
+stage. <strong>Trips when (WARN).</strong> <code>amplitude</code>/<code>hurst</code> pushed the level-set
+folding into pervasive topology-breaking territory — a large fraction of the
+domain needed correction, which is worth attention even though the run
+completed successfully. <strong>What to do.</strong> Reduce <code>boundaries.curved.amplitude</code>
+or <code>hurst</code>, or increase <code>min_seed_distance</code> (fewer/more-separated grains
+give the level-set rule more room before neighbouring perturbations start
+folding into each other). <strong>Observed range.</strong> Validation runs spanning
+12–60 grains and amplitudes from an aggressive prototype value up through
+the seed-containment guard ceiling measured 0.001–0.16 % reassigned — the
+single worst case still leaves roughly 13× headroom below the 2 % floor
+(<code>constants.REASSIGNED_FRACTION_WARN_TOL</code> docstring).</p>
+<h2 id="g20--perturbed_distance-box-counting-roughness-index-warn-only-diagnostic">G20 — <code>perturbed_distance</code> box-counting roughness index (warn-only diagnostic)</h2>
+<p><strong>Checks.</strong> A box-counting roughness-index fit <code>d_b_estimated</code> of the
+generated grain boundaries — the G13 analogue for this method — following
+the Braun et al. 2020 protocol (<code>docs/physics.md</code> §5b(d)) on up to 3 in-box
+cross-sections of the 5 largest grains (by voxel count). <strong>Fit window
+restricted to the synthesis band itself,</strong> <code>ε ∈ [l_min, l_max]</code>
+(converted to each section's own pixel scale) — a box size finer than
+<code>l_min</code> or coarser than <code>l_max</code> probes a scale the η field has no designed
+spectral content at (pixelation noise on one side, finite-object-size
+cutoff on the other), so it is excluded from the fit rather than averaged
+in with the previous fixed-decade window. Reported, never hard-failed: a
+box-counting fit from a finite, noisy, single-realization boundary on a
+handful of sampled grains/sections is an <em>estimate</em> with a documented
+resolution bias (§5b(d)), not a certificate — the same philosophy
+<code>gate_g13_hurst</code> uses for this same method's own Hurst back-estimate (G13,
+above — the two gates share one <code>PerturbedDistanceTessellation</code>
+construction and always fire together). <strong>Reports
+<code>n/a</code>, never a fabricated number,</strong> when no sampled (grain, section)
+combination yields a usable fit (e.g. every sampled grain is too small
+relative to the section resolution <code>SECTION_GRID</code>, or the band collapses at
+that section's pixel scale).</p>
+<p><strong>Roughness index, not a fractal-dimension certificate.</strong> Box-counting's
+ability to statistically separate the Hurst exponent's effect on boundary
+roughness from finite-band/finite-size noise is a GRADIENT with the
+synthesis band's octave count, not a sharp cliff at any one grain size.
+This project's own independent validation campaign measured an effect
+size indistinguishable from noise (η² ≈ 6%, p ≈ 0.14) at the ~1.7-octave
+band <code>pdau_perturbed_self_affine.yaml</code> uses; a follow-up synthetic-field
+Monte Carlo found the effect already statistically SIGNIFICANT (p ≪ 0.01)
+by ~3.2 octaves, but only reaching a conventionally LARGE effect size
+(η² &gt; 80%) once the grain diameter grows to ≈50 nm (~5.5 octaves) —
+significance and effect-size magnitude cross their respective thresholds
+at different octave counts (docs/physics.md §5b(g) has the full
+octave/η² table). <code>d_b_estimated</code> below the ~5.5-octave / large-effect
+regime is honest evidence of <em>local</em> boundary roughness at the resolved
+scales, not a converged, large-effect-size fractal dimension — the gate
+name (G20) and its warn-only identity are unchanged, but do not read a
+small-grain <code>d_b_estimated</code> as a fractal-dimension measurement comparable
+to a large-grain one. <strong>What it does NOT do.</strong> G20 has no pass/fail threshold
+and never triggers a WARN row by itself — <code>measured</code> is always
+<code>d_b_estimated</code> itself (or NaN when <code>n/a</code>); read it against the target band
+from your own experimental motivation (e.g. Braun 2020's D_b = 1.174 ±
+0.004 for nanocrystalline Pd₉₀Au₁₀, itself only measured on grains ≳45 μm
+under that paper's own minimum-grain-size protocol constraint, <code>d_min =
+ε_max/0.4</code> with <code>ε_min ≥ 3s</code>) rather than against a gate tolerance. See
+<code>docs/physics.md</code> §5b(e) for this backend's own honest calibration status
+against that band, and <code>examples/</code> for a ≥50 nm/5.5-octave configuration
+sized specifically to reach the statistically decisive regime.</p>
+<h2 id="g21--per-grain-gauss-bonnet-face-interior-residual-warn-only">G21 — Per-grain Gauss-Bonnet face-interior residual (warn-only)</h2>
+<p><strong>Checks.</strong> With <code>analysis.gb_curvature: true</code>, for every grain g the
+face-interior Gauss-curvature integral <code>Σ_faces K·dA</code> (summed over that
+grain's retained boundary samples, <code>analysis.curvature.
+per_grain_gauss_bonnet</code>) is compared against <code>CURV_G21_GAUSS_BONNET_TOL
+= 4π</code>. This runs immediately alongside G16 in the analysis stage,
+sharing the same <code>CurvatureResult</code> — it never runs when <code>gb_curvature</code> is
+off. <strong>Why 4π, and why this is a coarse ceiling, not a zero-residual
+test.</strong> The Gauss-Bonnet theorem fixes <code>∮_S K dA = 4π·(1 − g)</code> exactly for
+any closed orientable surface S of genus g; every grain under periodic
+boundary conditions is such a surface. <code>analyze_curvature</code> deliberately
+samples K only at boundary-FACE-INTERIOR points (its stencils are
+undefined at a polyhedral grain's non-differentiable edges/vertices,
+<code>analysis/curvature.py</code> §6.7); the DESIGN INTENT is that a Voronoi-like
+grain's Gauss-Bonnet budget is dominated by exactly those excluded
+edges/vertices, as angle-defect Dirac mass (a cube's eight corners alone
+already sum to 4π), leaving a small face-interior remainder. <strong>That
+intent is NOT what calibration measures.</strong> This gate's own validation
+sweep (<code>constants.CURV_G21_GAUSS_BONNET_TOL</code> docstring has the full
+numbers) found near-FLAT baselines (amplitude 0.01, six seeds) already
+cluster their worst-grain ratio at 0.977–1.041× this tolerance — AT one
+topological unit, not comfortably below it — and ordinary curved runs
+routinely reach 5–14×. The residual does not shrink toward 0 as
+<code>analysis.voxel_grid</code> is refined over the range tested (a 32→128 sweep
+gave a non-monotonic sequence with no visible downward trend), and a
+two-grain periodic bicrystal with one smooth boundary and NO triple
+junctions still measured 8–13× — ruling out "it's only a many-grain/
+many-triple-junction effect" as the sole explanation. A preliminary
+attempt to separate an area effect from a resolution effect (holding
+TRUE physical voxel spacing fixed while growing the box) did not show a
+clean, reproducible area trend either — the seed-to-seed spread was
+large enough to swamp it, so "grows with area" is not yet an established
+finding. What is reproducible: in a representative near-flat case,
+under 1% of retained samples account for about half of the worst
+grain's total, a heavy-tailed pattern more consistent with leakage
+concentrated at specific voxels than with generic uniform noise; the
+precise mechanism remains uncharacterized. <strong>What a WARN means (and does
+not mean).</strong> G16 asks "did we keep enough samples" (the dropped-sample
+fraction); G21 asks "how much of the excluded edge/vertex curvature is
+leaking into the kept, face-interior set". Given the calibration above,
+<strong>a WARN is routine on ordinary curved runs with the current
+estimator — including near-flat ones</strong> — it is a standing, coarse
+caveat on the quantitative reliability of <code>gb_curvature.csv</code>'s H/K
+columns for that run, not proof that something newly broke. G3/G4
+(volume/topology) and G7 (interatomic distances) already certify the
+atomistic output independently of this estimate, so <strong>G21 never
+hard-fails and a WARN here does not invalidate the structure.</strong>
+<code>measured</code> is the WORST (maximum <code>|Σ K·dA|</code>) grain; the message names
+the violating grain count, the worst grain's id, its value, and the 4π
+threshold. <strong>What to do.</strong> Treat a WARN as a caveat on curvature-column
+reliability for that run rather than as an actionable defect by itself;
+it is worth a second look only if the value is unusually large or grows
+unexpectedly between otherwise-similar configurations. It is not a
+signal to change <code>boundaries.curved</code> parameters, and raising
+<code>analysis.voxel_grid</code> has NOT been observed to make the residual
+converge toward zero in the range tested.</p>
+<h2 id="g22--volume-weighted-odf-fidelity-warn-only-never-fails">G22 — Volume-weighted ODF fidelity (warn-only, never fails)</h2>
+<p><strong>Checks.</strong> With <code>orientation.mdf_target</code> configured (single-phase only —
+<code>mdf_target</code> cannot combine with <code>phases</code>), the FINAL structure's
+volume-weighted orientation distribution is RE-MEASURED independently of
+the assignment annealer's own bookkeeping (the same "never trust the
+optimizer's own claim" discipline as G11/G12/G15), in the analysis stage
+rather than inside the annealer. It always reports: the Kish effective
+sample size <code>n_eff</code> of the grain-volume distribution, the assignment-
+independent count-vs-volume TV gap on LABELLED orientation indices
+(<code>orientation.odf.count_vs_volume_gap</code> — a property of grain sizes alone;
+an upper bound after merging duplicate or symmetry-equivalent
+orientations, not necessarily the physical quotient-space gap), and the re-measured atomic drift
+<code>drift</code> against its configured cap (<code>mdf_target.odf_drift_max</code>, or
+"no cap"). It also cross-checks the annealer's own <code>odf_drift_final</code>
+claim against this re-measurement and notes any disagreement above
+<code>1e-9</code>. Memory permitting (see below), it additionally builds a
+symmetrized de la Vallée Poussin Gram matrix at <code>mdf_target.
+odf_kernel_halfwidth_deg</code> and reports the kernel-smoothed discrepancy
+<code>mmd_vs_count</code> (annealed vs. the count-weighted/uniform reference —
+the SAME reference <code>null_mmd</code>'s null distribution uses),
+<code>mmd_vs_initial</code> (annealed vs. pre-annealing, descriptive only, no null),
+and <code>null_mmd</code>'s median / central-95% interval <code>[p2.5, p97.5]</code>, plus the
+empirical quantile <code>mmd_vs_count</code> falls at as informational context
+(<code>mdf_target.odf_null_samples</code> draws — see VALUE VS. QUANTILE below for
+why the empirical quantile is reported but never decides the verdict).</p>
+<p>The VP degree is the continuous half-width solution rounded to the nearest
+positive integer, so the even quaternion-dot power and its symmetry average
+are positive semidefinite. Fractional degrees do not have this property.
+The message records requested and effective half-widths and <code>kappa</code>; for a
+10-degree request, <code>kappa=91</code> gives about 9.99468 degrees. Effective widths
+cannot exceed 90 degrees with this nonconstant integer-degree family.
+The resulting MMD is a finite-bandwidth <strong>pseudometric</strong>: a zero diagnostic
+alone does not prove equality of physical ODFs. Its norm is not numerically
+bounded by <code>odf_drift_max</code>; the Markov-contraction bound is on the <strong>TV of
+smoothed densities</strong>, not MMD. Integer-degree kernel normalization is tested
+independently, including broad kernels where fractional powers previously
+gave negative eigenvalues.</p>
+<p><strong>Interpretation — read before reading the message.</strong> The re-measured
+<code>drift</code> is the CONTROL quantity: bounding it during annealing is what
+LICENSES the "volume-weighted ODF preserved to within an explicit
+epsilon" claim (a Markov-contraction argument — bounding the un-smoothed
+drift bounds the kernel-smoothed drift at every half-width at once, see
+<code>orientation/odf.py</code>). It is <strong>not, by itself, evidence of bias.</strong>
+Measured directly: on a 60-grain lognormal test case, an <em>unconstrained</em>
+anneal's drift sits at the 89th percentile of what random,
+non-adversarial permutations of the same grain volumes produce against
+the same orientation set (null median 0.427, p95 0.483) — comfortably
+inside the bulk, not an outlier. Bias detection — "did the annealer
+specifically concentrate volume onto a subset of orientations" — is what
+<code>mmd_vs_count</code> vs. its own null is for; do not read a large <code>drift</code> alone
+as a bias finding, or a small one as proof of its absence.</p>
+<p><strong>The null test is TWO-SIDED, and this is load-bearing, not stylistic.</strong>
+<code>mmd_vs_count</code> is a DISTANCE (in kernel space) to the count-weighted
+reference f_n; landing anomalously CLOSE to f_n is exactly as informative
+as landing anomalously far — both mean the final assignment's search
+happened to correlate orientation with grain size, just in opposite
+directions. A <strong>mid-range</strong> quantile, not a small one, is the genuine
+"nothing statistically resolvable" outcome. Worked example (SAME
+60-grain orientation set / adjacency / volumes, annealed with no cap vs.
+a tight <code>odf_drift_max=0.02</code>, reproduced exactly in
+<code>tests/test_odf_gates.py</code>):</p>
+<table>
+<thead>
+<tr>
+<th>run</th>
+<th>drift</th>
+<th>mmd_vs_count</th>
+<th>null median / [p2.5, p97.5]</th>
+<th>verdict (empirical quantile)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>no cap</td>
+<td>0.4024</td>
+<td>0.6329</td>
+<td>0.6943 / [0.6389, 0.7555]</td>
+<td><strong>WARN</strong> — below p2.5 (1.6%)</td>
+</tr>
+<tr>
+<td>cap 0.02</td>
+<td>0.0197</td>
+<td>0.6907</td>
+<td>0.6916 / [0.6423, 0.7683]</td>
+<td>ok — inside (47.7%)</td>
+</tr>
+</tbody>
+</table>
+<p>The uncapped run has the <em>larger</em> drift by 20× yet its <code>mmd_vs_count</code>
+lands BELOW the interval's own lower bound — an upper-tail-only check
+would have called this "ok" and flagged nothing, exactly backwards, since
+this is the run whose search settled unusually close to uniform. The
+capped run, despite its far smaller drift, sits comfortably inside the
+interval: the boring, expected result. <code>mmd_vs_initial</code> is the more
+directly interpretable "how far did the anneal move it" number here —
+1.0359 uncapped vs. 0.1522 capped, tracking the drift ratio far better
+than <code>mmd_vs_count</code> does.</p>
+<p><strong>A second floor: watch <code>n_eff</code>.</strong> It can collapse well below the grain
+count on its own, independent of annealing — measured on a reference
+end-to-end scenario (24 grains, <code>size_distribution.sigma_log=0.5</code>): a
+seed landing at <code>n_eff=4.25</code> (of 24) is unremarkable at that spread. Read
+<code>drift</code>/<code>mmd_vs_count</code> against that floor, not against zero — a
+small <code>n_eff</code> means the volume-weighted ODF is effectively a measure over
+a handful of grains before the annealer ever touches it.</p>
+<p><strong>VALUE vs. QUANTILE — a real defect this fixes.</strong> A run was observed
+printing <code>mmd_vs_count=0.3439</code> against a stated interval lower bound of
+<code>0.3494</code> while the SAME sentence asserted "inside the interval" — 0.3439
+is plainly below 0.3494. This happened because an earlier version decided
+the verdict from the <em>empirical</em> quantile (<code>mean(null &lt;= mmd_vs_count)</code>,
+quantized to <code>1/len(null)</code> — about 0.4% per sample at the default
+<code>odf_null_samples=256</code>) while the message was phrased as a value-vs-
+interval comparison; the two framings can disagree by one sample right at
+a boundary. The verdict is now decided directly on <code>mmd_vs_count</code> against
+<code>[p2.5, p97.5]</code> — the SAME comparison the message prints — so the
+sentence and the verdict cannot disagree by construction. The empirical
+quantile is still reported, but as <em>informational context only</em>. A run
+whose value sits within roughly one null sample of either bound should be
+read as <strong>borderline</strong>, not as a clean verdict either way; increase
+<code>odf_null_samples</code> to sharpen the boundary if that matters for a specific
+run.</p>
+<p><strong>Trips when (WARN).</strong> Either: the kernel block ran and <code>mmd_vs_count</code>
+itself falls outside the central 95% interval — i.e. <code>mmd_vs_count &lt;
+null_p2_5 or mmd_vs_count &gt; null_p97_5</code> (two-sided, see above); or a cap
+was configured and <code>drift &gt; odf_drift_max + 1e-9</code>. The <code>1e-9</code> slack is
+required, not cosmetic — <code>atomic_drift</code>'s re-measurement sums per-class
+volume masses in a different order than the annealer's own incremental
+<code>DriftTracker</code> bookkeeping, so an exactly-satisfied cap can read a few
+ULP high on independent re-measurement. <strong>What to do.</strong> For a drift-cap
+WARN, loosen <code>odf_drift_max</code> (trades off against how far the histogram
+can be pulled toward its target — see <code>MdfTargetConfig.odf_drift_max</code>'s
+own docstring for the measured trade-off curve) or accept the drift. For
+an <code>mmd_vs_count</code> WARN in EITHER tail, treat it as a genuine
+orientation-size correlation signature in the final assignment —
+tightening <code>odf_drift_max</code> is the direct lever, though a low-tail WARN
+(unusually CLOSE to uniform) is not fixed by the same intuition as a
+high-tail one and is worth inspecting the run before assuming any
+specific remedy.</p>
+<p><strong>Memory guard (§13).</strong> The Gram matrix is an N×N float64 allocation
+(<code>8·N²</code> bytes); this gate estimates that cost itself, BEFORE calling
+<code>orientation.odf.symmetrized_gram</code>, and skips the whole kernel block —
+reporting the atomic quantities above regardless, plus the skip reason
+(N and the estimated size) — whenever the estimate exceeds a modest
+share of the run's resolved §13 memory budget
+(<code>tess.memory_limit_bytes</code>/<code>tess.memory_limit_source</code>, the same budget
+every other §13 guard in the pipeline uses). A WARN-only diagnostic must
+never abort an otherwise-successful run; no exception from this gate is
+ever allowed to propagate. <code>measured</code> is <code>mmd_vs_count</code> when the kernel
+block ran, else <code>drift</code>.</p>
+<h2 id="g23--angle-window-vs-true-csl-sigma3-consistency-diagnostic-never-trips">G23 — Angle-window vs. true-CSL Sigma3 consistency (diagnostic, never trips)</h2>
+<p><strong>Checks.</strong> For any single-phase run that reaches the MDF-histogram
+block — independent of whether <code>orientation.mdf_target</code> is configured,
+since the gap below is informative either way — reports, side by side,
+two Sigma3 boundary-area fractions that are <strong>not interchangeable</strong>:
+<code>sigma3_angle_window_area_fraction</code> (area-weighted fraction of
+boundaries with <code>|misorientation_deg − 60| ≤ 15/√3</code>, computed from the
+per-boundary arrays directly — matching the
+validation campaign's Brandon-window computation (local validation tooling, not published with this repository)
+exactly: a boundary with a non-finite (NaN) misorientation angle compares
+False against the window bound, so its area stays in the total-area
+denominator but never enters the in-window numerator — a conservative
+dilution, in both tools alike) and
+<code>sigma3_csl_area_fraction</code> (area-weighted fraction of boundaries whose
+<code>csl_sigma</code> is exactly <code>"3"</code> — angle AND ⟨111⟩ axis, via the true CSL
+classification in <code>analysis/boundaries.py</code>), plus their ratio when the
+CSL value is available and non-zero. <strong><code>passed</code> is always <code>true</code> and the
+message never carries a WARN — G23 exists to report, not to judge.</strong></p>
+<p><strong>Why the gap is EXPECTED, not a defect.</strong> When <code>mdf_target</code> is
+configured, the annealing objective is the one-dimensional, area-weighted
+marginal of the disorientation ANGLE only (<code>orientation/mdf.py</code>).
+Placing a target in the Sigma3 Brandon angular window therefore enforces
+only the angular condition that is <em>necessary</em> for Sigma3 — the ⟨111⟩
+axis condition true CSL classification also requires never enters the
+energy, so the annealer has no mechanism to close that gap even at full
+convergence. <strong><code>sigma3_csl_area_fraction</code> requires <code>analysis.csl: true</code>
+to be measured at all</strong> — when it is <code>false</code> this is reported as <strong>NOT
+EVALUATED</strong> (an empty <code>summary.csv</code> cell), never as <code>0.0</code>, which would
+falsely claim no Sigma3 boundaries exist. <strong>Campaign range</strong> (MDF
+validation campaign, case M2 — local validation tooling, not published with this repository): the angle-window
+area fraction runs 0.24–0.44 while the true CSL Sigma3 area fraction
+stays 0.02–0.06 — roughly an order of magnitude apart, by construction.
+<strong>What to do.</strong> Nothing — this gate never trips. If a <code>csl_enriched</code>/
+<code>sigma3_angle_enriched</code> target's TRUE Sigma3 content matters (not just
+its angular window), enable <code>analysis.csl</code> and design the orientation
+set with genuine twin-related pairs (e.g. two <code>odf_components</code> related by
+60° ⟨111⟩ — see the shipped <code>cu_twin_odf_mdf.yaml</code> example), since the
+angular target alone cannot manufacture the axis condition.</p>
+<h2 id="g24--final-post-warp-per-grain-volume-fidelity-warn-only">G24 — Final (post-warp) per-grain volume fidelity (warn-only)</h2>
+<p><strong>Checks.</strong> Closes a real hole left by G11: G11 is evaluated on the
+UNWARPED SDOT power base (its own docstring already admits the realized,
+warped cells deviate), but nothing previously measured that deviation.
+G24 runs exactly when the geometry changed AFTER the volume fit —
+<code>sdot_res is not None and sdot_res.tess is not tess</code> — so for flat +
+<code>size_distribution</code> (where the power diagram <em>is</em> the final
+tessellation, the SAME object G11 already checked) this gate correctly
+never fires and can never double-report G11; only warp +
+<code>size_distribution</code> reaches it. Compares the FINAL per-grain volumes
+(measured in the analysis stage, the same array <code>grains.csv</code> reports)
+against <code>sdot_res.target_volumes</code>; <code>measured</code> is the max relative error,
+the message also reports the mean — and always states plainly that the
+comparison is against the UNWARPED-base targets, so a reader cannot
+mistake this for a second G11 reading.</p>
+<p><strong>Trips when (WARN).</strong> Max relative error exceeds <code>WARP_VOLUME_G24_TOL =
+0.10</code>. This threshold is a deliberately loose SANITY bound, not a physics
+claim, and is calibrated separately from (never reuses)
+<code>size_distribution.vol_tol</code> (default <code>1e-3</code>) — that tolerance governs the
+base-cell fit G11 checks, at a precision the warp displacement itself
+blows through by (at minimum) two-plus orders of magnitude.</p>
+<p><strong>Calibration.</strong> Equal-volume targets, a 60 Å box, warp amplitude 0.6,
+correlation length 10 Å: max relative POST-WARP volume error 0.0209 at 4
+grains and 0.0412 at 8 grains, against an UNWARPED-base G11 error of only
+1.5e-4 and 6.4e-5 respectively — G11 passes comfortably on the base while
+the realized cells are already two-plus orders of magnitude further from
+the targets. A wider sweep (70 Å box, seed 11, correlation length 10 Å)
+varying both grain count and how broad the target size distribution is
+(max relative error, mean in parentheses):</p>
+<table>
+<thead>
+<tr>
+<th>N</th>
+<th>size_distribution</th>
+<th>amplitude</th>
+<th>max (mean) error</th>
+<th>verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4</td>
+<td>equal</td>
+<td>0.6</td>
+<td>0.0220 (0.0110)</td>
+<td>ok</td>
+</tr>
+<tr>
+<td>8</td>
+<td>equal</td>
+<td>0.6</td>
+<td>0.0389 (0.0208)</td>
+<td>ok</td>
+</tr>
+<tr>
+<td>8</td>
+<td>lognormal σ=0.35</td>
+<td>0.6</td>
+<td>0.0465 (0.0217)</td>
+<td>ok</td>
+</tr>
+<tr>
+<td>8</td>
+<td>lognormal σ=0.5</td>
+<td>0.6</td>
+<td><strong>0.1088</strong> (0.0309)</td>
+<td><strong>WARN</strong></td>
+</tr>
+<tr>
+<td>24</td>
+<td>lognormal σ=0.5</td>
+<td>0.4</td>
+<td>0.0838 (0.0339)</td>
+<td>ok</td>
+</tr>
+</tbody>
+</table>
+<p>Observed range across every configuration measured: 0.022–0.109. The
+tolerance trips only at the extreme end (the broadest size spread
+measured, at a substantial amplitude) — it is not a hair trigger on
+ordinary warp + <code>size_distribution</code> combinations, but a BROAD grain-size
+distribution combined with a LARGE warp amplitude CAN push the realized
+error past it. <strong>When that happens, the WARN is the gate correctly
+reporting a real, physical effect — the warp is applied AFTER the volume
+fit and nothing re-fits the targets to the warped geometry — not a false
+alarm to tune away.</strong> The competing explanation — that any of this is
+merely voxel-grid discretisation noise rather than real warp displacement
+— was checked and ruled out: voxel-vs-exact-polyhedral volumes on the
+SAME (unwarped) flat tessellations differ by only 0.0024–0.0040 across
+the configurations above, far below every measured value in the table.
+<code>vol_tol</code> would therefore be the wrong threshold to reuse here: it sits
+below that discretisation floor and would false-fail on essentially every
+warped run. <strong>What to do.</strong> A WARN here flags a run whose combination of
+warp amplitude and target size spread has pushed realized volumes outside
+the calibrated range — reduce <code>boundaries.curved.amplitude</code>, narrow the
+<code>size_distribution</code> spread, or accept that <code>size_distribution</code> targets
+are only approximate once a domain warp of that severity is applied on
+top of them; do NOT read it as a threshold miscalibration to loosen.</p>
+<h2 id="g25--texture-component-fidelity-diagnostic-never-trips">G25 — Texture-component fidelity (diagnostic, never trips)</h2>
+<p><strong>Checks.</strong> For <code>orientation.scheme: odf_components</code> runs, puts the
+configured texture-component weights next to what the run actually
+realised — both in the gate message and as <code>texture,component_&lt;k&gt;_*</code>
+rows in <code>summary.csv</code> — tagged with the <code>orientation.component_weight_basis</code>
+in effect (<code>"volume"</code> or <code>"count"</code>). Per component <em>k</em>:</p>
+<ul>
+<li><code>w_cfg</code> — the configured <code>weight</code>, normalised;</li>
+<li><code>f_count</code> — the realised grain-<strong>count</strong> fraction. A permutation of
+  which grain carries which orientation cannot change a bincount, so this
+  one number already covers both before and after annealing;</li>
+<li><code>f_vol_pre</code> — the realised <strong>volume</strong> fraction right after
+  <code>orientation.samplers.odf_components</code> assigns components, <em>before</em> any
+  assignment annealing runs;</li>
+<li><code>f_vol_post</code> — the realised volume fraction <em>after</em> annealing (equal to
+  <code>f_vol_pre</code> when <code>mdf_target</code> is not configured);</li>
+<li><code>mean_volume_A3</code> — the component's mean grain volume — the signature of
+  the size-component correlation <code>component_weight_basis: "volume"</code>
+  trades for volume fidelity (<code>docs/physics.md</code> §4's lemma). Measured on the
+  <strong>pre</strong>-anneal labelling (see above), so <code>summary.csv</code> writes it as
+  <code>texture,component_{k}_mean_volume_pre_A3</code> — the <code>_pre</code> suffix is part of
+  the row key, unlike <code>f_vol_post</code>, whose row keeps the bare
+  <code>component_{k}_volume_fraction</code> name.</li>
+</ul>
+<p>It also reports three total-variation distances, each <code>0.5 · Σ_k |·|</code>
+over components:</p>
+<ul>
+<li><code>tv_cfg_vs_pre</code> — configured weight vs. realised pre-anneal volume
+  fraction: the <strong>sampler term</strong> (<code>docs/physics.md</code> §4's two-term
+  decomposition). Zero (up to floating point) under <code>"volume"</code> by
+  construction (<code>orientation.odf.volume_balanced_partition</code>); set by the
+  grain-size distribution under <code>"count"</code> (measured 24-grain,
+  <code>sigma_log=0.5</code> case: 0.245, vs. <code>weight: 0.5/0.5</code> configured).</li>
+<li><code>tv_pre_vs_post</code> — pre- vs. post-anneal volume fraction: the <strong>annealer
+  term</strong>, MEASURED directly from the pre/post component labels, not
+  inferred or bounded.</li>
+<li><code>tv_cfg_vs_post</code> — configured weight vs. realised final volume
+  fraction: the end-to-end gap, i.e. (up to the triangle inequality)
+  <code>tv_cfg_vs_pre + tv_pre_vs_post</code>.</li>
+</ul>
+<p><strong>Why this exists.</strong> <code>weight</code> is realised as a grain-count fraction only
+under <code>component_weight_basis: "count"</code>; the physically meaningful
+quantity is the <em>volume</em> fraction, and with unequal grain volumes the two
+differ (<code>f_count</code> vs. <code>f_vol_pre</code>). Reading the volume-weighted ODF as
+"the configured weights" is exactly the misinterpretation this gate makes
+impossible, for either basis.</p>
+<p><strong><code>tv_pre_vs_post</code> is a measurement, not a bound — it is <em>not</em>, in
+general, capped by <code>mdf_target.odf_drift_max</code>.</strong> <code>odf_drift_max</code> caps a
+related but finer-grained quantity: the atomic, per-<em>orientation</em> drift
+G22 re-measures. The two coincide only when the component labelling is
+<strong>constant on every orientation class</strong> — no two grains with different
+component labels ever carry bit-identical orientations. That condition
+can fail even at <code>spread_deg: 0</code>: two zero-spread <code>odf_components</code> with
+identical <code>euler_bunge_deg</code> are accepted by <code>resolve_config</code>, so two
+bit-identical orientations can land in different components; swapping
+those two grains during annealing leaves the atomic drift G22 reports at
+exactly <code>0.0</code> while moving <code>tv_pre_vs_post</code> by their combined volume
+fraction — up to 0.8 for two dominant, equal-volume grains split across
+components. <strong><code>passed</code> is always <code>true</code> and the message never carries a
+WARN — G25 exists to report, not to judge.</strong> No universal threshold
+exists: the expected sampler term is zero under <code>"volume"</code> and scales
+with the grain-size distribution under <code>"count"</code>; the annealer term
+scales with <code>odf_drift_max</code> when a cap is set, but this gate only ever
+measures it, never bounds it.</p>
+<p><strong>What to do.</strong> Nothing — this gate never trips. If <code>tv_cfg_vs_post</code> is
+larger than expected, read <code>tv_cfg_vs_pre</code> and <code>tv_pre_vs_post</code>
+separately before reaching for a fix — they are independent terms with
+independent levers: a nonzero <code>tv_cfg_vs_pre</code> under <code>"count"</code> is fixed by
+switching to <code>component_weight_basis: "volume"</code> (or by increasing
+<code>grains.number</code>, which shrinks the grain-size-driven gap under either
+basis); a large <code>tv_pre_vs_post</code> points at the annealer instead — set or
+tighten <code>mdf_target.odf_drift_max</code>. <code>mean_volume_A3</code> reports the
+<code>"volume"</code> basis's honest cost, the size-component correlation
+(<code>docs/physics.md</code> §4); it shrinks as <code>grains.number</code> grows.</p>
+<h2 id="g26--atomistic-odf-weighting-discretisation-floor-diagnostic-never-trips">G26 — Atomistic ODF-weighting discretisation floor (diagnostic, never trips)</h2>
+<p><strong>Checks.</strong> <code>odf_mtex.txt</code> writes <code>volumes / sum(volumes)</code> as its weight
+column, gate <strong>G22</strong> re-measures drift on those same TESSELLATION
+volumes, and <code>mdf_target.odf_drift_max</code> caps it — but the artefact
+actually shipped to an MD user is ATOMISTIC, and the ODF a downstream
+simulation experiences is weighted by the number of ATOMS in each grain,
+not by its polyhedral/voxel volume. G26 puts those two weightings side by
+side: <code>w_vol = volumes / sum(volumes)</code> (what <code>odf_mtex.txt</code> exports) vs.
+<code>w_atom = n_atoms / sum(n_atoms)</code> (what the exported atomistic structure
+actually realises), and reports</p>
+<ul>
+<li><code>tv</code> — <code>0.5 · Σ|w_vol − w_atom|</code>, the total-variation distance between
+  the two weightings (<code>summary.csv</code>: <code>odf,weighting_tv_volume_vs_atoms</code>);</li>
+<li><code>max_dw</code> — the single largest per-grain weight discrepancy
+  (<code>odf,weighting_max_dw</code>);</li>
+<li>the mean atoms per grain (<code>odf,atoms_per_grain_mean</code>), for context on
+  where this run sits on the scaling curve below.</li>
+</ul>
+<p><strong>This is a discretisation floor, not an error.</strong> An atomistic structure
+with <em>n</em> atoms in a grain cannot resolve a volume-weighted ODF finer than
+this floor — no choice of <code>odf_drift_max</code> changes that, since the
+annealer and G22 both operate on the continuous tessellation-volume
+weighting, while the export is always discrete atom counts. Measured
+(reference scenario: 24 grains, box 45 Å, <code>size_distribution</code> lognormal
+<code>sigma_log 0.5</code>, two texture components at <code>weight 0.5</code>, seed 4242, cubic
+Cu; same config, box size varied):</p>
+<table>
+<thead>
+<tr>
+<th>atoms/grain</th>
+<th>TV(volume vs atom-count)</th>
+<th>max per-grain |dw|</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>275</td>
+<td>0.027418</td>
+<td>0.009107</td>
+</tr>
+<tr>
+<td>1092</td>
+<td>0.018910</td>
+<td>0.006912</td>
+</tr>
+<tr>
+<td>3279</td>
+<td>0.013133</td>
+<td>0.004724</td>
+</tr>
+<tr>
+<td>9191</td>
+<td>0.008633</td>
+<td>0.003126</td>
+</tr>
+</tbody>
+</table>
+<p>Fitted exponent <strong>−0.33</strong>, i.e. the floor decays as <code>(atoms per
+grain)^(-1/3)</code> — a <strong>surface</strong> effect: every atom within one interatomic
+spacing of a grain boundary is only probabilistically assigned to one
+side or the other, and that shell's atom count is a fixed fraction of the
+grain's <em>surface</em>, which scales as <code>1/L</code> of its volume. This is <strong>not</strong>
+Poisson counting noise, which would give the steeper <code>(atoms per
+grain)^(-1/2)</code> — the fitted −0.33 rules that mechanism out. <strong>At 275
+atoms per grain the floor (0.027) exceeds a typical <code>odf_drift_max</code> of
+0.02</strong>: a drift cap tighter than this floor buys nothing that survives
+into the exported structure — that is the reason G26 exists, and what
+makes the <code>odf_drift_max</code> guarantee honest about what it does and does
+not cover.</p>
+<p><strong>NOT EVALUATED (never a false <code>0.0</code>)</strong> whenever the atom counts driving
+<code>w_atom</code> are absent or all zero — <code>analyze_grains</code> sets <code>n_atoms</code> to 0
+per grain when the atom block is omitted, and a zero-sum weight vector
+cannot be normalised; reporting <code>0.0</code> would falsely claim the two
+weightings coincide exactly, when the atom-count side was simply never
+measured. No <code>odf,*</code> rows are written in that case.</p>
+<p><strong>Multiphase.</strong> Different phases have different atom number densities (a
+consequence of differing crystal structures and lattice parameters), so a
+single global atom-count weighting mixed across phases would compare
+unlike things — the gap would mostly read off the density <em>ratio</em>
+between phases, not the within-phase discretisation floor this gate
+exists to quantify. G26 therefore computes and reports the statistic
+<strong>separately within each phase's own grain subset</strong>, the same
+grain→phase-name pairing <code>pipeline.py</code> already uses to write one
+<code>odf_mtex_&lt;name&gt;.txt</code> per phase — never a global mix. Each <code>odf,*</code> key is
+suffixed <code>_&lt;phase name&gt;</code>, and a phase whose subset happens to carry no
+atoms reports an empty cell for that phase's three keys only, other
+phases unaffected.</p>
+<p><strong><code>passed</code> is always <code>true</code> and the message never carries a WARN — G26
+exists to report, not to judge.</strong> No exception can escape it: a
+deliberately broken input degrades to an "ok: could not be evaluated"
+message rather than aborting the run.</p>
+<p><strong>What to do.</strong> Nothing — this gate never trips. If the reported floor is
+larger than expected relative to <code>odf_drift_max</code>, <code>atoms_per_grain_mean</code>
+says where on the <code>(atoms/grain)^(-1/3)</code> curve this run sits — increasing
+grain size (fewer, larger grains at fixed box volume, or a larger box at
+fixed grain count) is the only lever that shrinks it; no config knob
+tightens the floor itself, since it is a property of how many atoms
+represent one grain, not of any targeting or annealing setting.</p>
+<div class="prevnext">
+<a class="prev" href="config_reference.html"><span>← Previous</span><strong>Configuration reference</strong></a>
+<a class="next" href="outputs.html"><span>Next →</span><strong>Outputs</strong></a>
+</div>
+</article>
+<aside class="toc" aria-label="On this page"><div class="toc-title">On this page</div><ul>
+<li class="toc-l2"><a href="#summary">Summary</a></li>
+<li class="toc-l2"><a href="#g1--configuration-schema--cross-field-rules-hard">G1 — Configuration schema + cross-field rules (hard)</a></li>
+<li class="toc-l2"><a href="#g2--space-group-round-trip-hard">G2 — Space-group round-trip (hard)</a></li>
+<li class="toc-l2"><a href="#g3--volume-sum-hard">G3 — Volume sum (hard)</a></li>
+<li class="toc-l2"><a href="#g4--euler-characteristic-hard">G4 — Euler characteristic (hard)</a></li>
+<li class="toc-l2"><a href="#g5--connectivity--empty-cells-hard-warn-for-imports-repair-and-report-for-perturbed_distance">G5 — Connectivity + empty cells (hard; WARN for imports; repair-and-report for perturbed_distance)</a></li>
+<li class="toc-l2"><a href="#g6--warp-bijectivity-hard-na-for-perturbed_distance">G6 — Warp bijectivity (hard; n/a for perturbed_distance)</a></li>
+<li class="toc-l2"><a href="#g7--post-overlap-minimum-distance-hard">G7 — Post-overlap minimum distance (hard)</a></li>
+<li class="toc-l2"><a href="#g8--atom-count-warn--2--fail--5">G8 — Atom count (warn &gt; 2 %, fail &gt; 5 %)</a></li>
+<li class="toc-l2"><a href="#g9--composition-drift-warn">G9 — Composition drift (warn)</a></li>
+<li class="toc-l2"><a href="#g10--lammps-round-trip-hard">G10 — LAMMPS round-trip (hard)</a></li>
+<li class="toc-l2"><a href="#g11--grain-volume-targeting-hard">G11 — Grain-volume targeting (hard)</a></li>
+<li class="toc-l2"><a href="#g12--mdf-target-warn">G12 — MDF target (warn)</a></li>
+<li class="toc-l2"><a href="#g13--self-affine-hurst-warn-perturbed_distance-only">G13 — Self-affine Hurst (warn; perturbed_distance only)</a></li>
+<li class="toc-l2"><a href="#g14--single-crystal-commensurability-warn">G14 — Single-crystal commensurability (warn)</a></li>
+<li class="toc-l2"><a href="#g15--phase-volume-fractions-warn">G15 — Phase volume fractions (warn)</a></li>
+<li class="toc-l2"><a href="#g16--gb-curvature-sanity-warn-only">G16 — GB curvature sanity (warn-only)</a></li>
+<li class="toc-l2"><a href="#g17--dopant-composition--enrichment-warn">G17 — Dopant composition + enrichment (warn)</a></li>
+<li class="toc-l2"><a href="#g18--dopant-min-distance-re-verification-hard">G18 — Dopant min-distance re-verification (hard)</a></li>
+<li class="toc-l2"><a href="#g19--perturbed_distance-reassigned-voxel-fraction-warn-only">G19 — perturbed_distance reassigned-voxel fraction (warn-only)</a></li>
+<li class="toc-l2"><a href="#g20--perturbed_distance-box-counting-roughness-index-warn-only-diagnostic">G20 — perturbed_distance box-counting roughness index (warn-only diagnostic)</a></li>
+<li class="toc-l2"><a href="#g21--per-grain-gauss-bonnet-face-interior-residual-warn-only">G21 — Per-grain Gauss-Bonnet face-interior residual (warn-only)</a></li>
+<li class="toc-l2"><a href="#g22--volume-weighted-odf-fidelity-warn-only-never-fails">G22 — Volume-weighted ODF fidelity (warn-only, never fails)</a></li>
+<li class="toc-l2"><a href="#g23--angle-window-vs-true-csl-sigma3-consistency-diagnostic-never-trips">G23 — Angle-window vs. true-CSL Sigma3 consistency (diagnostic, never trips)</a></li>
+<li class="toc-l2"><a href="#g24--final-post-warp-per-grain-volume-fidelity-warn-only">G24 — Final (post-warp) per-grain volume fidelity (warn-only)</a></li>
+<li class="toc-l2"><a href="#g25--texture-component-fidelity-diagnostic-never-trips">G25 — Texture-component fidelity (diagnostic, never trips)</a></li>
+<li class="toc-l2"><a href="#g26--atomistic-odf-weighting-discretisation-floor-diagnostic-never-trips">G26 — Atomistic ODF-weighting discretisation floor (diagnostic, never trips)</a></li>
+</ul></aside>
+</div>
+</main>
+</body>
+</html>

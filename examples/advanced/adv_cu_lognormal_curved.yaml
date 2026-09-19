@@ -1,0 +1,123 @@
+# ===================== grainsmith run configuration =====================
+# ADVANCED example (~1M atoms) — realistic annealed FCC-Cu microstructure.
+# Log-normal grain-size distribution + centroidal (equiaxed) relaxation +
+# a curved (domain-warp) boundary network, all at once.
+#
+# WHAT THIS TEACHES
+#   * A real annealed polycrystal is NOT a random Voronoi diagram: grain
+#     volumes follow a roughly LOG-NORMAL distribution and the grains are
+#     compact/equiaxed.  grainsmith reproduces both:
+#       - size_distribution.type: lognormal prescribes the equivalent-
+#         sphere diameters d ~ LogN(0, sigma_log); volumes are fitted by a
+#         semi-discrete optimal-transport (SDOT) power/Laguerre diagram
+#         [Bourne et al. 2020, Phil. Mag. 100:2677; 2023, Mech. Res.
+#         Commun. 127:104023].  Gate G11 checks the achieved per-grain
+#         volume error against vol_tol.
+#       - centroidal_iterations alternates the volume fit with moving each
+#         seed to its power-cell centroid — equiaxed grains that STILL hit
+#         the prescribed volumes [Kuhn et al. 2020, CMAME 369:113175].
+#   * On top of that statistically-faithful base, a Gaussian domain warp
+#     gives the boundaries realistic curvature (as-built curved GBs rather
+#     than flat Laguerre facets).  Because a size_distribution is present,
+#     the warp base is the volume-fitted 'power' diagram (not plain flat).
+#   * sigma_log: 0.5 is a broad, experimentally typical spread (real
+#     annealed metals commonly report ~0.4-0.6); widen it and the small-
+#     grain tail eventually stresses the overlap cleanup near triple lines.
+#   * Scale: ~1e6 atoms of Cu in a 228^3 A (~22.8 nm) periodic cell.
+#
+# G6 (bijectivity) note: for the warp, where ||u|| saturates at the seed-
+# containment clip A_clip = min_seed_distance/4, the gradient scales as
+# ~A_clip/correlation_length independent of amplitude.  amplitude: 3.0 A
+# with correlation_length: 80 A is inside the guard for this box/grain
+# count; shortening correlation_length is what trips G6, not raising
+# amplitude past the clip.
+#
+# G5 (connectivity) note: correlation_length also has a floor from the
+# OTHER direction.  Too short and the warp field varies fast enough,
+# relative to a grain's own size, to pinch a grain into two or more
+# disconnected components on the analysis grid — a real risk here
+# because the log-normal size distribution has a long lower tail of
+# small grains for the field to fold across.  correlation_length: 80 A
+# with amplitude: 3.0 A keeps every grain in this box/grain-count/seed
+# combination single-piece while still comfortably clearing the G6
+# guard above; shortening it risks undoing both at once.
+#
+# HOW TO RUN
+#   grainsmith validate examples/advanced/adv_cu_lognormal_curved.yaml
+#   grainsmith generate examples/advanced/adv_cu_lognormal_curved.yaml --jobs 0
+#   Check summary.csv for the SDOT iteration count and gate G11's achieved
+#   volume error, and statistics.csv's grain_size section.
+
+meta:
+  title: "FCC Cu, log-normal sizes + centroidal + curved GBs, ~1M atoms"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 220231
+
+box:
+  lengths: [228.0, 228.0, 228.0]   # ~22.8 nm cube; ~1e6 Cu atoms
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 40
+  min_seed_distance: auto
+  lloyd_iterations: 0             # centroidal loop below is the equiaxing step
+  size_distribution:
+    type: lognormal
+    sigma_log: 0.5                # broad, realistic spread of ln(diameter)
+    vol_tol: 1.0e-3               # gate G11 max relative per-grain volume error
+    max_iter: 40                  # damped-Newton SDOT iterations
+    centroidal_iterations: 2      # Kuhn 2020: equiaxed shapes WITH target volumes
+
+crystal:
+  space_group:
+    number: 225                   # Fm-3m (FCC)
+  lattice:
+    a: 3.615                      # Cu, A
+  wyckoff_sites:
+    - element: Cu
+      coords: [0.0, 0.0, 0.0]
+      letter: a
+
+orientation:
+  scheme: random_uniform
+
+boundaries:
+  geometry: curved
+  curved:
+    method: warp
+    base: power                   # volume-fitted Laguerre base (needs size_distribution)
+    amplitude: 3.0                # RMS per component of u(x), A
+    correlation_length: 80.0      # Gaussian correlation length, A (G6- and G5-safe here)
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: true                       # elemental cubic -> Sigma labels meaningful
+  statistics: true
+  section: {axis: z, position: 0.5}
+
+output:
+  directory: ./out_adv_cu_lognormal_curved
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

@@ -1,0 +1,261 @@
+# ===================== grainsmith run configuration =====================
+# Pd90-Au10, PERTURBED-DISTANCE (level-set) grain boundaries at ~50 nm
+# (500 A) grain diameter, H=0.5 -- sized to reach the ~5.5-octave regime
+# where gate G20's box-counting roughness index (d_b_estimated) is
+# expected to resolve the Hurst exponent's effect at a conventionally
+# LARGE effect size (eta^2 > 80%) -- see docs/physics.md Sec 5b(g). A
+# merely statistically-significant (but smaller) response is reached at
+# far smaller grain sizes (~3.2 octaves, ~10 nm) -- this file targets the
+# stronger, Braun-comparable regime specifically, not the earliest size
+# at which ANY signal appears.
+#
+# *** DO NOT RUN THIS FILE CASUALLY. *** Estimated cost (see "COST
+# WARNING" below): ~5.3e7 atoms, several GB of per-color field memory
+# during tessellation, and a runtime this repo has not benchmarked at
+# this grain count/box size (advanced/adv_pdau_perturbed.yaml, the
+# closest benchmarked comparison, is a ~1e6-atom / 246 A box / 28-grain
+# run -- this file is ~50x more atoms in a ~3.75x larger box with fewer,
+# much larger grains). This example is validated at the config/schema
+# level only (G1 resolve, no tessellation/fill) -- run it yourself, on
+# hardware you have sized for it, when you actually need this regime.
+#
+# WHAT THIS TEACHES (beyond self_affine_gb/pdau_perturbed_self_affine.yaml, which this file
+# otherwise mirrors closely -- same chemistry, same method, same overlap
+# policy)
+#   * Why grain size matters for gate G20, not just for cost. G20's own
+#     docstring and docs/physics.md Sec 5b(g) explain that box-counting's
+#     ability to separate the Hurst exponent's effect on boundary
+#     roughness from finite-band/finite-size noise is a GRADIENT with
+#     synthesis-band octave count, not a sharp cliff (feasibility
+#     measurement: effect size eta^2 ~= 6%, p ~= 0.14 -- not
+#     distinguishable from noise -- at self_affine_gb/pdau_perturbed_self_affine.yaml's
+#     own ~1.7 octaves; already statistically significant, p << 0.01, by
+#     ~3.2 octaves; eta^2 > 80%, a conventionally LARGE effect size, only
+#     once the octave count reaches ~5.5 -- which at an atomic-scale
+#     l_min requires a grain radius at the upper end of the
+#     molecular-dynamics-accessible range). This file is sized
+#     specifically to reach that LARGE-effect-size regime:
+#         l_min = 2*d_nn = 5.53 A   (atomic-scale floor; see below)
+#         l_max ~= grain radius     (r_ws = 250.64 A, this geometry)
+#         octaves = log2(l_max/l_min) = 5.50   (the ~5.5-octave target)
+#     self_affine_gb/pdau_perturbed_self_affine.yaml's own l_min:12/l_max:40 band
+#     is only ~1.7 octaves -- comfortably below that regime, which is why
+#     ITS docstring never claims a resolved Hurst response and this
+#     file exists as the "what it takes to actually get one" companion.
+#   * amplitude_convention: reference_wavelength, opt-in -- self_affine_gb/
+#     pdau_perturbed_self_affine.yaml uses the default `total_rms` instead,
+#     deliberately, as a regression pin for that default. This file uses
+#     the DEFAULT
+#     reference_wavelength anchor (`null` -> l_max, moving with the
+#     band), NOT a fixed absolute one. Honest scope of that choice
+#     (docs/physics.md Sec 5b(f) has the full sign-test): the default
+#     anchor gives `amplitude` a stable physical meaning (Å-RMS at
+#     l_max's own reference octave, this geometry's own grain radius --
+#     the natural anchor when l_max already represents that physical
+#     scale) and lets every OTHER resolved octave accumulate its own
+#     contribution on top of that fixed reference-octave budget, rather
+#     than sharing a single whole-band total (the total_rms mechanism).
+#     It does NOT, by itself, fully invert the coarse-octave small-scale
+#     suppression trend total_rms exhibits -- a sign-test found
+#     only a FIXED ABSOLUTE reference_wavelength (anchored near l_min,
+#     not moving with l_max) achieves that full inversion. This file
+#     does not need that specific correction (it is not a band-width
+#     scan at fixed physical scale); it uses the default anchor for the
+#     stable-amplitude-meaning benefit above, consistent with l_max
+#     already being this geometry's own grain radius.
+#   * A worked, code-verified seed-containment ceiling under the NEW
+#     convention (all numbers below reproduced by
+#     `grainsmith.config.resolve.resolve_config` on this exact file --
+#     see the amplitude comment for the arithmetic).
+#
+# GEOMETRY CHOICE (honest arithmetic, all verified via the installed
+# grainsmith code -- grainsmith.seeding.wigner_seitz_radius,
+# grainsmith.constants.{ETA_CLIP,PERTURBED_DISTANCE_SAFETY}, and
+# grainsmith.tessellation.warp.reference_shell_kappa):
+#   * N=12 grains in a 925.0 A cubic box -> Wigner-Seitz radius r_ws =
+#     (3*V/(4*pi*N))^(1/3) = 250.64 A -> equivalent grain diameter d_eq =
+#     2*r_ws = 501.3 A ~= 50.1 nm (the target regime).
+#   * min_seed_distance: auto resolves to this SAME r_ws = 250.64 A.
+#   * l_min = 5.53 A = 2*d_nn, where d_nn = a/sqrt(2) = 2.764 A is the
+#     PdAu FCC nearest-neighbor distance at this file's Vegard lattice
+#     parameter a=3.909 A (same value self_affine_gb/pdau_perturbed_self_affine.yaml uses).
+#     2*d_nn is the smallest roughness wavelength that is still at least
+#     two nearest-neighbor spacings -- shorter would ask the field to
+#     resolve structure below the lattice's own atomic granularity, an
+#     unphysical ask for a per-grain boundary-roughness field. This ALSO
+#     clears the Nyquist floor l_min >= 2*h_field for the auto-resolved
+#     grid at this box size: the self_affine grid heuristic
+#     (h_target = l_min/4, capped at VOXEL_GRID_MAX=384/axis) lands on a
+#     384^3 grid (the per-axis cap -- this box needs ~670 voxels/edge
+#     uncapped) with h_field = 925.0/384 = 2.409 A, giving
+#     l_min/(2*h_field) - 1 = +14.8% Nyquist safety margin (verified via
+#     the actual auto-grid-resolution arithmetic in
+#     tessellation/perturbed.py) -- positive but
+#     narrower than smaller/coarser examples get, precisely because the
+#     grid cap is binding here (a direct, honest consequence of choosing
+#     a small l_min at a large box size).
+#   * l_max = 250.6 A ~= r_ws (the grain radius itself) -- the longest
+#     physically sensible roughness wavelength for a boundary that is a
+#     facet of a grain this size; also comfortably under the hard cap
+#     min(box.lengths)/2 = 462.5 A.
+#   * amplitude (A0, reference_wavelength convention, reference_wavelength
+#     defaults to l_max): the seed-containment guard's sup-norm ceiling
+#     a_max = PERTURBED_DISTANCE_SAFETY*min_seed_distance/(2*ETA_CLIP) =
+#     0.5*250.64/(2*3.0) = 20.887 A is UNCHANGED by the convention
+#     switch -- it always binds the REALIZED total-RMS-equivalent
+#     amplitude. The conversion factor at this H/l_min/l_max is
+#     kappa = reference_shell_kappa(0.5, 5.53, 250.6) = 0.7150 (computed
+#     in closed form), so the reference-octave ceiling is
+#     A0_max = a_max*kappa = 20.887*0.7150 = 14.935 A. This file uses
+#     amplitude: 13.44 A, ~90% of that ceiling (equivalent total-RMS
+#     amplitude ~18.80 A, for comparison against pdau_perturbed_
+#     self_affine.yaml's own total_rms-convention amplitude values).
+#
+# EXPECTED RESULT (stated as an expectation from the feasibility
+# study, NOT a number this file's own tessellation has been run to
+# confirm -- this file is validated at schema/resolve level only):
+#   d_b_estimated ~= 1.17-1.18, close to Braun et al. 2020's own
+#   D_b = 1.174 +/- 0.004 mean (per-grain range 1.10-1.24) -- and, per
+#   the octave-budget argument above, this is the ONE example in this
+#   repo where that comparison is
+#   actually meaningful at the level Braun's own protocol intends it;
+#   self_affine_gb/pdau_perturbed_self_affine.yaml's d_b_estimated at ~1.7 octaves is real
+#   evidence of local roughness but not a comparable measurement (see
+#   docs/physics.md Sec 5b(g) and gate G20's own docstring).
+#
+# COST WARNING (read before running):
+#   * ~5.3e7 atoms (FCC PdAu, a=3.909 A, box volume 925^3 A^3).
+#   * Per-color scalar-field memory during tessellation: the conflict-
+#     graph coloring for N=12 grains at this amplitude/geometry used 12
+#     distinct colors + 2 slack = 14 fields (verified via
+#     grainsmith.tessellation.perturbed.{build_conflict_graph,
+#     greedy_color_grains} on this exact seed/geometry) of shape 384^3
+#     float32 each -> ~3.2 GB just for the synthesized eta fields, on
+#     top of the voxel-grid connectivity pass and the final atom arrays.
+#   * No runtime benchmark exists in this repo at this grain count/box
+#     size; advanced/adv_pdau_perturbed.yaml (28 grains, 246 A box, ~1e6 atoms)
+#     is the closest calibrated reference and is itself the flagship
+#     "large" example -- this file is substantially larger. Budget
+#     accordingly (tens of GB RAM, a runtime you should expect to be at
+#     least an order of magnitude beyond the flagship's own, and confirm
+#     on a machine you are willing to dedicate to it) before running
+#     `grainsmith generate` on this file.
+#
+# HOW TO RUN
+#   grainsmith validate examples/self_affine_gb/pdau_perturbed_50nm_H05.yaml
+#   grainsmith generate examples/self_affine_gb/pdau_perturbed_50nm_H05.yaml --jobs 0
+#     (MANUAL only -- not run by the test suite; see
+#     tests/test_example_50nm_config.py for what IS checked automatically,
+#     i.e. schema/resolve validation only)
+
+meta:
+  title: "Pd90-Au10, perturbed-distance (self-affine) GBs, ~50 nm grains, H=0.5"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 105102               # same nod to J. Appl. Phys. 128:105102 (Braun 2020)
+
+box:
+  lengths: [925.0, 925.0, 925.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 12
+  min_seed_distance: auto     # -> r_ws = 250.64 A (Wigner-Seitz radius)
+  lloyd_iterations: 0
+
+crystal:
+  space_group:
+    number: 225              # Fm-3m (FCC)
+  lattice:
+    a: 3.909                 # Vegard Pd(3.8907)/Au(4.0782) at 90/10 at.%, A
+  wyckoff_sites:
+    - element: {Pd: 0.90, Au: 0.10}   # random solid solution on the 4a site
+      coords: [0.0, 0.0, 0.0]
+      letter: a
+
+orientation:
+  scheme: random_uniform
+
+boundaries:
+  geometry: curved
+  curved:
+    method: perturbed_distance
+    spectrum: self_affine
+    amplitude: 13.44            # A; A0 (reference_wavelength convention),
+                                 # ~90% of A0_max = a_max*kappa = 14.935 A
+                                 # (a_max = 0.5*250.64/(2*3.0) = 20.887 A,
+                                 # kappa = reference_shell_kappa(0.5, 5.53,
+                                 # 250.6) = 0.7150) -- see the amplitude
+                                 # comment block above for the full
+                                 # derivation.
+    amplitude_convention: reference_wavelength  # opt-in: fixes the
+                                 # RMS power of the l_max-anchored
+                                 # reference octave, not the whole-band
+                                 # total RMS -- see docs/physics.md Sec 5b(f)
+                                 # for why this matters at this file's own
+                                 # (wide, ~5.5-octave) band.
+    # reference_wavelength left unset (defaults to l_max = 250.6 A): the
+    # natural choice here since l_max already represents this geometry's
+    # own grain radius.
+    hurst: 0.5                  # per-grain box-counting D_b range
+                                 # (Braun 2020: 1.10-1.24) is only weakly
+                                 # H-sensitive at any single grain size
+                                 # tested in the feasibility study;
+                                 # H=0.5 sits centrally in that range.
+    l_min: 5.53                 # = 2*d_nn (d_nn = 3.909/sqrt(2) = 2.764 A,
+                                 # PdAu FCC nearest-neighbor distance) --
+                                 # the smallest roughness wavelength that
+                                 # is still >= 2 atomic spacings; also
+                                 # clears the Nyquist floor l_min >=
+                                 # 2*h_field on the auto-resolved 384^3
+                                 # grid this box needs (h_field = 925.0/384
+                                 # = 2.409 A -> +14.8% margin, verified
+                                 # against the real grid-
+                                 # resolution code).
+    l_max: 250.6                # ~= r_ws (this geometry's own grain
+                                 # radius, 250.64 A); <= min(L)/2 = 462.5 A.
+                                 # Together with l_min above: 5.50 octaves
+                                 # (1.66 decades) -- the ~5.5-octave target
+                                 # docs/physics.md Sec 5b(g) identifies as
+                                 # needed for gate G20's d_b_estimated to
+                                 # resolve `hurst` at a LARGE effect size
+                                 # (a merely-significant response needs
+                                 # only ~3.2 octaves; below either, as in
+                                 # self_affine_gb/pdau_perturbed_self_affine.yaml's
+                                 # ~1.7 octaves, d_b_estimated is still an
+                                 # honest LOCAL roughness index -- see
+                                 # that gate's own docstring -- just not a
+                                 # converged fractal-dimension measurement).
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower   # midpoint_merge forbidden: multi-species alloy
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false
+  per_atom_margin: false
+  statistics: true
+  section: {axis: z, position: 0.5}   # EBSD-like midplane slice for MTEX
+
+output:
+  directory: ./out_pdau_perturbed_50nm_H05
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

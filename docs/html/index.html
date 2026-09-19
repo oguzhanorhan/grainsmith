@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Overview · grainsmith</title>
+<style>
+
+:root{
+  --sidebar-w: 300px; --toc-w: 240px;
+  --accent:#b5651d; --accent-2:#1f6f8b;
+  --ink:#1a1f24; --ink-soft:#4a545e; --line:#e3e7ea;
+  --bg:#ffffff; --bg-side:#1c2530; --bg-side-2:#243040;
+  --code-bg:#f5f7f9; --side-ink:#c9d3de; --side-ink-soft:#8a97a6;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:Georgia,"Times New Roman",Times,serif;
+  color:var(--ink); background:var(--bg); line-height:1.68; font-size:16px;
+}
+/* ---- full-screen layout: fixed sidebar + fluid content ---- */
+.sidebar{
+  position:fixed; top:0; left:0; width:var(--sidebar-w); height:100vh;
+  overflow-y:auto; background:var(--bg-side); color:var(--side-ink);
+  padding:22px 0 40px; z-index:20;
+}
+.brand{padding:6px 24px 20px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:14px;}
+.brand a{color:#fff;font-weight:700;font-size:1.35rem;text-decoration:none;letter-spacing:.5px;}
+.brand-sub{display:block;color:var(--side-ink-soft);font-size:.8rem;margin-top:2px;}
+.nav-group{margin:0 0 6px;}
+.nav-group-title{
+  padding:12px 24px 5px;font-size:.72rem;text-transform:uppercase;
+  letter-spacing:.09em;color:var(--side-ink-soft);font-weight:700;
+}
+.nav-group ul{list-style:none;margin:0;padding:0;}
+.nav-group li a{
+  display:block;padding:6px 24px 6px 28px;color:var(--side-ink);
+  text-decoration:none;font-size:.92rem;border-left:3px solid transparent;
+}
+.nav-group li a:hover{background:var(--bg-side-2);color:#fff;}
+.nav-group li.active a{
+  color:#fff;border-left-color:var(--accent);background:var(--bg-side-2);font-weight:600;
+}
+.content{margin-left:var(--sidebar-w);min-height:100vh;}
+.content-inner{
+  display:grid;grid-template-columns:minmax(0,1fr) var(--toc-w);
+  gap:48px;max-width:1500px;margin:0 auto;padding:52px 64px 96px;
+}
+article{min-width:0;}
+/* ---- in-page TOC (sticky, right rail) ---- */
+.toc{position:sticky;top:36px;align-self:start;font-size:.86rem;
+  border-left:1px solid var(--line);padding-left:18px;max-height:calc(100vh-72px);overflow-y:auto;}
+.toc-title{font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--ink-soft);margin-bottom:10px;}
+.toc ul{list-style:none;margin:0;padding:0;}
+.toc li{margin:3px 0;}
+.toc li a{color:var(--ink-soft);text-decoration:none;display:block;line-height:1.4;}
+.toc li a:hover{color:var(--accent);}
+.toc-l3{padding-left:14px;font-size:.82rem;}
+/* ---- typography ---- */
+article h1{font-size:2.05rem;line-height:1.2;margin:.1em 0 .7em;font-weight:750;letter-spacing:-.01em;}
+article h2{font-size:1.5rem;margin:1.9em 0 .6em;padding-bottom:.28em;
+  border-bottom:2px solid var(--line);font-weight:700;}
+article h3{font-size:1.18rem;margin:1.6em 0 .5em;font-weight:650;}
+article h4{font-size:1.02rem;margin:1.3em 0 .4em;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;}
+article p{margin:.85em 0;}
+article a{color:var(--accent-2);text-decoration:none;}
+article a:hover{text-decoration:underline;}
+article strong{font-weight:650;}
+article img{max-width:100%;height:auto;display:block;margin:1.4em auto;
+  border:1px solid var(--line);border-radius:8px;background:#fff;}
+article ul,article ol{padding-left:1.5em;margin:.7em 0;}
+article li{margin:.32em 0;}
+article blockquote{
+  margin:1.3em 0;padding:.7em 1.2em;border-left:4px solid var(--accent);
+  background:#fbf6f0;color:var(--ink);border-radius:0 6px 6px 0;
+}
+article blockquote p{margin:.4em 0;}
+/* ---- display math (MathJax typesets these; this is the no-JS/offline fallback) ---- */
+.math-display{
+  margin:1.5em 0;padding:.9em 1.2em;text-align:center;overflow-x:auto;
+  font-family:"Cambria Math","STIX Two Math",Cambria,"Times New Roman",serif;
+  font-size:1.05rem;color:var(--ink);
+}
+/* ---- code ---- */
+code{font-family:"SF Mono",SFMono-Regular,ui-monospace,Menlo,Consolas,monospace;
+  font-size:.88em;background:var(--code-bg);padding:.12em .38em;border-radius:4px;
+  color:#b03a2e;border:1px solid var(--line);}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;
+  padding:16px 18px;overflow-x:auto;margin:1.2em 0;line-height:1.5;}
+pre code{background:none;border:none;padding:0;color:var(--ink);font-size:.86rem;}
+/* ---- tables (wide, striped, scrollable) ---- */
+article table{border-collapse:collapse;width:100%;margin:1.3em 0;font-size:.9rem;display:block;overflow-x:auto;}
+article thead th{background:#2c3844;color:#fff;text-align:left;padding:9px 12px;font-weight:600;white-space:nowrap;}
+article tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top;}
+article tbody tr:nth-child(even){background:#f8fafb;}
+article tbody code{white-space:nowrap;}
+/* ---- prev/next ---- */
+.prevnext{display:flex;justify-content:space-between;gap:16px;margin-top:3.5em;
+  padding-top:1.6em;border-top:1px solid var(--line);}
+.prevnext a{flex:1;max-width:48%;padding:14px 18px;border:1px solid var(--line);
+  border-radius:8px;text-decoration:none;color:var(--ink);background:#fcfdfe;}
+.prevnext a:hover{border-color:var(--accent);background:#fbf6f0;}
+.prevnext .next{text-align:right;}
+.prevnext span{display:block;font-size:.78rem;color:var(--ink-soft);margin-bottom:3px;}
+.prevnext strong{font-size:.98rem;color:var(--accent-2);font-weight:600;}
+/* ---- mobile ---- */
+.menu-toggle{display:none;position:fixed;top:12px;left:12px;z-index:30;
+  background:var(--bg-side);color:#fff;border:none;border-radius:6px;
+  width:42px;height:42px;font-size:1.3rem;cursor:pointer;}
+@media (max-width:1080px){
+  .content-inner{grid-template-columns:minmax(0,1fr);}
+  .toc{display:none;}
+}
+@media (max-width:820px){
+  .menu-toggle{display:block;}
+  .sidebar{transform:translateX(-100%);transition:transform .2s ease;}
+  body.nav-open .sidebar{transform:translateX(0);}
+  .content{margin-left:0;}
+  .content-inner{padding:64px 22px 72px;}
+}
+
+</style>
+<script>
+window.MathJax = {
+  tex: { displayMath: [['\\[', '\\]']], processEscapes: true },
+  options: { enableMenu: false }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</head>
+<body>
+<button class="menu-toggle" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+<nav class="sidebar" aria-label="Documentation navigation">
+<div class="brand"><a href="index.html">grainsmith</a><span class="brand-sub">documentation</span></div>
+<div class="nav-group"><div class="nav-group-title">Getting started</div><ul>
+<li class="active"><a href="index.html">Overview</a></li>
+<li><a href="manual.html">User manual</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Concepts &amp; physics</div><ul>
+<li><a href="architecture.html">Architecture</a></li>
+<li><a href="geometry.html">Grain geometry</a></li>
+<li><a href="physics.html">Physics &amp; conventions</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Reference</div><ul>
+<li><a href="config_reference.html">Configuration reference</a></li>
+<li><a href="gates.html">QA gates (G1–G26)</a></li>
+<li><a href="outputs.html">Outputs</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Developer</div><ul>
+<li><a href="developer.html">Developer guide</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Help</div><ul>
+<li><a href="faq.html">FAQ &amp; troubleshooting</a></li>
+</ul></div>
+</nav>
+<main class="content">
+<div class="content-inner">
+<article>
+<h1>grainsmith documentation</h1>
+<p><strong>grainsmith</strong> generates space-group-aware atomistic polycrystals for molecular
+dynamics — with statistically controlled microstructure (grain size, texture,
+grain-boundary network, boundary roughness), construction-time QA gates, and
+reproducible, publication-grade outputs. Current output target: LAMMPS.</p>
+<p>This is the full documentation set. It serves both first-time users (install →
+first model → reading the outputs) and advanced users and developers (the
+physics, the module architecture, the programmatic API, and how to extend the
+code).</p>
+<h2 id="start-here">Start here</h2>
+<ul>
+<li><a href="manual.html"><strong>User manual</strong></a> — install, quickstart, the CLI, and how a run is
+  built. Read this first.</li>
+<li><a href="config_reference.html"><strong>Configuration reference</strong></a> — every config field, its
+  type, default, and constraints (auto-generated from the schema).</li>
+</ul>
+<h2 id="understand-the-system">Understand the system</h2>
+<ul>
+<li><a href="architecture.html"><strong>Architecture</strong></a> — the pipeline stages, the data objects
+  that flow between them, the package structure, and the module dependency
+  graph.</li>
+<li><a href="geometry.html"><strong>Grain geometry</strong></a> — the flat / power / curved /
+  self-affine (perturbed-distance) / weighted / voxel-import backends, the
+  exact parameters that control each, and the construction conditions they
+  must satisfy.</li>
+<li><a href="physics.html"><strong>Physics &amp; conventions</strong></a> — the math and the coordinate,
+  orientation, and unit conventions the code commits to.</li>
+</ul>
+<h2 id="reference">Reference</h2>
+<ul>
+<li><a href="gates.html"><strong>QA gates (G1–G26)</strong></a> — every construction-time correctness gate,
+  what it checks, and what a failure means.</li>
+<li><a href="outputs.html"><strong>Outputs</strong></a> — every file a run writes and every column in it.</li>
+</ul>
+<h2 id="for-developers">For developers</h2>
+<ul>
+<li><a href="developer.html"><strong>Developer guide</strong></a> — the repository layout, the <code>run()</code>
+  entry point, the <code>RunResult</code> contract, the public API per subpackage, the
+  determinism contract and the parallel pattern that implements it, how to
+  add a tessellation backend, orientation sampler, or output writer, and the
+  test suite's own conventions.</li>
+</ul>
+<h2 id="help">Help</h2>
+<ul>
+<li><a href="faq.html"><strong>FAQ &amp; troubleshooting</strong></a> — common errors and what to do about them.</li>
+</ul>
+<p><em>grainsmith is reproducible by design: every stochastic step records an explicit
+RNG seed, and the same seed produces a bit-identical model (see the manual's
+"Determinism and provenance" for what that does and does not cover across
+machines, and for <code>grainsmith verify</code>). Every physical constraint is enforced by
+a QA gate at construction time — a model that would be physically invalid is
+never written.</em></p>
+<div class="prevnext">
+<span></span>
+<a class="next" href="manual.html"><span>Next →</span><strong>User manual</strong></a>
+</div>
+</article>
+<aside class="toc" aria-label="On this page"><div class="toc-title">On this page</div><ul>
+<li class="toc-l2"><a href="#start-here">Start here</a></li>
+<li class="toc-l2"><a href="#understand-the-system">Understand the system</a></li>
+<li class="toc-l2"><a href="#reference">Reference</a></li>
+<li class="toc-l2"><a href="#for-developers">For developers</a></li>
+<li class="toc-l2"><a href="#help">Help</a></li>
+</ul></aside>
+</div>
+</main>
+</body>
+</html>

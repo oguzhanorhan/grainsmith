@@ -1,0 +1,138 @@
+# ===================== grainsmith run configuration =====================
+# ADVANCED example (~1M atoms) — rolled-and-annealed FCC Cu:
+# a beta-fibre ROLLING texture (ODF) + a Sigma3 annealing-twin boundary
+# network (MDF), at ~1e6 atoms.
+#
+# WHAT THIS TEACHES
+#   * ODF control with the canonical FCC rolling components (the beta
+#     fibre): Copper {112}<11-1>, S {123}<634>, Brass {011}<2-1-1>, plus a
+#     minor Cube {001}<100> recrystallization component.  Grains are
+#     assigned to a component and spread isotropically by spread_deg
+#     (exact Haar sin^2(theta/2) small-angle law).  [Engler & Randle 2009,
+#     "Introduction to Texture Analysis".]
+#   * orientation.component_weight_basis: volume (set explicitly below) --
+#     each component's 'weight' (0.30/0.30/0.25/0.15) is the VOLUME
+#     fraction of material in that component, the physical definition of
+#     the ODF; grains are partitioned deterministically
+#     (orientation.odf.volume_balanced_partition) so the realised volume
+#     split matches those weights.  The alternative, 'count' (the pre-1.2
+#     default), realises weight as a GRAIN-COUNT fraction via an i.i.d.
+#     categorical draw, whose realised VOLUME split can differ
+#     substantially on a finite, broad grain-size population -- gate G25
+#     reports both bases' fractions (count, volume-pre-anneal,
+#     volume-post-anneal) plus the per-component mean grain volume, the
+#     honest signature of the size-component correlation 'volume' trades
+#     for volume fidelity.
+#   * The Euler centres below are NOT typed from memory: each is the
+#     Bunge (phi1, Phi, phi2) that grainsmith's own hkl_uvw -> quaternion
+#     -> quat_to_bunge machinery returns for the stated {hkl}<uvw>, and
+#     the Brass value (35.2644, 45, 0) reproduces the repo-pinned Brass
+#     validation orientation exactly — {011}<2-1-1> -> (35.26, 45, 0),
+#     pinned and MTEX-round-trip-verified in docs/physics.md.
+#   * Disorientation-angle control decoupled from the ODF: mdf_target:
+#     sigma3_angle_enriched drives a target Sigma3 ANGULAR-window area
+#     fraction by PERMUTING which grain gets which orientation (simulated
+#     annealing) — the number-weighted orientation distribution is
+#     invariant by construction; the volume-weighted ODF drift is measured
+#     and can be capped (odf_drift_max, gate G22).  This mimics the abundant
+#     Sigma3 (60 deg <111>, coherent twin) boundaries of annealed FCC Cu.
+#     Sigma labels use the cubic CSL table + Brandon window
+#     Delta-theta <= 15/sqrt(Sigma) [Brandon 1966; Mackenzie 1958 is the
+#     random-pair reference the target sits on top of].  Gate G12 (warn)
+#     reports the chi^2 distance between the achieved and target MDF.
+#   * Scale: ~1e6 atoms of Cu, 228^3 A (~22.8 nm) periodic; flat Voronoi
+#     boundaries keep the focus on the ORIENTATION statistics (texture),
+#     not GB curvature — pair this with
+#     advanced/adv_cu_lognormal_curved.yaml for the geometric side.
+#
+# HOW TO RUN
+#   grainsmith validate examples/advanced/adv_cu_rolling_twin.yaml
+#   grainsmith generate examples/advanced/adv_cu_rolling_twin.yaml --jobs 0
+#   Check boundaries.csv's csl_sigma column for the Σ3 fraction and
+#   mdf.csv / odf_mtex.txt for the texture/misorientation densities.
+
+meta:
+  title: "FCC Cu rolling texture (beta-fibre ODF) + Sigma3 twin MDF, ~1M atoms"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 314159
+
+box:
+  lengths: [228.0, 228.0, 228.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 64
+  min_seed_distance: auto
+  lloyd_iterations: 2          # mild equiaxing; texture is the point here
+
+crystal:
+  space_group:
+    number: 225                # Fm-3m (FCC)
+  lattice:
+    a: 3.615                   # Cu, A
+  wyckoff_sites:
+    - element: Cu
+      coords: [0.0, 0.0, 0.0]
+      letter: a
+
+orientation:
+  scheme: odf_components
+  # weight below is a VOLUME fraction (the physical ODF definition), not a
+  # grain-count fraction -- see header and gate G25.
+  component_weight_basis: volume
+  components:
+    # --- beta-fibre deformation components (Bunge angles = grainsmith's own
+    #     hkl_uvw->bunge output for each {hkl}<uvw>; see header) ---
+    - {euler_bunge_deg: [90.0,     35.2644, 45.0], weight: 0.30, spread_deg: 8.0}   # Copper {112}<11-1>
+    - {euler_bunge_deg: [59.0,     36.7,    63.4], weight: 0.30, spread_deg: 8.0}   # S      {123}<634>
+    - {euler_bunge_deg: [35.2644,  45.0,     0.0], weight: 0.25, spread_deg: 8.0}   # Brass  {011}<2-1-1>
+    # --- minor recrystallization cube component ---
+    - {euler_bunge_deg: [0.0,       0.0,     0.0], weight: 0.15, spread_deg: 8.0}   # Cube   {001}<100>
+  mdf_target:
+    type: sigma3_angle_enriched
+    sigma3_fraction: 0.4       # mixture coefficient of the Sigma3-window
+                               # term (annealing twins), NOT the resulting
+                               # window mass: the Haar base already has
+                               # mass inside the 60 deg window
+    annealing_steps: 20000
+    t0: 0.05
+    cooling: 0.995
+    chi2_max: 1.0              # G12 warn threshold (relaxed for the enriched target)
+
+boundaries:
+  geometry: flat               # planar Voronoi — isolate the ODF/MDF statistics
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: true                    # Sigma3 fraction is the headline diagnostic
+  statistics: true
+  section: {axis: z, position: 0.5}
+  mdf_bins: 40
+
+output:
+  directory: ./out_adv_cu_rolling_twin
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+    # mdf.csv is emitted automatically (fixed name) whenever mdf_target is set
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

@@ -1,0 +1,91 @@
+# ===================== grainsmith run configuration =====================
+# FCC Al with 2 at% Mg, GB-segregated substitutional dopants.
+#
+# WHAT THIS TEACHES
+#   * The doping stage: substitutional dopants replace host (Al) atoms in
+#     place after overlap removal — no new atoms, no interstitial
+#     sublattice needed.
+#   * GB segregation: enrichment E = 5 concentrates Mg in a 4 Å shell
+#     around the grain boundaries (histogram it from doping.csv).
+#   * Gates G17 (achieved vs nominal fraction + enrichment, warn) and
+#     G18 (min-distance re-verification, hard — trivially 0 violations
+#     for substitutional dopants, which never move atoms).
+#   * Determinism: same seed => same dopant sites for ANY --jobs value.
+#
+# HOW TO RUN
+#   grainsmith validate examples/doping/al_mg_gb_substitutional.yaml
+#   grainsmith generate examples/doping/al_mg_gb_substitutional.yaml
+#   Check doping.csv for the per-grain shell/bulk split and
+#   doping_profile.csv / doping_profile.plt for the enrichment profile.
+
+meta:
+  title: "FCC Al + 2 at% Mg, GB-segregated substitutional"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 271829
+
+box:
+  lengths: [60.0, 60.0, 60.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 8
+  min_seed_distance: auto
+  lloyd_iterations: 0
+
+crystal:
+  space_group:
+    number: 225              # Fm-3m
+  lattice:
+    a: 4.046                 # Å (repo-pinned Al value)
+  wyckoff_sites:
+    - element: Al
+      coords: [0.0, 0.0, 0.0]
+
+orientation:
+  scheme: random_uniform
+
+boundaries:
+  geometry: flat
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower
+
+doping:
+  dopants:
+    - element: Mg
+      mode: substitutional
+      host: Al
+      concentration: 0.02
+      gb_segregation:
+        enabled: true
+        shell_width: 4.0
+        enrichment: 5.0
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false
+  per_atom_margin: false
+
+output:
+  directory: ./out_al_mg_gb_substitutional
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

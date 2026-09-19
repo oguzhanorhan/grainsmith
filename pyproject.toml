@@ -1,0 +1,153 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "grainsmith"
+version = "1.1.0"
+description = "A Generator of Polycrystalline Models for Atomistic Simulations with Statistical and Grain-Boundary Morphology Control"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.11",
+    "spglib>=2.1",
+    "pyyaml",
+    "pydantic>=2",
+]
+
+[project.optional-dependencies]
+mesh = ["scikit-image"]
+import = ["h5py"]
+# Optional direct-CIF crystal input (crystal.cif): ase.io.read parses the
+# file; spglib (a core dependency already) detects its symmetry. The
+# engine try-imports ase and raises a clear ConfigError if it is missing
+# (crystal/cif.py), so this is opt-in like the other format-specific extras.
+cif = ["ase>=3.22"]
+# Optional CPU speed-up: a Numba-jitted owns() kernel. Pure-NumPy is the
+# default and the result is bit-identical with or without Numba, so this is an
+# opt-in accelerator, never a hard dependency (the engine try-imports it).
+perf = ["numba>=0.59"]
+# An interactive UI ("grainsmith studio") is planned for a future release;
+# it is not included in this version, so there is no install extra for it yet.
+# Optional best-effort total-RSS soft-WARN monitor (--max-rss). The engine
+# try-imports psutil and is fully functional without it (the monitor is
+# simply inert), so this is never a hard dependency.
+monitor = ["psutil>=5.9"]
+# The benchmark suite imports matplotlib unconditionally to render figure
+# PNGs; it's only needed to run benchmarks, not by the core engine, so it's
+# an extra rather than a core dependency.
+bench = ["matplotlib"]
+# Optional docs-site builder (tools/build_docs_html.py): a pure-Python Markdown
+# engine so the themed HTML site under docs/html/ builds with no external binary
+# (pandoc stays an optional fallback). Markdown under docs/ is the source of
+# truth, so this is only needed to (re)generate the HTML mirror.
+docs = ["markdown"]
+test = ["pytest", "pytest-cov", "ase", "httpx", "psutil>=5.9"]
+dev = ["ruff==0.15.20", "mypy==2.2.0"]
+
+[project.scripts]
+grainsmith = "grainsmith.cli:main"
+
+[project.urls]
+Repository = "https://github.com/oguzhanorhan/grainsmith"
+Issues = "https://github.com/oguzhanorhan/grainsmith/issues"
+
+[tool.setuptools]
+# The built React studio bundle (grainsmith/ui/static/**) is data, not code, so
+# it is included via package-data below rather than discovered as a package.
+include-package-data = true
+# Ship the project license plus the studio's attribution files in the wheel's
+# .dist-info (THIRD_PARTY_LICENSES is not matched by the default glob, so the
+# set is listed explicitly). The bundled React/icon/font assets are covered
+# there as required by their (MIT / ISC / OFL-1.1) terms.
+license-files = ["LICENSE", "NOTICE", "THIRD_PARTY_LICENSES"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+# Ship the pre-built React UI bundle inside the wheel. It is committed under
+# src/grainsmith/ui/static/, built by `vite build` from a frontend tree that is
+# not published with the repository. This release is CLI-only — `grainsmith ui`
+# reports that the studio is not included — so the bundle is staged for a
+# future version, not served by this one.
+"grainsmith.ui" = ["static/**/*", "static/*"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+# E/F (pycodestyle, pyflakes), I (import order), UP (modernize),
+# B (bugbear), NPY (numpy pitfalls — incl. NPY002 legacy np.random.*).
+select = ["E", "F", "I", "UP", "B", "NPY"]
+ignore = [
+    "E501",   # line length: scientific comments/docstrings carry formulas
+]
+# RUF, SIM, C4 and the pylint subset (PL*) were trialed (727 hits), but the
+# vast majority are domain-intentional and were NOT adopted as enforced
+# rules; genuine signals surfaced by the trial were hand-fixed instead.
+# Deliberately NOT enabled:
+#   RUF001/002/003  ambiguous-unicode  — φ Φ ψ Σ ≤ ≥ × ᵀ ‖ are physics notation
+#   PLR2004         magic-value        — numerical thresholds live in constants.py
+#   PLC0415         import-outside-top — intentional lazy / optional-dep imports
+#   PLR0911/12/13/15 complexity        — inherent scientific rigor (resolve's 29
+#                                        documented rules, pipeline orchestration,
+#                                        MDF/boundaries/statistics assembly), not
+#                                        bloat (reviewed and found no genuine
+#                                        over-engineering).
+
+[tool.ruff.lint.per-file-ignores]
+# Tests favour readable literal blocks over import-sorting strictness.
+"tests/*" = ["I001"]
+
+[tool.mypy]
+# python_version tracks the newest SUPPORTED runtime, NOT the 3.10 floor in
+# `requires-python`. numpy >= 2.5 declares `Requires-Python: >=3.12` and its
+# stubs use PEP 695 `type` statements, which mypy refuses to parse under an
+# older `python_version` ("Type statement is only supported in Python 3.12 and
+# greater") — it aborts with "errors prevented further checking", so nothing
+# gets type-checked at all. Checking "as 3.10" against a numpy that does not
+# support 3.10 is not a coherent target, and pinning numpy for the lint job
+# would only defer this while diverging the lint env from the test env.
+#
+# The 3.10 FLOOR is still enforced, by execution rather than by typeshed
+# gating: CI's test matrix runs the whole suite on Python 3.10, so a
+# post-3.10 stdlib API on any executed path fails there. ruff's
+# `target-version = "py310"` is unchanged and still governs syntax/idiom.
+python_version = "3.12"
+files = ["src/grainsmith"]
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true
+check_untyped_defs = true
+# Scientific deps without stubs (incl. fastapi/uvicorn, used by the not-yet
+# wired-up grainsmith.ui backend):
+[[tool.mypy.overrides]]
+module = ["spglib", "scipy.*", "yaml", "h5py", "numba", "psutil",
+          "fastapi", "fastapi.*", "uvicorn", "uvicorn.*", "starlette", "starlette.*"]
+ignore_missing_imports = true
+
+# scikit-image (and its tifffile dependency) ship typed source that uses
+# newer-Python-only syntax — e.g. tifffile's PEP 695 `type` statements, which
+# mypy rejects while following imports under --python-version 3.10. We only
+# type-check grainsmith itself, so don't analyse these libraries at all.
+[[tool.mypy.overrides]]
+module = ["skimage", "skimage.*", "tifffile", "tifffile.*"]
+follow_imports = "skip"
+ignore_missing_imports = true

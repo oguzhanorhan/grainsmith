@@ -1,0 +1,95 @@
+# ===================== grainsmith run configuration =====================
+# Ti2Ni (E9_3, cubic Fd-3m) SINGLE CRYSTAL — crystal structure read
+# DIRECTLY from a Materials Project CIF file (examples/assets/Ti2Ni.cif).
+#
+# WHAT THIS TEACHES
+#   * crystal.cif on the SINGLE-CRYSTAL backend (grains.number: 1, see
+#     basics/cu_single_crystal.yaml for the from-scratch manual version of
+#     this same idea): the whole box is one grain, no seeding, no Voronoi.
+#   * A LARGE conventional cell straight from the file: Ti2Ni's Fd-3m
+#     cell is 96 atoms (Z = 32, three symmetry-inequivalent sites — Ti on
+#     16d + 48f, Ni on 32e); grainsmith reads all three Wyckoff orbits
+#     from spglib's standardized cell — no manual site-by-site transcription.
+#   * Commensurability at identity orientation: the box is EXACTLY
+#     3x3x3 conventional cells (3·a per axis) with euler_bunge_deg
+#     [0, 0, 0], so gate G14 (box/lattice misfit, warn-only) reports
+#     essentially zero strain and overlap removal deletes 0 atoms —
+#     exactly 96*27 = 2592 atoms, the perfect-crystal reference. This
+#     `box.lengths` + identity-orientation recipe is the MANUAL way to get
+#     exact commensurability, and it only works because Ti2Ni's cell is
+#     CUBIC (an orthogonal box IS the crystal's own cell shape here). For
+#     a non-orthogonal cell (monoclinic/hexagonal/triclinic) this trick
+#     cannot work — an axis-aligned box can never equal a tilted cell's
+#     shape — `box.cells: [n1, n2, n3]` solves that instead: box vectors
+#     built directly from the crystal's own (possibly tilted) cell matrix,
+#     which is exactly periodic for ANY crystal family. See
+#     cif/tini_cif_triclinic_single.yaml (monoclinic) and
+#     cif/tini3_cif_hexagonal_single.yaml (hexagonal gamma=120).
+#   * Traceability: summary.csv section "crystal" records the CIF file
+#     path, the symprec used, and the spglib-DETECTED space group (rows
+#     cif_file / cif_symprec / detected_sg — for the CIF path,
+#     requested_sg is set equal to the detected group, SG 227 Fd-3m here;
+#     a declared-vs-detected mismatch is surfaced as a WARN in run.log).
+#
+# HOW TO RUN
+#   grainsmith validate examples/cif/ti2ni_cif_single_crystal.yaml
+#   grainsmith generate examples/cif/ti2ni_cif_single_crystal.yaml
+#   Check summary.csv for the atom count (exactly 2592) and the
+#   cif_file/cif_symprec/detected_sg rows in its crystal section.
+
+meta:
+  title: "Ti2Ni (Fd-3m), single crystal, 3x3x3 cells, crystal read from CIF"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 141421356         # no stage consumes randomness here
+
+box:
+  lengths: [33.73121211, 33.73121211, 33.73121211]  # exactly 3 x a
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 1
+
+crystal:
+  cif:
+    file: ../assets/Ti2Ni.cif  # resolved relative to this file
+    symprec: 1.0e-4
+
+orientation:
+  scheme: fixed
+  fixed:
+    euler_bunge_deg: [0.0, 0.0, 0.0]   # identity -> commensurate (G14 ok)
+
+boundaries:
+  geometry: flat             # required for the single-crystal backend
+  overlap_removal:
+    enabled: true             # no-op here (0 deletions); cleans the box
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false                  # cubic family, but CSL needs >= 2 grains
+  per_atom_margin: false
+
+output:
+  directory: ./out_ti2ni_cif_single
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

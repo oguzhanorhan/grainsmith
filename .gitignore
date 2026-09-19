@@ -1,0 +1,31 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.claude/
+.coverage
+htmlcov/
+build/
+dist/
+node_modules/
+.venv/
+venv/
+examples/_validation_runs/
+examples/_validation_runs_cif/
+
+# Release policy: only src/, docs/, examples/, tests/, tools/, README.md,
+# license files and packaging metadata are tracked. Everything below stays
+# on disk but out of git.
+/paper/
+/frontend/
+/benchmarks/
+/md_benchmark/
+/.vscode/
+/.github/
+/*.log
+/fig*.png
+
+# Stray run artifact (default engine output name) — never ship run outputs.
+examples/polycrystal.data

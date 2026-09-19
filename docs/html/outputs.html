@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Outputs · grainsmith</title>
+<style>
+
+:root{
+  --sidebar-w: 300px; --toc-w: 240px;
+  --accent:#b5651d; --accent-2:#1f6f8b;
+  --ink:#1a1f24; --ink-soft:#4a545e; --line:#e3e7ea;
+  --bg:#ffffff; --bg-side:#1c2530; --bg-side-2:#243040;
+  --code-bg:#f5f7f9; --side-ink:#c9d3de; --side-ink-soft:#8a97a6;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:Georgia,"Times New Roman",Times,serif;
+  color:var(--ink); background:var(--bg); line-height:1.68; font-size:16px;
+}
+/* ---- full-screen layout: fixed sidebar + fluid content ---- */
+.sidebar{
+  position:fixed; top:0; left:0; width:var(--sidebar-w); height:100vh;
+  overflow-y:auto; background:var(--bg-side); color:var(--side-ink);
+  padding:22px 0 40px; z-index:20;
+}
+.brand{padding:6px 24px 20px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:14px;}
+.brand a{color:#fff;font-weight:700;font-size:1.35rem;text-decoration:none;letter-spacing:.5px;}
+.brand-sub{display:block;color:var(--side-ink-soft);font-size:.8rem;margin-top:2px;}
+.nav-group{margin:0 0 6px;}
+.nav-group-title{
+  padding:12px 24px 5px;font-size:.72rem;text-transform:uppercase;
+  letter-spacing:.09em;color:var(--side-ink-soft);font-weight:700;
+}
+.nav-group ul{list-style:none;margin:0;padding:0;}
+.nav-group li a{
+  display:block;padding:6px 24px 6px 28px;color:var(--side-ink);
+  text-decoration:none;font-size:.92rem;border-left:3px solid transparent;
+}
+.nav-group li a:hover{background:var(--bg-side-2);color:#fff;}
+.nav-group li.active a{
+  color:#fff;border-left-color:var(--accent);background:var(--bg-side-2);font-weight:600;
+}
+.content{margin-left:var(--sidebar-w);min-height:100vh;}
+.content-inner{
+  display:grid;grid-template-columns:minmax(0,1fr) var(--toc-w);
+  gap:48px;max-width:1500px;margin:0 auto;padding:52px 64px 96px;
+}
+article{min-width:0;}
+/* ---- in-page TOC (sticky, right rail) ---- */
+.toc{position:sticky;top:36px;align-self:start;font-size:.86rem;
+  border-left:1px solid var(--line);padding-left:18px;max-height:calc(100vh-72px);overflow-y:auto;}
+.toc-title{font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--ink-soft);margin-bottom:10px;}
+.toc ul{list-style:none;margin:0;padding:0;}
+.toc li{margin:3px 0;}
+.toc li a{color:var(--ink-soft);text-decoration:none;display:block;line-height:1.4;}
+.toc li a:hover{color:var(--accent);}
+.toc-l3{padding-left:14px;font-size:.82rem;}
+/* ---- typography ---- */
+article h1{font-size:2.05rem;line-height:1.2;margin:.1em 0 .7em;font-weight:750;letter-spacing:-.01em;}
+article h2{font-size:1.5rem;margin:1.9em 0 .6em;padding-bottom:.28em;
+  border-bottom:2px solid var(--line);font-weight:700;}
+article h3{font-size:1.18rem;margin:1.6em 0 .5em;font-weight:650;}
+article h4{font-size:1.02rem;margin:1.3em 0 .4em;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;}
+article p{margin:.85em 0;}
+article a{color:var(--accent-2);text-decoration:none;}
+article a:hover{text-decoration:underline;}
+article strong{font-weight:650;}
+article img{max-width:100%;height:auto;display:block;margin:1.4em auto;
+  border:1px solid var(--line);border-radius:8px;background:#fff;}
+article ul,article ol{padding-left:1.5em;margin:.7em 0;}
+article li{margin:.32em 0;}
+article blockquote{
+  margin:1.3em 0;padding:.7em 1.2em;border-left:4px solid var(--accent);
+  background:#fbf6f0;color:var(--ink);border-radius:0 6px 6px 0;
+}
+article blockquote p{margin:.4em 0;}
+/* ---- display math (MathJax typesets these; this is the no-JS/offline fallback) ---- */
+.math-display{
+  margin:1.5em 0;padding:.9em 1.2em;text-align:center;overflow-x:auto;
+  font-family:"Cambria Math","STIX Two Math",Cambria,"Times New Roman",serif;
+  font-size:1.05rem;color:var(--ink);
+}
+/* ---- code ---- */
+code{font-family:"SF Mono",SFMono-Regular,ui-monospace,Menlo,Consolas,monospace;
+  font-size:.88em;background:var(--code-bg);padding:.12em .38em;border-radius:4px;
+  color:#b03a2e;border:1px solid var(--line);}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;
+  padding:16px 18px;overflow-x:auto;margin:1.2em 0;line-height:1.5;}
+pre code{background:none;border:none;padding:0;color:var(--ink);font-size:.86rem;}
+/* ---- tables (wide, striped, scrollable) ---- */
+article table{border-collapse:collapse;width:100%;margin:1.3em 0;font-size:.9rem;display:block;overflow-x:auto;}
+article thead th{background:#2c3844;color:#fff;text-align:left;padding:9px 12px;font-weight:600;white-space:nowrap;}
+article tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top;}
+article tbody tr:nth-child(even){background:#f8fafb;}
+article tbody code{white-space:nowrap;}
+/* ---- prev/next ---- */
+.prevnext{display:flex;justify-content:space-between;gap:16px;margin-top:3.5em;
+  padding-top:1.6em;border-top:1px solid var(--line);}
+.prevnext a{flex:1;max-width:48%;padding:14px 18px;border:1px solid var(--line);
+  border-radius:8px;text-decoration:none;color:var(--ink);background:#fcfdfe;}
+.prevnext a:hover{border-color:var(--accent);background:#fbf6f0;}
+.prevnext .next{text-align:right;}
+.prevnext span{display:block;font-size:.78rem;color:var(--ink-soft);margin-bottom:3px;}
+.prevnext strong{font-size:.98rem;color:var(--accent-2);font-weight:600;}
+/* ---- mobile ---- */
+.menu-toggle{display:none;position:fixed;top:12px;left:12px;z-index:30;
+  background:var(--bg-side);color:#fff;border:none;border-radius:6px;
+  width:42px;height:42px;font-size:1.3rem;cursor:pointer;}
+@media (max-width:1080px){
+  .content-inner{grid-template-columns:minmax(0,1fr);}
+  .toc{display:none;}
+}
+@media (max-width:820px){
+  .menu-toggle{display:block;}
+  .sidebar{transform:translateX(-100%);transition:transform .2s ease;}
+  body.nav-open .sidebar{transform:translateX(0);}
+  .content{margin-left:0;}
+  .content-inner{padding:64px 22px 72px;}
+}
+
+</style>
+<script>
+window.MathJax = {
+  tex: { displayMath: [['\\[', '\\]']], processEscapes: true },
+  options: { enableMenu: false }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</head>
+<body>
+<button class="menu-toggle" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+<nav class="sidebar" aria-label="Documentation navigation">
+<div class="brand"><a href="index.html">grainsmith</a><span class="brand-sub">documentation</span></div>
+<div class="nav-group"><div class="nav-group-title">Getting started</div><ul>
+<li><a href="index.html">Overview</a></li>
+<li><a href="manual.html">User manual</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Concepts &amp; physics</div><ul>
+<li><a href="architecture.html">Architecture</a></li>
+<li><a href="geometry.html">Grain geometry</a></li>
+<li><a href="physics.html">Physics &amp; conventions</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Reference</div><ul>
+<li><a href="config_reference.html">Configuration reference</a></li>
+<li><a href="gates.html">QA gates (G1–G26)</a></li>
+<li class="active"><a href="outputs.html">Outputs</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Developer</div><ul>
+<li><a href="developer.html">Developer guide</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Help</div><ul>
+<li><a href="faq.html">FAQ &amp; troubleshooting</a></li>
+</ul></div>
+</nav>
+<main class="content">
+<div class="content-inner">
+<article>
+<h1>grainsmith outputs</h1>
+<p>Every run writes into <code>output.directory</code> (default <code>./out</code>). Files fall into six
+groups: <strong>atomistic models</strong> (for MD), <strong>reports</strong> (CSV/JSON tables), <strong>the
+publication trio</strong> (statistics + machine-readable record + methods), <strong>the
+visualization bundle</strong> (gnuplot), an <strong>optional boundary mesh</strong> (PLY), and
+<strong>provenance</strong> (log, manifest, resolved config, <code>verbose &gt;= 3</code> diagnostics).
+Filenames in the <em>configurable</em> column can be renamed in the config; the
+rest are fixed.</p>
+<h2 id="file-inventory">File inventory</h2>
+<table>
+<thead>
+<tr>
+<th>file</th>
+<th>group</th>
+<th>configurable?</th>
+<th>written when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>polycrystal.data</code></td>
+<td>model</td>
+<td><code>output.lammps.filename</code></td>
+<td>always</td>
+</tr>
+<tr>
+<td><code>polycrystal.extxyz</code></td>
+<td>model</td>
+<td><code>output.xyz.filename</code> (<code>output.xyz.enabled</code>)</td>
+<td><code>xyz.enabled</code> (default on)</td>
+</tr>
+<tr>
+<td><code>grains.csv</code></td>
+<td>report</td>
+<td><code>output.csv.grains</code></td>
+<td>always</td>
+</tr>
+<tr>
+<td><code>boundaries.csv</code></td>
+<td>report</td>
+<td><code>output.csv.boundaries</code></td>
+<td>always</td>
+</tr>
+<tr>
+<td><code>vertices.csv</code></td>
+<td>report</td>
+<td><code>output.csv.vertices</code></td>
+<td>flat and power/Laguerre (SDOT) geometry only</td>
+</tr>
+<tr>
+<td><code>summary.csv</code></td>
+<td>report</td>
+<td><code>output.csv.summary</code></td>
+<td>always</td>
+</tr>
+<tr>
+<td><code>statistics.csv</code></td>
+<td>publication</td>
+<td>fixed</td>
+<td><code>analysis.statistics</code> (default on)</td>
+</tr>
+<tr>
+<td><code>microstructure.json</code></td>
+<td>publication</td>
+<td>fixed</td>
+<td><code>analysis.statistics</code> (default on)</td>
+</tr>
+<tr>
+<td><code>METHODS.md</code></td>
+<td>publication</td>
+<td>fixed</td>
+<td><code>output.methods_snippet</code> (default on)</td>
+</tr>
+<tr>
+<td><code>mdf.csv</code></td>
+<td>report</td>
+<td>fixed</td>
+<td>always (single-phase)</td>
+</tr>
+<tr>
+<td><code>odf_mtex.txt</code></td>
+<td>report</td>
+<td>fixed</td>
+<td>always (single-phase)</td>
+</tr>
+<tr>
+<td><code>mdf_&lt;name&gt;.csv</code></td>
+<td>report</td>
+<td>fixed</td>
+<td>per phase (multiphase)</td>
+</tr>
+<tr>
+<td><code>odf_mtex_&lt;name&gt;.txt</code></td>
+<td>report</td>
+<td>fixed</td>
+<td>per phase (multiphase)</td>
+</tr>
+<tr>
+<td><code>slice_&lt;axis&gt;&lt;pos&gt;.csv</code></td>
+<td>report</td>
+<td>fixed</td>
+<td><code>analysis.section</code> set</td>
+</tr>
+<tr>
+<td><code>gb_curvature.csv</code></td>
+<td>report</td>
+<td>fixed</td>
+<td><code>analysis.gb_curvature</code></td>
+</tr>
+<tr>
+<td><code>doping.csv</code></td>
+<td>report</td>
+<td>fixed</td>
+<td><code>doping.dopants</code> non-empty</td>
+</tr>
+<tr>
+<td><code>doping_profile.csv</code></td>
+<td>report</td>
+<td>fixed</td>
+<td><code>doping.dopants</code> non-empty</td>
+</tr>
+<tr>
+<td><code>seeds.dat</code>, <code>edges.dat</code> / <code>gb_points.dat</code>, <code>box.dat</code>, <code>view.plt</code></td>
+<td>viz</td>
+<td>fixed</td>
+<td><code>output.gnuplot.enabled</code> (default on)</td>
+</tr>
+<tr>
+<td><code>curvature_hist.plt</code></td>
+<td>viz</td>
+<td>fixed</td>
+<td><code>analysis.gb_curvature</code> + gnuplot enabled</td>
+</tr>
+<tr>
+<td><code>doping_profile.plt</code></td>
+<td>viz</td>
+<td>fixed</td>
+<td>doping non-empty + gnuplot enabled</td>
+</tr>
+<tr>
+<td><code>boundaries.ply</code></td>
+<td>mesh</td>
+<td>fixed (<code>output.mesh.enabled</code>/<code>.format</code>)</td>
+<td><code>mesh.enabled</code> (curved; needs scikit-image)</td>
+</tr>
+<tr>
+<td><code>diagnostics/grain_atom_counts.dat</code></td>
+<td>provenance</td>
+<td>fixed</td>
+<td><code>meta.verbose &gt;= 3</code></td>
+</tr>
+<tr>
+<td><code>diagnostics/warp_field_stats.dat</code></td>
+<td>provenance</td>
+<td>fixed</td>
+<td><code>meta.verbose &gt;= 3</code> and <code>warp</code> tessellation</td>
+</tr>
+<tr>
+<td><code>diagnostics/voxel_histogram.dat</code></td>
+<td>provenance</td>
+<td>fixed</td>
+<td><code>meta.verbose &gt;= 3</code> and curved (non-flat) geometry</td>
+</tr>
+<tr>
+<td><code>resolved_config.yaml</code></td>
+<td>provenance</td>
+<td>fixed</td>
+<td>always</td>
+</tr>
+<tr>
+<td><code>run.log</code></td>
+<td>provenance</td>
+<td>fixed</td>
+<td>always</td>
+</tr>
+<tr>
+<td><code>MANIFEST.txt</code></td>
+<td>provenance</td>
+<td>fixed</td>
+<td>always (SHA-256 of every output)</td>
+</tr>
+</tbody>
+</table>
+<p><code>edges.dat</code> is written for flat geometry, <code>gb_points.dat</code> for curved.</p>
+<h2 id="atomistic-models">Atomistic models</h2>
+<p><strong><code>polycrystal.data</code></strong> — LAMMPS data file. <code>atom_style: atomic</code> → <code>id type x y z</code>;
+<code>atom_style: molecular</code> → <code>id mol type x y z</code> with <code>mol = grain_id + 1</code> (so OVITO
+can colour by molecule = grain). A <code>Masses</code> section is written (from
+<code>output.lammps.masses</code> or <code>constants.ATOMIC_MASSES</code>). Gate <strong>G10</strong> re-parses this
+file to guarantee round-trip integrity.</p>
+<p><strong><code>polycrystal.extxyz</code></strong> — extended XYZ. Per-atom columns: <code>species x y z grain</code>
+(+ <code>gb_margin</code> when <code>analysis.per_atom_margin: true</code> — signed distance to the
+nearest GB in Å). The header <code>Lattice</code>/<code>Properties</code> line follows the extxyz
+convention (OVITO/ASE-readable).</p>
+<h2 id="reports">Reports</h2>
+<p><strong><code>grains.csv</code></strong> — one row per grain:</p>
+<table>
+<thead>
+<tr>
+<th>column</th>
+<th>meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>grain_id</code></td>
+<td>0-based grain index</td>
+</tr>
+<tr>
+<td><code>seed_x/y/z</code></td>
+<td>seed coordinates (Å)</td>
+</tr>
+<tr>
+<td><code>volume_A3</code>, <code>volume_fraction</code></td>
+<td>cell volume and its fraction of the box</td>
+</tr>
+<tr>
+<td><code>n_atoms</code></td>
+<td>atoms in the grain after overlap removal and dopant insertion</td>
+</tr>
+<tr>
+<td><code>n_neighbors</code></td>
+<td>number of distinct neighbour grains</td>
+</tr>
+<tr>
+<td><code>q_w/q_x/q_y/q_z</code></td>
+<td>orientation quaternion (scalar-first, unit)</td>
+</tr>
+<tr>
+<td><code>euler_phi1_deg/Phi/phi2_deg</code></td>
+<td>Bunge Euler angles (φ1, Φ, φ2), MTEX/EBSD convention</td>
+</tr>
+<tr>
+<td><code>axis_x/y/z</code>, <code>angle_deg</code></td>
+<td>orientation as axis–angle</td>
+</tr>
+<tr>
+<td><code>z_plane_hkl</code>, <code>z_plane_dev_deg</code></td>
+<td>crystal plane nearest lab +z and its misfit</td>
+</tr>
+<tr>
+<td><code>x_dir_uvw</code>, <code>x_dir_dev_deg</code></td>
+<td>crystal direction nearest lab +x and its misfit</td>
+</tr>
+</tbody>
+</table>
+<p><strong><code>boundaries.csv</code></strong> — one row per grain–grain interface:</p>
+<table>
+<thead>
+<tr>
+<th>column</th>
+<th>meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>grain_i</code>, <code>grain_j</code></td>
+<td>the two grains (i &lt; j)</td>
+</tr>
+<tr>
+<td><code>seed_distance_A</code></td>
+<td>centre-to-centre distance (Å)</td>
+</tr>
+<tr>
+<td><code>misorientation_deg</code></td>
+<td>disorientation angle (minimal over symmetry); <code>NaN</code> for interphase</td>
+</tr>
+<tr>
+<td><code>axis_u/v/w</code>, <code>axis_dev_deg</code></td>
+<td>disorientation axis (Miller) and its spread</td>
+</tr>
+<tr>
+<td><code>area_A2</code></td>
+<td>interface area (Å²)</td>
+</tr>
+<tr>
+<td><code>mean_normal_x/y/z</code>, <code>normal_spread_deg</code></td>
+<td>mean boundary-plane normal and its scatter</td>
+</tr>
+<tr>
+<td><code>plane_i_hkl/dev_deg</code>, <code>plane_j_hkl/dev_deg</code></td>
+<td>boundary-plane Miller indices in each crystal frame</td>
+</tr>
+<tr>
+<td><code>character</code>, <code>character_angle_deg</code></td>
+<td>tilt / twist / mixed and the defining angle</td>
+</tr>
+<tr>
+<td><code>csl_sigma</code></td>
+<td>CSL Σ (cubic only; blank if none/non-cubic)</td>
+</tr>
+<tr>
+<td><code>n_overlap_deleted</code></td>
+<td>atoms removed along this boundary</td>
+</tr>
+<tr>
+<td><code>H_mean_invA</code>, <code>H_std_invA</code>, <code>H_abs_mean_invA</code></td>
+<td>area-weighted mean/std/mean-</td>
+</tr>
+<tr>
+<td><code>K_mean_invA2</code>, <code>K_std_invA2</code></td>
+<td>area-weighted mean/std local Gaussian curvature (1/Å²); <code>analysis.gb_curvature</code> only</td>
+</tr>
+<tr>
+<td><code>curv_n_samples</code></td>
+<td>number of retained (non-degenerate) local curvature samples for this boundary; <code>analysis.gb_curvature</code> only</td>
+</tr>
+</tbody>
+</table>
+<p><strong><code>vertices.csv</code></strong> (flat and power/Laguerre geometry only) — Voronoi vertices
+(legacy <code>dump.dat</code> parity): vertex coordinates and the grains meeting there.</p>
+<p><strong><code>gb_curvature.csv</code></strong> (<code>analysis.gb_curvature</code>) — one row per retained local
+curvature sample on a grain-boundary (curved geometry) or per exact face
+polygon with <code>H = K = 0</code> (flat geometry):</p>
+<table>
+<thead>
+<tr>
+<th>column</th>
+<th>meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>grain_i</code>, <code>grain_j</code></td>
+<td>the two grains the sample's boundary separates (i &lt; j)</td>
+</tr>
+<tr>
+<td><code>x/y/z</code></td>
+<td>sample point coordinates (Å)</td>
+</tr>
+<tr>
+<td><code>area_A2</code></td>
+<td>the sample's area weight (Å²)</td>
+</tr>
+<tr>
+<td><code>H_invA</code></td>
+<td>local mean curvature (1/Å)</td>
+</tr>
+<tr>
+<td><code>K_invA2</code></td>
+<td>local Gaussian curvature (1/Å²)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sign convention.</strong> Curvature is evaluated on the level set of the margin
+difference oriented <code>grain_i → grain_j</code>: <code>H &gt; 0</code> means <code>grain_i</code> is locally
+convex (e.g. a sphere of grain <code>i</code> in a matrix <code>j</code> has <code>H = +1/R</code>); negate <code>H</code>
+for <code>grain_j</code>'s perspective. <code>K</code> is orientation-independent. <strong>Per-grain
+histogram recipe:</strong> select rows with <code>grain_i == g</code> or <code>grain_j == g</code>, and
+negate <code>H</code> where <code>g == grain_j</code> (<code>curvature_hist.plt</code>'s <code>grain</code> variable does
+exactly this). Flat geometries are exactly planar, so every row reports
+<code>H = K = 0</code>. Degenerate samples (near-zero level-set gradient) are dropped
+before writing and tracked by gate <strong>G16</strong>. Per-grain, <code>Σ K·dA</code> over a
+grain's own retained rows is INTENDED to sit well below the grain's full
+closed-surface Gauss-Bonnet budget (face-interior sampling excludes the
+edge/vertex angle-defects meant to carry most of that budget for a
+polyhedral grain) — but in practice is NOT reliably ≈0, or even reliably
+small: gate <strong>G21</strong>'s own calibration found near-flat baselines already
+cluster around one topological unit (4π), and ordinary curved runs
+routinely reach several multiples of it (see <code>docs/gates.md</code> G21 for the
+full numbers) — a standing reliability caveat on this file's H/K columns
+for that run, not proof the model is wrong.</p>
+<p><strong><code>doping.csv</code></strong> (<code>doping.dopants</code> non-empty) — one row per (grain, dopant)
+pair:</p>
+<table>
+<thead>
+<tr>
+<th>column</th>
+<th>meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>grain_id</code></td>
+<td>0-based grain index</td>
+</tr>
+<tr>
+<td><code>element</code></td>
+<td>dopant element symbol</td>
+</tr>
+<tr>
+<td><code>mode</code></td>
+<td><code>substitutional</code> or <code>interstitial</code></td>
+</tr>
+<tr>
+<td><code>n_candidate_sites</code></td>
+<td>candidate host sites (substitutional) or interstitial sites (interstitial) considered in this grain</td>
+</tr>
+<tr>
+<td><code>n_rejected_min_distance</code></td>
+<td>candidates rejected by the <code>min_distance</code> cutoff (interstitial only; always 0 for substitutional)</td>
+</tr>
+<tr>
+<td><code>n_dopant</code></td>
+<td>dopants actually placed in this grain</td>
+</tr>
+<tr>
+<td><code>n_dopant_shell</code></td>
+<td>of those, in the GB shell (<code>margin &lt;= shell_width</code>)</td>
+</tr>
+<tr>
+<td><code>n_dopant_bulk</code></td>
+<td>of those, in the bulk (<code>margin &gt; shell_width</code>)</td>
+</tr>
+<tr>
+<td><code>fraction_shell</code></td>
+<td>achieved dopant fraction among this grain's shell candidate sites (<code>n_dopant_shell / n_candidate_shell</code>; <code>NaN</code> when the shell has no candidates)</td>
+</tr>
+<tr>
+<td><code>fraction_bulk</code></td>
+<td>achieved dopant fraction among this grain's bulk candidate sites (<code>n_dopant_bulk / n_candidate_bulk</code>; <code>NaN</code> when the bulk has no candidates)</td>
+</tr>
+</tbody>
+</table>
+<p>For interstitial dopants, <code>n_candidate_sites</code> is the PRE-rejection count
+(before the <code>min_distance</code> cutoff), so the <code>fraction_shell</code>/<code>fraction_bulk</code>
+denominators <code>n_candidate_shell</code>/<code>n_candidate_bulk</code> refer to the
+post-rejection survivors and satisfy <code>n_candidate_shell + n_candidate_bulk
+= n_candidate_sites - n_rejected_min_distance</code>; for substitutional dopants
+no rejection applies (<code>n_rejected_min_distance = 0</code>) and the identity is
+exact with no subtraction needed.</p>
+<p>Gate <strong>G17</strong> (warn) compares the per-dopant totals (summed over grains) to
+their nominal concentration and target enrichment; gate <strong>G18</strong> (hard)
+re-verifies every interstitial dopant's <code>min_distance</code> on the final structure.</p>
+<p><strong><code>doping_profile.csv</code></strong> (<code>doping.dopants</code> non-empty) — dopant–GB distance
+profile (proxigram), one row per (dopant, GB-distance bin):</p>
+<table>
+<thead>
+<tr>
+<th>column</th>
+<th>meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>element</code>, <code>mode</code></td>
+<td>dopant element and placement mode</td>
+</tr>
+<tr>
+<td><code>bin_lo</code>, <code>bin_hi</code>, <code>bin_center</code></td>
+<td>bin edges/center in Å of distance to the nearest grain boundary</td>
+</tr>
+<tr>
+<td><code>n_dopant</code></td>
+<td>placed dopant atoms of this element in the bin</td>
+</tr>
+<tr>
+<td><code>n_candidate</code></td>
+<td>candidate sites in the bin (interstitial: <code>min_distance</code> survivors; substitutional: eligible host atoms)</td>
+</tr>
+<tr>
+<td><code>local_fraction</code></td>
+<td><code>n_dopant / n_candidate</code> — local dopant fraction on the candidate sublattice at this GB distance (<code>nan</code> for empty bins)</td>
+</tr>
+<tr>
+<td><code>nominal_fraction</code>, <code>shell_width</code>, <code>enrichment</code></td>
+<td>config references, constant per element (<code>shell_width = 0</code>, <code>enrichment = 1</code> when segregation is off)</td>
+</tr>
+</tbody>
+</table>
+<p>The bin width is <code>shell_width / 3</code> when GB segregation is enabled (≥ 3 bins
+resolve the shell step), else <code>max(margin) / 20</code>. For enrichment <code>E</code>,
+<code>local_fraction</code> should step from ≈ <code>E·p_bulk</code> inside the shell to ≈ <code>p_bulk</code>
+outside; without segregation it is flat at the nominal fraction. The
+companion script <strong><code>doping_profile.plt</code></strong> (gnuplot bundle) renders the
+dopant-count histogram and the <code>local_fraction(d)</code> profile against the
+nominal line and shell edge — run <code>gnuplot doping_profile.plt</code> in the output
+directory to produce <code>doping_profile.png</code>; set its <code>element</code> variable to one
+symbol to filter multi-dopant runs. See <code>docs/physics.md</code> (§ doping) for why
+normalising by candidates, not bin volume, is the physically meaningful
+profile.</p>
+<p><strong><code>mdf.csv</code></strong> — misorientation-angle distribution histogram: <code>bin_center_deg,
+area_weighted_density, number_density, haar_random_reference, target_density</code> (the
+last is filled only when an <code>mdf_target</code> is active). <code>haar_random_reference</code> is
+the deterministic random-pair disorientation-angle reference of the actual
+crystal point group — it equals the Mackenzie 1958 law only for the cubic proper
+point group, and is named for what the curve is everywhere (renamed from the
+legacy <code>mackenzie_reference</code>). See <code>docs/physics.md</code>.</p>
+<p><strong><code>odf_mtex.txt</code></strong> — per-grain Bunge Euler angles + volume-fraction weights, with
+an MTEX import header — drop straight into MTEX as a discrete ODF. <code>weight</code> is
+the tessellation-volume fraction — the quantity grainsmith controls (gate G22,
+<code>odf_drift_max</code>). When the run has an atom block with a nonzero total atom
+count, a fifth column, <code>atom_fraction</code> (each grain's share of the exported
+structure's atoms), is added, and the header explains why it differs from
+<code>weight</code> — the atomistic discretisation floor gate <strong>G26</strong> measures. With no
+atom block, or an all-zero atom count, the file stays the original four
+columns, byte for byte.</p>
+<p><strong><code>summary.csv</code></strong> — long format <code>section,key,value</code>: <code>meta</code> (title, version,
+timestamp, the two full 64-hex digests <code>config_sha256</code> and <code>provenance_sha256</code>,
+the payload schema id, and <code>source_date_epoch</code>), box, grains, seed, every
+QA-gate result, composition, SDOT iterations, timings, dependency <code>versions</code>,
+and the <code>environment</code> section. The first stop for "what happened".</p>
+<p>The <code>environment</code> section records what the run's floating-point bytes actually
+depended on, beyond the library versions: <code>blas_name</code>, <code>blas_version</code>,
+<code>blas_detection</code> and <code>blas_openblas_config</code> (NumPy's BLAS is where cross-machine
+last-bit differences come from); <code>os</code>, <code>os_release</code>, <code>platform</code>, <code>machine</code>,
+<code>processor</code> and <code>libc</code>; <code>python_implementation</code> and <code>python_version</code>; <code>numba</code>
+(the version and whether the optional kernel was active, or <code>absent</code>); and
+<code>jobs_requested</code> / <code>jobs_effective</code> (<code>--jobs 0</code> requests "all cores available to
+this process", and the number it expanded to is machine-specific). Unavailable
+probes record <code>unknown</code> rather than failing the run. The <code>timings,*_s</code> rows are
+absent when <code>SOURCE_DATE_EPOCH</code> is set — see <em>Reproducibility scope</em> below.
+<code>meta,timings_status</code> explicitly records <code>measured</code> or
+<code>omitted_source_date_epoch</code>; <code>timing_stages</code> lists the stages that ran and
+<code>timings_log</code> points to <code>run.log</code>, which always records their actual wall
+times, including at <code>verbose: 0</code>. <code>timings_scope</code> states the measurement
+boundary: <code>total_s</code> ends after the primary outputs and excludes summary
+serialization, manifest hashing and shutdown. <code>curvature_s</code>, when present,
+is a submeasurement of <code>analysis_s</code>, not an additional stage to add to it.</p>
+<p>The <code>box</code> section distinguishes the material region from the exported
+simulation cell:</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>vacuum_A</code></td>
+<td>Requested total padding on each nonperiodic axis; half on each side</td>
+</tr>
+<tr>
+<td><code>vacuum_per_axis_A</code>, <code>export_shift_A</code></td>
+<td>Applied x/y/z padding and coordinate shift; zero on periodic axes</td>
+</tr>
+<tr>
+<td><code>export_lengths_A</code></td>
+<td>Exported x/y/z box spans; for triclinic cells these are the restricted-triclinic diagonal spans, with tilts recorded separately</td>
+</tr>
+<tr>
+<td><code>material_volume_A3</code></td>
+<td>Tessellation-box volume before vacuum padding</td>
+</tr>
+<tr>
+<td><code>export_volume_A3</code></td>
+<td>Simulation-cell volume including padding</td>
+</tr>
+<tr>
+<td><code>vacuum_volume_A3</code>, <code>vacuum_fraction</code></td>
+<td>Added padding volume and its fraction of the exported cell volume</td>
+</tr>
+</tbody>
+</table>
+<p><code>vacuum_fraction</code> describes the explicitly added vacuum, not atomic-scale
+free volume, porosity, or voids left by boundary overlap removal.</p>
+<p>The <code>analysis</code> section records <code>csl</code>, <code>gb_character</code>, <code>gb_curvature</code>,
+<code>statistics</code> and the configured <code>voxel_grid</code>; <code>texture,scheme</code> is present
+for every orientation scheme and <code>overlap,enabled</code> is always explicit.
+The <code>sigma3</code> fraction rows have companion <code>csl_status</code> and
+<code>angle_window_status</code> values: <code>measured</code>, <code>not_evaluated</code>, or
+<code>no_boundary_area</code>. Empty/<code>nan</code> numerical cells are thus distinguishable
+from a measured zero without breaking the numerical column contract.</p>
+<p>The <code>composition</code> section's <code>{sp}_final_fraction</code> rows reflect the FINAL
+(post-doping) composition by design — this is the atom-count-weighted mixture
+actually written to disk, dopant species included. Gate <strong>G9</strong>, by contrast,
+measures the PRE-doping host snapshot (species drift from overlap removal
+only): comparing dopant achieved-vs-nominal fractions is gate <strong>G17</strong>'s job,
+whose per-dopant rows live in the <code>doping</code> section, keyed
+<code>dopant{k}_{element}_*</code> where <code>k</code> is the dopant's index in
+<code>doping.dopants</code> (<code>dopant{k}_{element}_element</code>,
+<code>…_nominal_fraction</code>, <code>…_achieved_fraction</code>, <code>…_enrichment_target</code>,
+<code>…_enrichment_achieved</code>, <code>…_rejected_min_distance</code>) — see
+<code>doping.csv</code> above for the per-grain breakdown. The index is part of the key
+because <code>doping.dopants</code> does not require distinct elements: a bulk pass and
+a GB-enriched pass of the SAME species are a documented use, and keying on
+the symbol alone would make the two collide on one summary row.</p>
+<p><code>nominal_basis</code> and <code>final_basis</code> make that pre/post-doping distinction
+explicit. Each species also has <code>{sp}_n_final</code> and
+<code>{sp}_final_mass_fraction</code>; <code>n_species_final</code> counts the species present.
+The <code>lammps_masses</code> section records the actual exported masses, including
+<code>output.lammps.masses</code> overrides. In the <code>atoms</code> section, <code>mass_total_amu</code>,
+<code>number_density_material_per_A3</code>, <code>number_density_export_per_A3</code>,
+<code>density_material_g_cm3</code> and <code>density_export_g_cm3</code> use the FINAL atom
+counts and those same masses. The material/export densities differ only
+in their denominators (before/after vacuum padding). They are box-average
+densities of the generated, unrelaxed structure, not measurements of an
+equilibrated bulk phase; <code>crystal,density_g_cm3</code> remains the ideal-crystal
+basis density. Multiphase nominal atom fractions use expected atom counts
+(<code>phase volume * ideal atomic number density</code>), not volume fractions alone.</p>
+<p>The <code>odf</code> section (gate <strong>G26</strong>, report-only) records the atomistic
+ODF-weighting discretisation floor: <code>weighting_tv_volume_vs_atoms</code> (the
+total-variation distance between the tessellation-volume weight vector
+<code>odf_mtex.txt</code> exports/<code>odf_drift_max</code> controls and the atom-count weight
+vector the exported structure actually carries), <code>weighting_max_dw</code> (the
+largest single-grain weight discrepancy), and <code>atoms_per_grain_mean</code>. All
+three are absent entirely when the run has no atom block at all (never a
+false <code>0.0</code>); on a multiphase run each key is instead suffixed
+<code>_&lt;phase name&gt;</code> and written once per phase (atom number densities differ
+by phase, so a global figure would be meaningless), with an empty cell
+for a phase whose own atom counts happen to be absent. See <code>docs/gates.md</code>
+G26 and <code>docs/physics.md</code> §4 for the measured floor and its
+<code>(atoms/grain)^(-1/3)</code> surface-scaling.</p>
+<p>For angle-shaping runs, the <code>mdf</code> section states the <code>objective</code>
+(<code>area_weighted_disorientation_angle</code>) and <code>odf_constraint</code> (<code>measure_only</code>
+or <code>tv_cap</code>). It also records <code>odf_kernel_halfwidth_requested_deg</code>,
+<code>odf_kernel_degree</code>, <code>odf_kernel_halfwidth_effective_deg</code> and
+<code>odf_null_samples</code>. These describe the configured diagnostic; G22 states
+whether its memory-limited kernel calculation actually ran. A nonrepresentable
+kernel parameter is marked <code>not_evaluated</code>, never reported as a zero width.</p>
+<p><strong><code>slice_&lt;axis&gt;&lt;pos&gt;.csv</code></strong> (when <code>analysis.section</code> set) — one row per section
+pixel: the two in-plane coordinates, the grain id, and the grain's Bunge Euler
+angles — directly comparable to an experimental EBSD map.</p>
+<h2 id="the-publication-trio">The publication trio</h2>
+<p><strong><code>statistics.csv</code></strong> — long format <code>section,key,value</code>. Sections:</p>
+<ul>
+<li><code>grain_size</code>: <code>n_grains</code>, equivalent-diameter <code>d_eq_{mean,std,min,max}_A</code>,
+  log-normal <code>lognormal_{mu,sigma}_hat</code>, and <code>lognormal_ks_{statistic,p}</code>.</li>
+<li><code>sphericity</code>: Wadell sphericity <code>{estimator, mean, std, min, max}</code>.</li>
+<li><code>topology</code>: faces-per-grain stats.</li>
+<li><code>boundaries</code>: <code>n_boundaries</code>, total GB area, surface density <code>S_V_per_A</code>.</li>
+<li><code>triple_junctions</code>: total TJ length and line density <code>L_V_per_A2</code>.</li>
+<li><code>gb_character</code>: tilt/twist/mixed/undefined area fractions.</li>
+<li><code>csl</code> (if <code>analysis.csl</code>): <code>area_fraction_sigma3</code>, <code>area_fraction_non_csl</code>.</li>
+<li><code>mdf</code>: <code>mean_misorientation_deg</code>, <code>lagb_area_fraction</code>.</li>
+<li><code>roughness</code> (<code>perturbed_distance</code> + <code>spectrum: self_affine</code> only): <code>hurst_target</code>, <code>hurst_estimated</code>.</li>
+<li>per-phase <code>grain_size_&lt;name&gt;</code> / <code>sphericity_&lt;name&gt;</code> sections (multiphase), and
+  <code>S_V</code> split into same-phase vs interphase.</li>
+</ul>
+<p><strong><code>microstructure.json</code></strong> — schema <code>grainsmith/microstructure/v1</code>: a strict-JSON
+record of the whole run (config echo, provenance digests, execution environment,
+gate results, per-grain and per-boundary records, statistics). NaN → <code>null</code>.
+This is the Zenodo/dataset-repository artifact.</p>
+<p>It carries <strong>no wall-clock stage timings</strong>, but it <em>does</em> carry the run's UTC
+timestamp (<code>provenance.timestamp_utc</code>) and the <code>environment</code> section, so two
+re-runs of the same config are byte-identical only when the clock is frozen with
+<code>SOURCE_DATE_EPOCH</code> (see <em>Reproducibility scope</em> below) and the environment is
+unchanged. Its <code>provenance</code> block holds the full 64-hex <code>config_sha256</code> and
+<code>provenance_sha256</code> — the truncated 12-hex forms in the file headers are display
+forms of the same two digests.</p>
+<p><strong><code>METHODS.md</code></strong> — an auto-generated methods paragraph for THIS run: the exact
+algorithm chain with parameter values and numbered literature citations — a
+copy-paste starting point for the paper's Methods section.</p>
+<h2 id="estimator-bias-notes-honest-stated-per-section">Estimator-bias notes (honest, stated per section)</h2>
+<p>The <code>estimator</code> key in each <code>statistics.csv</code> section records <em>how</em> a quantity was
+measured, because <strong>voxel-based estimators carry geometric bias that grainsmith
+reports rather than silently corrects</strong>:</p>
+<ul>
+<li><strong>Sphericity / S_V / L_V — flat vs voxel.</strong> Flat geometry uses <em>exact polyhedral</em>
+  areas, volumes and triple-line lengths. Curved/voxel geometry estimates them
+  from the voxel grid, where an oblique boundary face is over-counted by up to a
+  factor <strong>√3</strong> (axis-aligned voxel faces approximating a tilted plane) and triple
+  lines by the voxel-edge staircase. The bias shrinks with finer
+  <code>analysis.voxel_grid</code>. The <code>estimator</code> field says which applies.</li>
+<li><strong>Log-normal KS p-value is optimistic.</strong> <code>lognormal_ks_p</code> is computed with the
+  <em>fitted</em> μ̂, σ̂, so it is anti-conservative (the Lilliefors caveat; Lilliefors
+  1967). Treat it as a descriptive goodness indicator, not a hypothesis test at
+  face value.</li>
+<li><strong>CSL Σ assignment is cubic-only</strong>; blank for non-cubic point groups.</li>
+<li><strong>G13 Hurst</strong> carries a constant finite-band/finite-size offset (measured:
+  ~0.1, low-biased) — <code>hurst_estimated</code> vs <code>hurst_target</code> reflects this, which
+  is why G13 is a warn gate.</li>
+</ul>
+<h2 id="diagnostics-metaverbose-gt-3">Diagnostics (<code>meta.verbose &gt;= 3</code>)</h2>
+<p>At verbosity 3 the pipeline dumps extra per-run diagnostics into
+<code>&lt;outdir&gt;/diagnostics/</code> (plain-text, <code>#</code>-commented provenance header):</p>
+<table>
+<thead>
+<tr>
+<th>file</th>
+<th>written when</th>
+<th>columns/content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>grain_atom_counts.dat</code></td>
+<td>always at verbose ≥ 3</td>
+<td><code>grain_id n_atoms</code> — final atom count per grain</td>
+</tr>
+<tr>
+<td><code>warp_field_stats.dat</code></td>
+<td><code>boundaries.curved.method: warp</code> only</td>
+<td><code>max_grad_u</code>, <code>rms_u_x/y/z</code>, <code>max_norm_u</code> — warp-field gradient/amplitude summary (the same quantities gate <strong>G6</strong> checks)</td>
+</tr>
+<tr>
+<td><code>voxel_histogram.dat</code></td>
+<td>any curved (non-flat) geometry</td>
+<td><code>grain_id n_voxels</code> — voxel count per grain on the analysis grid</td>
+</tr>
+</tbody>
+</table>
+<h2 id="provenance">Provenance</h2>
+<ul>
+<li><strong><code>resolved_config.yaml</code></strong> — the fully-resolved config (all defaults filled,
+  all <code>auto</code> values computed) actually used by the run. Re-running it reproduces
+  the result. Everything below its two <code>#</code> header lines is exactly the byte
+  sequence hashed into <code>config_sha256</code>, which is what lets <code>grainsmith verify</code>
+  re-derive that digest from the shipped file.</li>
+<li><strong><code>run.log</code></strong> — the INFO/DEBUG log (verbosity from <code>meta.verbose</code>); ASCII-safe
+  for Windows cp1254 consoles. It is the one output whose content is wall-clock
+  by design, so <code>MANIFEST.txt</code> lists it <em>without</em> a digest.</li>
+<li><strong><code>MANIFEST.txt</code></strong> — SHA-256 and byte size of every output file this run wrote,
+  for integrity/FAIR. Its comment header repeats the run's provenance line and
+  then the two full-length (64-hex) digests and the payload schema id:</li>
+</ul>
+<p><code># grainsmith 1.1.0 | 2026-09-01T12:00:00Z | seed=555666 | config sha256=fd1c4ecb04ac | provenance sha256=9a3f0c1d2e4b
+  # config_sha256 = &lt;64 hex&gt;
+  # provenance_sha256 = &lt;64 hex&gt;
+  # provenance_payload_schema = grainsmith-provenance/v1
+  # sha256  size_bytes  path (relative to this file)</code></p>
+<p>Stale files left in a reused output directory are deliberately <strong>not</strong> listed,
+  so a leftover artefact is never attributed to this run.</p>
+<h3 id="the-two-digests">The two digests</h3>
+<p><code>config_sha256</code> is the SHA-256 of the canonical resolved config alone — it
+identifies the <em>input</em>. <code>provenance_sha256</code> is the SHA-256 of a small payload
+that also contains the grainsmith version string, so it identifies <em>input +
+producer</em>: the version an output claims cannot be altered without invalidating
+the digest. Both are recorded full-length in <code>MANIFEST.txt</code>, <code>summary.csv</code>
+(<code>meta,config_sha256</code> / <code>meta,provenance_sha256</code>) and <code>microstructure.json</code>;
+provenance headers show the first 12 hex of each.</p>
+<h3 id="verifying-a-directory">Verifying a directory</h3>
+<pre><code class="language-bash">grainsmith verify ./out          # 0 = OK, 1 = mismatch, 2 = cannot verify
+grainsmith verify ./out --strict --expect-version 1.1.0
+</code></pre>
+<p>See the <a href="manual.html">user manual</a> for the full check list.</p>
+<h3 id="reproducibility-scope">Reproducibility scope</h3>
+<p>A fixed <code>seed.value</code> reproduces the scientific payload byte-for-byte for any
+<code>--jobs</code> value, on the same platform and dependency versions. Two caveats that
+the table in the <a href="manual.html">user manual</a> spells out in full:</p>
+<ol>
+<li><strong>Timestamps.</strong> Every file that permits comments carries the run's UTC
+   timestamp in its provenance header, so two default runs are not byte-identical
+   as whole files, and <code>MANIFEST.txt</code> — which hashes them — differs in every
+   digest. Set <code>SOURCE_DATE_EPOCH</code> to freeze the clock (and drop the wall-clock
+   <code>timings,*_s</code> rows from <code>summary.csv</code>); the whole directory except <code>run.log</code>
+   is then byte-identical between runs.</li>
+<li><strong>Platform.</strong> A different BLAS build or CPU architecture can change the last
+   floating-point bit of a fraction of atom coordinates, and a different
+   NumPy/SciPy/spglib <em>version</em> can change the structure outright. The
+   <code>environment</code> section of <code>summary.csv</code> records what actually ran;
+   <code>constraints-repro.txt</code> pins the versions to reproduce it.</li>
+</ol>
+<div class="prevnext">
+<a class="prev" href="gates.html"><span>← Previous</span><strong>QA gates (G1–G26)</strong></a>
+<a class="next" href="developer.html"><span>Next →</span><strong>Developer guide</strong></a>
+</div>
+</article>
+<aside class="toc" aria-label="On this page"><div class="toc-title">On this page</div><ul>
+<li class="toc-l2"><a href="#file-inventory">File inventory</a></li>
+<li class="toc-l2"><a href="#atomistic-models">Atomistic models</a></li>
+<li class="toc-l2"><a href="#reports">Reports</a></li>
+<li class="toc-l2"><a href="#the-publication-trio">The publication trio</a></li>
+<li class="toc-l2"><a href="#estimator-bias-notes-honest-stated-per-section">Estimator-bias notes (honest, stated per section)</a></li>
+<li class="toc-l2"><a href="#diagnostics-metaverbose-gt-3">Diagnostics (meta.verbose &amp;gt;= 3)</a></li>
+<li class="toc-l2"><a href="#provenance">Provenance</a></li>
+<li class="toc-l3"><a href="#the-two-digests">The two digests</a></li>
+<li class="toc-l3"><a href="#verifying-a-directory">Verifying a directory</a></li>
+<li class="toc-l3"><a href="#reproducibility-scope">Reproducibility scope</a></li>
+</ul></aside>
+</div>
+</main>
+</body>
+</html>

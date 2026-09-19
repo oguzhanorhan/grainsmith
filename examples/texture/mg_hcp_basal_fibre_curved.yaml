@@ -1,0 +1,156 @@
+# ===================== grainsmith run configuration =====================
+# Mg (HCP), basal fibre texture on self-affine curved grain boundaries.
+# ~20.7 nm grains in a 36 nm cube, ~2.0e6 atoms.
+#
+# WHAT THIS EXAMPLE IS FOR
+# ------------------------
+# Two things a cubic example cannot show.
+#
+#   1. THE REFERENCE CURVE IS NOT "THE MACKENZIE DISTRIBUTION".
+#      Mackenzie's 1958 law is the random-pair disorientation-ANGLE
+#      distribution of the CUBIC proper point group (24 rotations, angles
+#      up to 62.8 deg). Mg is P6_3/mmc: the proper point group 622 has
+#      TWELVE rotations and its random-pair angle distribution is a
+#      different curve, reaching ~94 deg. grainsmith therefore calls the
+#      general quantity `haar_random` and computes it per point group by a
+#      deterministic Monte-Carlo with a fixed internal seed; `mackenzie` is
+#      accepted as a deprecated alias and warns, and the warning says
+#      explicitly when the configured group is not cubic. mdf.csv's
+#      `haar_random_reference` column below IS that non-cubic curve -- put
+#      it next to the cubic one from the Cu example and the two disagree
+#      over the whole range, which is the entire reason for the rename.
+#
+#      Note also what is NOT here: `sigma3_angle_enriched` is rejected at
+#      config resolve for a non-cubic space group (Sigma3 is a cubic CSL
+#      class), so this run targets the honest `haar_random` reference.
+#
+#   2. A REAL, MUCH-STUDIED TEXTURE. Rolled and extruded Mg alloys develop
+#      a strong basal fibre: the c-axis [0001] aligns with the sheet normal
+#      while the a-axes stay free in the plane. That is a FIBRE, not a set
+#      of discrete components -- one crystal direction is pinned, one
+#      rotational degree of freedom is left uniform -- and it is what makes
+#      Mg sheet notoriously anisotropic. The `fiber` scheme samples exactly
+#      that: Haar-uniform about the fibre axis, Gaussian tilt away from it.
+#
+# GEOMETRY (verified against the installed code)
+# ----------------------------------------------
+#   * N=10 grains in a 360.0 A cube -> r_ws = 103.66 A, d_eq = 20.7 nm;
+#     min_seed_distance: auto resolves to that same r_ws.
+#   * Mg HCP a = 3.209 A, c = 5.211 A (c/a = 1.624, near-ideal) -> 2
+#     atoms/cell, d_nn = 3.1971 A, 1.737 g/cm3, 12 proper rotations.
+#     2,007,920 atoms before overlap removal.
+#   * l_min = 6.39 A = 2*d_nn. Grid heuristic -> 226^3, UNCAPPED, so
+#     h_field = 360/226 = 1.593 A and l_min >= 2*h_field clears with
+#     +100.6% margin.
+#   * l_max = 103.7 A ~= r_ws; <= min(L)/2 = 180 A. Band = 4.02 octaves.
+#   * amplitude 7.34 A = 85% of a_max = 0.5*103.66/6 = 8.638 A (total_rms
+#     convention: the number IS the field's total RMS).
+#
+# COST
+# ----
+#   ~2e6 atoms, a 226^3 analysis grid, ~12 colour fields (~0.55 GB of field
+#   workspace). The lightest of the three curved texture examples.
+#
+# Run:
+#   grainsmith validate examples/texture/mg_hcp_basal_fibre_curved.yaml
+#   grainsmith generate examples/texture/mg_hcp_basal_fibre_curved.yaml --jobs 4
+# =========================================================================
+
+meta:
+  title: "Mg HCP, basal fibre on self-affine curved GBs, ~20.7 nm grains"
+  verbose: 1
+
+runtime:
+  # Per-ALLOCATION guard (Section 13), not a total-RSS cap: it bounds any
+  # SINGLE array (analysis voxel grid, one self-affine colour field, one
+  # grain's lattice grid). Largest single allocation here is ~0.55 GB; 8 GB
+  # leaves room while still failing fast on a mistyped parameter. The
+  # parallel fill divides this by the worker count to decide how many
+  # workers actually fit.
+  memory_limit_gb: 8.0
+
+seed:
+  mode: fixed
+  value: 271828
+
+box:
+  lengths: [360.0, 360.0, 360.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 10
+  min_seed_distance: auto     # -> r_ws = 103.66 A
+  lloyd_iterations: 0
+
+crystal:
+  space_group:
+    number: 194               # P6_3/mmc — HCP. Proper point group 622:
+                              # 12 rotations, NOT the cubic 24.
+  lattice:
+    a: 3.209                  # Mg, A
+    c: 5.211                  # c/a = 1.624 (ideal is 1.633)
+  wyckoff_sites:
+    - element: Mg
+      coords: [0.3333333333333333, 0.6666666666666666, 0.25]
+      letter: c               # 2c -> the two-atom HCP motif
+
+orientation:
+  scheme: fiber
+  fiber:
+    crystal_axis: [0, 0, 1]   # [0001], the c-axis
+    sample_direction: z       # ... pinned to the sheet normal: basal fibre
+    spread_deg: 12.0          # tilt spread; rolled Mg is typically strong
+                              # but not perfect, ~10-15 deg is realistic
+  mdf_target:
+    # The general, point-group-correct reference. For THIS crystal it is a
+    # 12-rotation curve reaching ~94 deg, NOT Mackenzie's cubic law -- that
+    # identity holds only for m-3m. Writing `mackenzie` here would still
+    # work but emits a DeprecationWarning naming exactly this mismatch.
+    type: haar_random
+    annealing_steps: 40000
+    t0: 0.05
+    cooling: 0.9995
+    # Bound the volume-weighted ODF drift the assignment anneal introduces
+    # (see the Cu example's header for why the ODF is NOT invariant under a
+    # permutation). Gate G22 re-measures it independently.
+    odf_drift_max: 0.03
+
+boundaries:
+  geometry: curved
+  curved:
+    method: perturbed_distance
+    spectrum: self_affine
+    hurst: 0.7
+    amplitude: 7.34           # A, total RMS; 85% of a_max = 8.638 A
+    l_min: 6.39               # = 2*d_nn; clears Nyquist by +100.6%
+    l_max: 103.7              # ~= r_ws; <= min(L)/2 = 180 A
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower
+
+analysis:
+  voxel_grid: auto            # -> 226^3, uncapped at this l_min
+  gb_character: true
+  csl: false                  # CSL Sigma tables here are cubic; reporting
+                              # them for HCP would be a category error.
+  statistics: true
+  per_atom_margin: false
+  section: {axis: z, position: 0.5}
+
+output:
+  directory: ./out_mg_hcp_basal_fibre_curved
+  lammps:
+    filename: polycrystal.data
+    atom_style: atomic
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    summary: summary.csv
+    grains: grains.csv
+    boundaries: boundaries.csv
+  gnuplot:
+    enabled: true
+  methods_snippet: true

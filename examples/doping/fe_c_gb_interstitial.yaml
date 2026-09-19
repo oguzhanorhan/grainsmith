@@ -1,0 +1,90 @@
+# ===================== grainsmith run configuration =====================
+# BCC Fe with 2 at% C, GB-segregated octahedral interstitials.
+#
+# WHAT THIS TEACHES
+#   * The doping stage: interstitial dopants placed on the
+#     bcc_octahedral preset sublattice, after overlap removal.
+#   * GB segregation: enrichment E = 5 concentrates C in a 3 Å shell
+#     around the grain boundaries (histogram it from doping.csv).
+#   * Gates G17 (achieved vs nominal fraction + enrichment, warn) and
+#     G18 (min-distance re-verification, hard).
+#   * Determinism: same seed => same dopant sites for ANY --jobs value.
+#
+# HOW TO RUN
+#   grainsmith validate examples/doping/fe_c_gb_interstitial.yaml
+#   grainsmith generate examples/doping/fe_c_gb_interstitial.yaml
+#   Check doping.csv for the per-grain shell/bulk split and
+#   doping_profile.csv / doping_profile.plt for the enrichment profile.
+
+meta:
+  title: "BCC Fe + 2 at% C, GB-segregated octahedral interstitials"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 314159
+
+box:
+  lengths: [60.0, 60.0, 60.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 8
+  min_seed_distance: auto
+  lloyd_iterations: 0
+
+crystal:
+  space_group:
+    number: 229              # Im-3m
+  lattice:
+    a: 2.866                 # Å (repo-pinned Fe value)
+  wyckoff_sites:
+    - element: Fe
+      coords: [0.0, 0.0, 0.0]
+
+orientation:
+  scheme: random_uniform
+
+boundaries:
+  geometry: flat
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower
+
+doping:
+  dopants:
+    - element: C
+      mode: interstitial
+      sites: bcc_octahedral
+      concentration: 0.02
+      min_distance: 1.2      # Å; bcc octahedral-host spacing is a/2 = 1.433
+      gb_segregation:
+        enabled: true
+        shell_width: 3.0
+        enrichment: 5.0
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false
+  per_atom_margin: false
+
+output:
+  directory: ./out_fe_c_gb_interstitial
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

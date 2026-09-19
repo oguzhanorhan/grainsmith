@@ -1,0 +1,83 @@
+# ===================== grainsmith run configuration =====================
+# HCP Ti, 6 grains, 100×100×50 Å thin film (periodic xy, free z).
+#
+# WHAT THIS TEACHES
+#   * Slab/thin-film geometry: box.periodic = [true, true, false] frees
+#     the z axis and box.vacuum pads it, so grains sit between two free
+#     surfaces instead of wrapping through a fully periodic box.
+#   * The hexagonal crystal family (space group 194, P6_3/mmc): a = b,
+#     gamma fixed at 120°, c free.
+#   * A single 2c Wyckoff site is the IDEAL HCP structure — no other
+#     orbit is needed (a double-HCP-like motif would add a 2a site too).
+#
+# HOW TO RUN
+#   grainsmith validate examples/basics/hcp_ti_thin_film.yaml
+#   grainsmith generate examples/basics/hcp_ti_thin_film.yaml
+#   Check view.plt / box.dat for the free-surface geometry and
+#   grains.csv's z_plane_hkl column for the exposed surface planes.
+
+meta:
+  title: "HCP Ti, 6 grains, 100×100×50 Å thin film"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 111222
+
+box:
+  lengths: [100.0, 100.0, 50.0]
+  periodic: [true, true, false]   # free z-axis → slab/thin-film mode
+  vacuum: 10.0                    # Å of vacuum on the free z surfaces
+
+grains:
+  number: 6
+  min_seed_distance: auto
+  lloyd_iterations: 0
+
+crystal:
+  space_group:
+    number: 194           # P6_3/mmc (HCP)
+    setting: null
+  lattice:
+    a: 2.9508             # Ti a-parameter, Å
+    c: 4.6855             # Ti c-parameter, Å
+  wyckoff_sites:
+    # α-Ti is the ideal HCP structure: a SINGLE 2c site (orbit of 2 atoms,
+    # (1/3,2/3,1/4) and (2/3,1/3,3/4)).  Adding 2a as well would describe
+    # a 4-atom double-HCP-like motif, not titanium.
+    - {element: Ti, coords: [0.3333333333333333, 0.6666666666666667, 0.25], letter: c}
+
+orientation:
+  scheme: random_uniform
+
+boundaries:
+  geometry: flat
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false
+  per_atom_margin: false
+
+output:
+  directory: ./out_hcp_ti_film
+  lammps:
+    filename: polycrystal.data
+    atom_style: atomic
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false
+    format: ply

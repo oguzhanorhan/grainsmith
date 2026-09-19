@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Developer guide · grainsmith</title>
+<style>
+
+:root{
+  --sidebar-w: 300px; --toc-w: 240px;
+  --accent:#b5651d; --accent-2:#1f6f8b;
+  --ink:#1a1f24; --ink-soft:#4a545e; --line:#e3e7ea;
+  --bg:#ffffff; --bg-side:#1c2530; --bg-side-2:#243040;
+  --code-bg:#f5f7f9; --side-ink:#c9d3de; --side-ink-soft:#8a97a6;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:Georgia,"Times New Roman",Times,serif;
+  color:var(--ink); background:var(--bg); line-height:1.68; font-size:16px;
+}
+/* ---- full-screen layout: fixed sidebar + fluid content ---- */
+.sidebar{
+  position:fixed; top:0; left:0; width:var(--sidebar-w); height:100vh;
+  overflow-y:auto; background:var(--bg-side); color:var(--side-ink);
+  padding:22px 0 40px; z-index:20;
+}
+.brand{padding:6px 24px 20px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:14px;}
+.brand a{color:#fff;font-weight:700;font-size:1.35rem;text-decoration:none;letter-spacing:.5px;}
+.brand-sub{display:block;color:var(--side-ink-soft);font-size:.8rem;margin-top:2px;}
+.nav-group{margin:0 0 6px;}
+.nav-group-title{
+  padding:12px 24px 5px;font-size:.72rem;text-transform:uppercase;
+  letter-spacing:.09em;color:var(--side-ink-soft);font-weight:700;
+}
+.nav-group ul{list-style:none;margin:0;padding:0;}
+.nav-group li a{
+  display:block;padding:6px 24px 6px 28px;color:var(--side-ink);
+  text-decoration:none;font-size:.92rem;border-left:3px solid transparent;
+}
+.nav-group li a:hover{background:var(--bg-side-2);color:#fff;}
+.nav-group li.active a{
+  color:#fff;border-left-color:var(--accent);background:var(--bg-side-2);font-weight:600;
+}
+.content{margin-left:var(--sidebar-w);min-height:100vh;}
+.content-inner{
+  display:grid;grid-template-columns:minmax(0,1fr) var(--toc-w);
+  gap:48px;max-width:1500px;margin:0 auto;padding:52px 64px 96px;
+}
+article{min-width:0;}
+/* ---- in-page TOC (sticky, right rail) ---- */
+.toc{position:sticky;top:36px;align-self:start;font-size:.86rem;
+  border-left:1px solid var(--line);padding-left:18px;max-height:calc(100vh-72px);overflow-y:auto;}
+.toc-title{font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--ink-soft);margin-bottom:10px;}
+.toc ul{list-style:none;margin:0;padding:0;}
+.toc li{margin:3px 0;}
+.toc li a{color:var(--ink-soft);text-decoration:none;display:block;line-height:1.4;}
+.toc li a:hover{color:var(--accent);}
+.toc-l3{padding-left:14px;font-size:.82rem;}
+/* ---- typography ---- */
+article h1{font-size:2.05rem;line-height:1.2;margin:.1em 0 .7em;font-weight:750;letter-spacing:-.01em;}
+article h2{font-size:1.5rem;margin:1.9em 0 .6em;padding-bottom:.28em;
+  border-bottom:2px solid var(--line);font-weight:700;}
+article h3{font-size:1.18rem;margin:1.6em 0 .5em;font-weight:650;}
+article h4{font-size:1.02rem;margin:1.3em 0 .4em;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;}
+article p{margin:.85em 0;}
+article a{color:var(--accent-2);text-decoration:none;}
+article a:hover{text-decoration:underline;}
+article strong{font-weight:650;}
+article img{max-width:100%;height:auto;display:block;margin:1.4em auto;
+  border:1px solid var(--line);border-radius:8px;background:#fff;}
+article ul,article ol{padding-left:1.5em;margin:.7em 0;}
+article li{margin:.32em 0;}
+article blockquote{
+  margin:1.3em 0;padding:.7em 1.2em;border-left:4px solid var(--accent);
+  background:#fbf6f0;color:var(--ink);border-radius:0 6px 6px 0;
+}
+article blockquote p{margin:.4em 0;}
+/* ---- display math (MathJax typesets these; this is the no-JS/offline fallback) ---- */
+.math-display{
+  margin:1.5em 0;padding:.9em 1.2em;text-align:center;overflow-x:auto;
+  font-family:"Cambria Math","STIX Two Math",Cambria,"Times New Roman",serif;
+  font-size:1.05rem;color:var(--ink);
+}
+/* ---- code ---- */
+code{font-family:"SF Mono",SFMono-Regular,ui-monospace,Menlo,Consolas,monospace;
+  font-size:.88em;background:var(--code-bg);padding:.12em .38em;border-radius:4px;
+  color:#b03a2e;border:1px solid var(--line);}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;
+  padding:16px 18px;overflow-x:auto;margin:1.2em 0;line-height:1.5;}
+pre code{background:none;border:none;padding:0;color:var(--ink);font-size:.86rem;}
+/* ---- tables (wide, striped, scrollable) ---- */
+article table{border-collapse:collapse;width:100%;margin:1.3em 0;font-size:.9rem;display:block;overflow-x:auto;}
+article thead th{background:#2c3844;color:#fff;text-align:left;padding:9px 12px;font-weight:600;white-space:nowrap;}
+article tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top;}
+article tbody tr:nth-child(even){background:#f8fafb;}
+article tbody code{white-space:nowrap;}
+/* ---- prev/next ---- */
+.prevnext{display:flex;justify-content:space-between;gap:16px;margin-top:3.5em;
+  padding-top:1.6em;border-top:1px solid var(--line);}
+.prevnext a{flex:1;max-width:48%;padding:14px 18px;border:1px solid var(--line);
+  border-radius:8px;text-decoration:none;color:var(--ink);background:#fcfdfe;}
+.prevnext a:hover{border-color:var(--accent);background:#fbf6f0;}
+.prevnext .next{text-align:right;}
+.prevnext span{display:block;font-size:.78rem;color:var(--ink-soft);margin-bottom:3px;}
+.prevnext strong{font-size:.98rem;color:var(--accent-2);font-weight:600;}
+/* ---- mobile ---- */
+.menu-toggle{display:none;position:fixed;top:12px;left:12px;z-index:30;
+  background:var(--bg-side);color:#fff;border:none;border-radius:6px;
+  width:42px;height:42px;font-size:1.3rem;cursor:pointer;}
+@media (max-width:1080px){
+  .content-inner{grid-template-columns:minmax(0,1fr);}
+  .toc{display:none;}
+}
+@media (max-width:820px){
+  .menu-toggle{display:block;}
+  .sidebar{transform:translateX(-100%);transition:transform .2s ease;}
+  body.nav-open .sidebar{transform:translateX(0);}
+  .content{margin-left:0;}
+  .content-inner{padding:64px 22px 72px;}
+}
+
+</style>
+<script>
+window.MathJax = {
+  tex: { displayMath: [['\\[', '\\]']], processEscapes: true },
+  options: { enableMenu: false }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</head>
+<body>
+<button class="menu-toggle" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+<nav class="sidebar" aria-label="Documentation navigation">
+<div class="brand"><a href="index.html">grainsmith</a><span class="brand-sub">documentation</span></div>
+<div class="nav-group"><div class="nav-group-title">Getting started</div><ul>
+<li><a href="index.html">Overview</a></li>
+<li><a href="manual.html">User manual</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Concepts &amp; physics</div><ul>
+<li><a href="architecture.html">Architecture</a></li>
+<li><a href="geometry.html">Grain geometry</a></li>
+<li><a href="physics.html">Physics &amp; conventions</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Reference</div><ul>
+<li><a href="config_reference.html">Configuration reference</a></li>
+<li><a href="gates.html">QA gates (G1–G26)</a></li>
+<li><a href="outputs.html">Outputs</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Developer</div><ul>
+<li class="active"><a href="developer.html">Developer guide</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Help</div><ul>
+<li><a href="faq.html">FAQ &amp; troubleshooting</a></li>
+</ul></div>
+</nav>
+<main class="content">
+<div class="content-inner">
+<article>
+<h1>Developer guide</h1>
+<p>This page is for users who want to <strong>call grainsmith from Python</strong> or <strong>extend
+it</strong> — add a tessellation backend, an orientation sampler, or an output writer
+— and for anyone working ON the codebase itself. It documents the repository
+layout, the programmatic entry point, the data-object contracts, the public
+API of each scientific subpackage, the determinism contract and the parallel
+pattern that implements it, the extension points, the test suite's
+conventions (including the drift-proof documentation tests), and the dev
+install.</p>
+<p>Read <a href="architecture.html">architecture.md</a> first for the pipeline and module map;
+this page assumes you know the stage chain.</p>
+<h2 id="1-repository-layout">1. Repository layout</h2>
+<pre><code>src/grainsmith/            the engine (importable as `grainsmith`)
+  cli.py                    generate / validate / verify / info / ui subcommands
+  provenance.py             version-bound digest, SOURCE_DATE_EPOCH, environment capture
+  verify.py                 `grainsmith verify`: MANIFEST re-hash + version-binding checks
+  pipeline.py                run() orchestrator: the stage chain, summary.csv assembly
+  qa.py                      the QAGates registry + every gate_gN_* evaluator
+  constants.py                physics/gate thresholds and tolerances live here
+                              as the single source for those constants
+  rng.py, seeding.py          RNGBundle (deterministic child streams), RSA + Lloyd seeding
+  phases.py, memory.py, errors.py   multiphase LPT partition, the total-RSS
+                              monitor, the exception hierarchy
+  config/                     pydantic schema, YAML -&gt; RunConfig resolution,
+                              schema introspection (drives config_reference.md)
+  crystal/                    lattice geometry, Wyckoff expansion via spglib,
+                              space-group verification, CIF ingestion
+  orientation/                 quaternion algebra, disorientation, texture/MDF sampling
+  tessellation/                 every grain-partition backend (flat, power, warp,
+                              weighted/anisotropic, imported-voxel via voxel_import,
+                              perturbed, single) plus voxel.py's shared VoxelGrid
+                              GB-membership helper and the base.Tessellation contract
+  atoms/                       per-grain lattice fill, PBC-aware overlap removal,
+                              dopant insertion
+  analysis/                    grain/boundary reports, publication statistics, GB curvature
+  io/                          every output writer + the LAMMPS parse-back (gate G10)
+  ui/                          FastAPI backend for an interactive UI (&quot;grainsmith
+                              studio&quot;) planned for a future release; not enabled
+                              in this version (architecture.md §4)
+tests/                      pytest suite: one test_&lt;module&gt;.py per src module
+                              (roughly), plus test_docs.py, test_end_to_end.py,
+                              test_fuzz.py; conftest.py holds the shared fixtures
+tools/                      docs generators — gen_config_reference.py, build_docs_html.py
+docs/                       this documentation set: the Markdown under docs/ is
+                              the source of truth; docs/html/ and
+                              docs/config_reference.md are generated (§9)
+examples/                   worked configs, grouped by topic (basics/,
+                              crystallography/, cif/, texture/, grain_geometry/,
+                              alloys_multiphase/, doping/, self_affine_gb/,
+                              voxel_import/, advanced/), plus examples/assets/
+                              for shared CIF files and imported label fields
+pyproject.toml              package metadata + the optional-extras map (§10)
+</code></pre>
+<p>See <a href="architecture.html#4-package-structure">architecture.md §4</a> for the full
+subpackage responsibility table and the measured dependency-edge counts
+between subpackages; this section is only the filesystem map.</p>
+<h2 id="2-programmatic-entry-point">2. Programmatic entry point</h2>
+<p>The whole pipeline is one call:</p>
+<pre><code class="language-python">from grainsmith.config.resolve import load_config
+from grainsmith.pipeline import run
+
+config = load_config(&quot;examples/grain_geometry/cu_lognormal_sizes.yaml&quot;)   # -&gt; RunConfig
+result = run(config)                                         # -&gt; RunResult
+print(result.seed, result.n_generated, result.n_deleted)
+print([f.name for f in result.files])                        # files written
+</code></pre>
+<p><code>run()</code> has the signature:</p>
+<pre><code class="language-python">def run(config: RunConfig, jobs: int = 1, max_rss_gb: float | None = None) -&gt; RunResult
+</code></pre>
+<ul>
+<li><strong><code>config</code></strong> — a validated <code>RunConfig</code> (build it with
+  <code>config.resolve.load_config(path)</code> from YAML, or <code>resolve_config(raw_dict)</code> from
+  a dict).</li>
+<li><strong><code>jobs</code></strong> — worker processes for the per-grain fill stage, the
+  GB-curvature analysis stage, and <code>analyze_boundaries</code>'s per-(i, j)-pair
+  geometry/character/CSL computation on curved/voxel backends (flat stays
+  serial regardless — its exact-face lookup is too cheap to be worth a
+  worker pool), and the thread count for the overlap-removal neighbour
+  search and gate G7's fresh query — all named in the CLI's <code>--jobs</code> help.
+  <code>1</code> = serial; <code>0</code> = all cores; <code>n</code> = n workers. The same knob also drives
+  one further stage not named in that one-line help: the LAMMPS/extxyz
+  writers' row-chunk formatting (<code>io.lammps.write_lammps</code>,
+  <code>io.xyz.write_extxyz</code>) for large atom counts. The result is
+  <strong>bit-identical</strong> regardless of <code>jobs</code> in every one of these stages
+  (determinism is preserved across parallelisation — see §5–§6 below for the
+  contract and the house pattern that makes this true).</li>
+<li><strong><code>max_rss_gb</code></strong> — optional total-RSS WARN ceiling for the soft, best-effort
+  monitor (see <code>memory.MemoryMonitor</code>): it samples the driver's resident set on
+  a background thread and logs a WARNING when the ceiling is crossed. It never
+  raises, never aborts the run, and never alters an output byte. The hard,
+  <em>per-allocation</em> guard that does abort is a separate mechanism — the §13
+  budget <code>min(runtime.memory_limit_gb, detected physical RAM)</code>, enforced in
+  <code>atoms/fill.py</code>, <code>tessellation/voxel.py</code> and <code>tessellation/voxel_import.py</code>.</li>
+</ul>
+<p><code>run()</code> both <strong>writes all outputs</strong> to <code>config.output.directory</code> and <strong>returns</strong>
+the in-memory <code>RunResult</code>, so you can either consume the files or work with the
+objects directly.</p>
+<h3 id="building-a-config-in-code">Building a config in code</h3>
+<pre><code class="language-python">from grainsmith.config.resolve import resolve_config
+raw = {
+    &quot;seed&quot;: {&quot;mode&quot;: &quot;fixed&quot;, &quot;value&quot;: 42},
+    &quot;box&quot;: {&quot;lengths&quot;: [60.0, 60.0, 60.0]},
+    &quot;grains&quot;: {&quot;number&quot;: 12},
+    &quot;crystal&quot;: {
+        &quot;space_group&quot;: {&quot;number&quot;: 225},
+        &quot;lattice&quot;: {&quot;a&quot;: 3.615},
+        &quot;wyckoff_sites&quot;: [{&quot;element&quot;: &quot;Cu&quot;, &quot;coords&quot;: [0.0, 0.0, 0.0]}],
+    },
+}
+config = resolve_config(raw)     # runs the full pydantic validation + resolution
+</code></pre>
+<p><code>resolve_config</code> applies the schema <strong>and</strong> the cross-field resolution rules
+(e.g. inferring the power backend when a size distribution is present). It raises
+<code>ConfigError</code> on an invalid config — this is gate <strong>G1</strong>.</p>
+<h2 id="3-data-object-contracts">3. Data-object contracts</h2>
+<h3 id="runresult"><code>RunResult</code></h3>
+<p>The single return value of <code>run()</code>. All 18 fields (<code>pipeline.RunResult</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>config</code></td>
+<td><code>RunConfig</code></td>
+<td>the resolved config that produced this run</td>
+</tr>
+<tr>
+<td><code>seed</code></td>
+<td><code>int</code></td>
+<td>the seed actually used (regenerate with this)</td>
+</tr>
+<tr>
+<td><code>outdir</code></td>
+<td><code>Path</code></td>
+<td>resolved output directory</td>
+</tr>
+<tr>
+<td><code>atoms</code></td>
+<td><code>AtomBlock</code></td>
+<td>filled model, sorted by <code>(grain, generation order)</code></td>
+</tr>
+<tr>
+<td><code>tess</code></td>
+<td><code>Tessellation</code></td>
+<td>the grain partition object</td>
+</tr>
+<tr>
+<td><code>quats</code></td>
+<td><code>(N,4) ndarray</code></td>
+<td>per-grain orientation quaternions</td>
+</tr>
+<tr>
+<td><code>grain_reports</code></td>
+<td><code>list[GrainReport]</code></td>
+<td>per-grain analysis</td>
+</tr>
+<tr>
+<td><code>boundary_reports</code></td>
+<td><code>list[BoundaryReport]</code></td>
+<td>per-boundary analysis</td>
+</tr>
+<tr>
+<td><code>gates</code></td>
+<td><code>qa.QAGates</code></td>
+<td>all gate results (see <code>docs/gates.md</code>)</td>
+</tr>
+<tr>
+<td><code>timings</code></td>
+<td><code>dict[str, float]</code></td>
+<td>wall-clock seconds per stage</td>
+</tr>
+<tr>
+<td><code>n_generated</code></td>
+<td><code>int</code></td>
+<td>atoms placed before overlap removal</td>
+</tr>
+<tr>
+<td><code>n_deleted</code></td>
+<td><code>int</code></td>
+<td>atoms removed by the overlap gate</td>
+</tr>
+<tr>
+<td><code>d_nn</code></td>
+<td><code>float</code></td>
+<td>ideal-crystal nearest-neighbour distance (Å)</td>
+</tr>
+<tr>
+<td><code>files</code></td>
+<td><code>list[Path]</code></td>
+<td>every file written</td>
+</tr>
+<tr>
+<td><code>phase_of</code></td>
+<td><code>ndarray \| None</code></td>
+<td>grain → phase index (multiphase runs)</td>
+</tr>
+<tr>
+<td><code>statistics</code></td>
+<td><code>dict \| None</code></td>
+<td>publication statistics sections</td>
+</tr>
+<tr>
+<td><code>peak_rss_bytes</code></td>
+<td><code>float \| None</code></td>
+<td>peak resident memory, if monitored</td>
+</tr>
+<tr>
+<td><code>provenance</code></td>
+<td><code>io.common.Provenance \| None</code></td>
+<td>full config and producer-bound digests, seed and timestamp</td>
+</tr>
+</tbody>
+</table>
+<h3 id="crystaldata"><code>CrystalData</code></h3>
+<p>Crystal-stage output (<code>pipeline.CrystalData</code>), one per phase:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cellpar</code></td>
+<td><code>crystal.cell.CellPar</code></td>
+<td>the six lattice parameters</td>
+</tr>
+<tr>
+<td><code>A</code></td>
+<td><code>(3,3) ndarray</code></td>
+<td>cell matrix, <strong>columns</strong> = <code>a₁,a₂,a₃</code> (Å)</td>
+</tr>
+<tr>
+<td><code>basis</code></td>
+<td><code>crystal.spacegroup.Basis</code></td>
+<td>symmetry-expanded atom basis</td>
+</tr>
+<tr>
+<td><code>sym_quats</code></td>
+<td><code>(Nsym,4) ndarray</code></td>
+<td>proper point-group rotations</td>
+</tr>
+<tr>
+<td><code>dataset</code></td>
+<td><code>dict</code></td>
+<td>spglib verification subset (gate G2)</td>
+</tr>
+<tr>
+<td><code>d_nn</code></td>
+<td><code>float</code></td>
+<td>nearest-neighbour distance (Å)</td>
+</tr>
+<tr>
+<td><code>rho_atom</code></td>
+<td><code>float</code></td>
+<td>atom number density (atoms/Å³)</td>
+</tr>
+<tr>
+<td><code>density_g_cm3</code></td>
+<td><code>float</code></td>
+<td>mass density (NaN if a mass is unknown)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="atomblock"><code>AtomBlock</code></h3>
+<p>The filled model (<code>atoms.fill.AtomBlock</code>). Array attributes, all row-aligned:
+<code>pos</code> <code>(M,3)</code> positions in Å, <code>species</code> <code>(M,)</code> element symbols, <code>grain</code> <code>(M,)</code>
+grain id, and (optionally) <code>gb_margin</code> <code>(M,)</code> signed distance to the nearest
+boundary. <code>concatenate()</code> merges per-grain blocks. <strong>Note the attribute is
+<code>.pos</code>, not <code>.positions</code>.</strong></p>
+<h2 id="4-public-api-by-subpackage">4. Public API by subpackage</h2>
+<p>Every symbol below is importable from its module (e.g. <code>from
+grainsmith.tessellation.sdot import fit_power_weights</code>). Signatures are the real
+ones; only the most useful entry points per subpackage are listed — see the
+source or <code>help()</code> for the full set.</p>
+<h3 id="crystal--lattice--symmetry"><code>crystal</code> — lattice &amp; symmetry</h3>
+<pre><code class="language-python">cell.cell_matrix(a, b, c, alpha, beta, gamma) -&gt; (3,3) ndarray
+cell.validate_cellpar(family, params) -&gt; CellPar
+spacegroup.symmetry_ops(hall) -&gt; (rotations, translations)
+spacegroup.expand_wyckoff(sites, rots, trans) -&gt; Basis
+verify.verify_spacegroup(cellpar, basis, requested_number, symprec=…) -&gt; dict   # gate G2
+</code></pre>
+<h3 id="orientation--orientation-algebra--sampling"><code>orientation</code> — orientation algebra &amp; sampling</h3>
+<pre><code class="language-python">quaternion.axis_angle_to_quat(axis, angle_deg) -&gt; (4,) ndarray     # angle in DEGREES
+quaternion.quat_to_matrix(q) -&gt; (3,3) ndarray                       # active: v_lab = R @ v_crystal
+quaternion.quat_to_bunge(q) -&gt; (phi1, Phi, phi2)                    # Bunge ZXZ, MTEX/EBSD convention
+misorientation.disorientation(q_i, q_j, sym_quats) -&gt; Disorientation
+samplers.random_uniform(n, rng) -&gt; (n,4)
+samplers.fiber_texture(n, crystal_axis, sample_direction, spread_deg, rng, cell_matrix=None) -&gt; (n,4)
+samplers.odf_components(n, components, rng, cell_matrix=None) -&gt; (n,4)
+</code></pre>
+<h3 id="tessellation--grain-partition-backends"><code>tessellation</code> — grain-partition backends</h3>
+<pre><code class="language-python">sdot.fit_power_weights(seeds, box_lengths, periodic, target_volumes,
+                       vol_tol=1e-3, max_iter=30, centroidal_iterations=0) -&gt; SDOTResult
+sdot.sample_target_volumes(dist_type, n, box_volume, rng, sigma_log=0.35, volumes=None) -&gt; (n,)
+warp.synthesize_grf(grid_shape, correlation_length, box_lengths, rng,
+                    spectrum='gaussian', hurst=0.8, l_min=8.0, l_max=60.0) -&gt; ndarray
+warp.estimate_hurst(field, box_lengths, l_min, l_max, n_bins=16) -&gt; float
+</code></pre>
+<pre><code class="language-python">perturbed.box_count_dimension(mask, eps_min_px=3, ...) -&gt; float | None    # G20's D_b estimator
+</code></pre>
+<p>Backend classes: <code>FlatTessellation</code>, <code>PowerTessellation</code>, <code>WarpTessellation</code>,
+<code>WeightedTessellation</code>, <code>AnisotropicTessellation</code>,
+<code>VoxelTessellation</code> (<code>tessellation/voxel_import.py</code> — <code>voxel.py</code> itself
+holds only the shared <code>VoxelGrid</code> GB-membership helper, not a second
+backend), <code>PerturbedDistanceTessellation</code>, <code>SingleCrystalTessellation</code> —
+all subclasses of <code>base.Tessellation</code>.</p>
+<h3 id="atoms--fill--overlap"><code>atoms</code> — fill &amp; overlap</h3>
+<pre><code class="language-python">overlap.resolve_cutoff(spec, d_nn=None) -&gt; float           # parses &quot;0.85*d_nn&quot; etc.
+fill.fill_grains(tess, frac_basis, basis_species, basis_occupancy, A, quats,
+                 box_lengths, periodic, rngs, jobs=1) -&gt; list[AtomBlock]
+overlap.remove_overlaps(atoms, tess, cutoff, policy, periodic, box_lengths,
+                        jobs=1) -&gt; (AtomBlock, OverlapLedger)   # gate G7
+doping.run_doping(doping_cfg, atoms, tess, rng_bundle, crystal, quats, n_grains,
+                  box_lengths, periodic) -&gt; (AtomBlock, DopingResult)  # gates G17/G18
+doping.resolve_sites(sites, sg_number, what) -&gt; (M,3) ndarray  # preset name or explicit coords
+doping.INTERSTITIAL_PRESETS: dict[str, tuple[int, ndarray]]  # preset -&gt; (space group, frac coords)
+</code></pre>
+<h3 id="analysis--reports--statistics"><code>analysis</code> — reports &amp; statistics</h3>
+<pre><code class="language-python">grains.grain_volumes(tess, box_lengths) -&gt; (N,) ndarray
+grains.analyze_grains(tess, quats, A, box_lengths, ...) -&gt; list[GrainReport]
+boundaries.analyze_boundaries(tess, quats, sym_quats, A, box_lengths, periodic,
+                              csl=False, character=True, jobs=1, ...) -&gt; list[BoundaryReport]
+statistics.lognormal_fit(diameters) -&gt; dict     # + KS test (Lilliefors caveat)
+curvature.analyze_curvature(tess, box_lengths, periodic, vg=None, jobs=1) -&gt; CurvatureResult
+curvature.attach_curvature(reports, result) -&gt; None   # fills H/K fields of BoundaryReport in place
+curvature.global_curvature_rows(result) -&gt; list[(section, key, value)]  # summary.csv rows
+</code></pre>
+<h3 id="io--output-writers"><code>io</code> — output writers</h3>
+<pre><code class="language-python">lammps.write_lammps(path, atoms, box_lengths, periodic, atom_style, provenance,
+                    vacuum=0.0, masses=None, jobs=1) -&gt; dict
+lammps.parse_lammps(path) -&gt; dict               # round-trip parse-back (gate G10)
+xyz.write_extxyz(path, atoms, box_lengths, periodic, provenance, ...) -&gt; None
+reports.write_grains_csv / write_boundaries_csv / write_summary_csv(...)
+publication.write_microstructure_json(path, config, provenance, gates, ...) -&gt; None
+</code></pre>
+<h3 id="config--schema--resolution"><code>config</code> — schema &amp; resolution</h3>
+<pre><code class="language-python">resolve.load_config(path) -&gt; RunConfig          # YAML file -&gt; validated config
+resolve.resolve_config(raw) -&gt; RunConfig         # dict -&gt; validated config  (gate G1)
+resolve.config_sha256(config) -&gt; str             # full config hash (summary.csv, MANIFEST.txt)
+resolve.config_sha12(config) -&gt; str              # its first 12 hex (in output headers)
+introspect.field_specs(model) -&gt; list[FieldSpec] # drives the config-reference generator
+</code></pre>
+<h2 id="5-the-determinism-contract">5. The determinism contract</h2>
+<p>grainsmith's central promise (manual.md, "Determinism and provenance") is
+code-enforced, not just documented: a fixed <code>seed.value</code> reproduces the
+scientific payload byte-for-byte for ANY <code>--jobs</code>/<code>jobs=</code> value, on the same
+platform and dependency versions. Whole-file identity additionally requires a
+frozen clock (<code>SOURCE_DATE_EPOCH</code>), because every commented output carries the
+run's UTC timestamp in its provenance header; <code>manual.md</code>'s "Determinism and
+provenance" table states which files are identical under which conditions.
+Three mechanisms, at three different levels of the stack, make this true.</p>
+<h3 id="51-one-seed-many-independent-streams">5.1 One seed, many independent streams</h3>
+<p><code>np.random.*</code> module-level calls are forbidden everywhere in the engine (a
+project-wide guardrail — see <code>rng.py</code>'s module docstring); every stochastic
+draw goes through an <code>RNGBundle</code> (<code>rng.make_rng(seed)</code>). <code>make_rng</code> spawns
+<strong>seven</strong> independent PCG64 streams from one <code>numpy.random.SeedSequence(seed)</code>,
+in a fixed order (<code>STAGE_NAMES</code>: <code>seeding, orientation, fields, occupancy,
+sizes, mdf, doping</code>) — reordering that tuple, or inserting a new stage before
+its end, would silently change every later stream and break reproducibility
+of existing configs, which is why the module docstring pins "add new stages
+at the end only".</p>
+<p>Two of those streams (<code>occupancy</code>, <code>doping</code>) are themselves the PARENT of a
+further per-grain fan-out: <code>RNGBundle.occupancy_streams(n)</code> /
+<code>.doping_streams(n)</code> derive grain <code>i</code>'s own stream by extending the parent
+<code>SeedSequence</code>'s <code>spawn_key</code> with <code>(i,)</code> — a STATELESS construction (plain
+<code>SeedSequence.spawn()</code> counts children as a side effect, so calling it twice
+would not reproduce the same streams; extending <code>spawn_key</code> by hand has no
+such state). A grain's stream therefore depends only on <code>(master seed, grain
+id)</code> — never on <code>--jobs</code>, execution order, or how many times the function is
+called — which is what makes the parallel fill (§6) reproducible in the
+first place.</p>
+<h3 id="52-ordered-reassembly-after-a-process-pool">5.2 Ordered reassembly after a process pool</h3>
+<p>Parallelizing over grains or boundary pairs changes only WHEN each unit of
+work runs, never what it produces (each is a pure function of its own
+inputs) or where its result lands: every parallel driver in the engine
+(<code>atoms.fill.fill_grains</code>, <code>analysis.curvature.analyze_curvature</code>,
+<code>analysis.boundaries.analyze_boundaries</code>, the LAMMPS/extxyz writers) submits
+work through <code>ProcessPoolExecutor.map</code>, which preserves input order in its
+output, and reassembles results positionally (<code>fill_grains</code>: grain order;
+<code>analyze_curvature</code>/<code>analyze_boundaries</code>: <code>tess.adjacency()</code> order) rather
+than in whatever order workers happen to finish. <code>--jobs</code> therefore never
+feeds back into the DATA — only into how many OS processes computed it, and
+how long that took.</p>
+<p>The one place parallelism touches data ORDER rather than just execution
+order is neighbour-pair DISCOVERY in <code>atoms.overlap</code>/
+<code>qa.gate_g7_min_distance</code>: <code>jobs &gt; 1</code> swaps <code>scipy.spatial.KDTree.query_pairs</code>
+for a thread-parallel <code>query_ball_point</code> two-pass scan. <code>overlap.py</code>'s module
+docstring proves the two routes return the identical pair SET (both run the
+same <code>d² &lt;= cutoff²</code> comparison in the same cKDTree C machinery) and both are
+sorted into one canonical lexicographic order before any deletion logic sees
+them — so the deletion sequence, and hence the final atom set, does not
+depend on <code>jobs</code>, only the discovery wall time does.</p>
+<h3 id="53-numba-kernels-are-ieee-exact-never-an-approximation">5.3 Numba kernels are IEEE-exact, never an approximation</h3>
+<p>The <code>perf</code> extra (<code>pip install ".[perf]"</code>, <code>numba&gt;=0.59</code>) enables fused
+<code>owns()</code>/<code>margin()</code>/<code>grain_of()</code> kernels at three sites, all following the
+same soft-dependency pattern:</p>
+<ul>
+<li><code>tessellation/_local_owns.py</code> — the shared owns()-tie-break kernel behind
+  <code>FlatTessellation</code> and <code>PowerTessellation</code>; always uses numba when it is
+  importable (no environment override outside the equality tests' own
+  <code>use_numba=</code> argument).</li>
+<li><code>tessellation/weighted.py</code> — <code>WeightedTessellation</code>/<code>AnisotropicTessellation</code>'s
+  owns()/margin() kernels.</li>
+<li><code>tessellation/perturbed.py</code> — <code>PerturbedDistanceTessellation</code>'s three
+  fused kernels (K1 <code>owns</code>, K2 <code>margin</code>, K3 <code>grain_of</code>), all built on one
+  shared <code>_eval_candidate</code>/<code>_interp_eta</code> primitive.</li>
+</ul>
+<p>The latter two read <code>GRAINSMITH_NO_NUMBA</code> (<code>1</code>/<code>true</code>/<code>yes</code>/<code>on</code>,
+case-insensitive) to force the plain-NumPy path even when numba is installed.
+Every kernel is compiled with <code>@numba.njit(cache=True)</code>; a few (in
+<code>weighted.py</code>) also pass <code>nogil=True</code>, which only releases the GIL during
+execution and has no bearing on exactness. What matters for the
+IEEE-exactness argument is what's absent instead: no <code>fastmath</code> (which
+would let LLVM reorder floating-point operations and change rounding) and
+no <code>prange</code> (parallel numba would reintroduce a reduction-order dependency
+of exactly the kind §5.2 is designed to avoid) — so the compiled kernel
+evaluates the same operations in the same order as
+the NumPy reference it replaces, term by term (see <code>perturbed.py</code>'s
+<code>_interp_eta</code> docstring: "same trilinear 8-term sum in the SAME textual term
+order").</p>
+<p>Numba is a SOFT dependency everywhere it is used: the NumPy implementation is
+kept byte-for-byte as the reference — never deleted or left to bit-rot —
+specifically so it can serve as the always-available fallback AND as the
+other half of an equality test. Every numba site is regression-pinned by
+tests that force each path explicitly (monkeypatching the module's
+<code>_USE_NUMBA</code> flag) and assert the SAME output bytes come out either way
+(<code>tests/test_owns_kernel.py</code>, <code>tests/test_perturbed_kernel.py</code>) — including
+engineered TIE cases (candidates exactly equidistant, at a periodic-boundary
+half-<code>L</code>, etc.) where a naive reduction order would be the first thing to
+disagree (§8 below has more on this test family).</p>
+<h3 id="54-how-the-contract-is-tested">5.4 How the contract is tested</h3>
+<p>Three layers, deliberately independent:</p>
+<ol>
+<li><code>tests/test_end_to_end.py::test_byte_identical_rerun</code> — two runs of the same
+   config from two working directories, compared after normalizing timestamps
+   and dropping the wall-clock <code>timings</code> rows. This is the wall-clock-mode
+   guarantee.</li>
+<li><code>tests/test_end_to_end.py::test_byte_identical_rerun_source_date_epoch</code> — the
+   same two runs with <code>SOURCE_DATE_EPOCH</code> set, compared with <strong>no</strong> normalization
+   at all, <code>MANIFEST.txt</code> included and <code>run.log</code> the only exclusion. This is the
+   strict form.</li>
+<li><code>tools/golden_hashes.py</code> + <code>tests/test_reproducibility.py</code> — a committed
+   fixture config, a recorded digest set, and a same-environment double run. The
+   golden check degrades to a warning (never a failure) when the environment it
+   was recorded in no longer matches the one it runs in, because byte-identity
+   across BLAS builds and CPU architectures is not something grainsmith can
+   promise; its bootstrap and update procedure is in the tool's module docstring.</li>
+</ol>
+<h2 id="6-the-parallel-pattern">6. The parallel pattern</h2>
+<p>Three stages — the per-grain fill (<code>atoms/fill.py</code>), the per-boundary-pair
+GB-curvature analysis (<code>analysis/curvature.py</code>), and the per-boundary-pair
+geometry/character/CSL analysis on curved/voxel backends
+(<code>analysis/boundaries.py</code>) — all parallelize the SAME shape of embarrassingly
+parallel problem (one independent unit of work per grain, or per adjacent
+grain pair) with the SAME house pattern. Understand one and you understand
+all three; a future stage that fans out over grains or boundary pairs should
+follow it too:</p>
+<ol>
+<li><strong><code>jobs &lt;= 1</code> short-circuits to the untouched serial path.</strong> Every driver
+   checks <code>jobs &lt;= 1</code> (or <code>jobs &lt;= 1 or len(units) &lt;= 1</code>) FIRST and, on that
+   branch, runs a plain Python loop/comprehension calling the same pure
+   per-unit function it would otherwise ship to a worker — no
+   <code>ProcessPoolExecutor</code> is even imported on this path. <code>jobs=1</code> (the
+   default) therefore stays exactly as cheap, and exactly as behaved, as
+   before any of this parallel machinery existed.</li>
+<li><strong>A module-level <code>_XXX_CTX</code> global + <code>_init_xxx_worker</code> initializer</strong>
+   ships the (potentially large) shared, read-only inputs — the
+   <code>Tessellation</code> object, the crystal basis, <code>h_vec</code>, per-phase symmetry/cell
+   tables — to each worker process ONCE, via <code>ProcessPoolExecutor</code>'s
+   <code>initializer=</code>/<code>initargs=</code>, instead of once per task. Because
+   <code>ProcessPoolExecutor</code> workers are separate OS processes (POSIX fork or
+   Windows spawn), <code>_FILL_CTX</code>/<code>_CURVATURE_CTX</code>/<code>_BOUNDARY_CTX</code> are
+   process-local state, not shared mutable module state in the sense the
+   codebase otherwise forbids (the same "no module-level <code>np.random</code>"
+   guardrail §5.1 mentions) — each worker sets its OWN copy once and reads
+   it for every task that lands on it.</li>
+<li><strong>A thin per-task function</strong> (<code>_fill_one</code>, <code>_curvature_pair_task</code>,
+   <code>_boundary_pair_task</code>) reads the worker's <code>_XXX_CTX</code> plus its own task
+   arguments (a grain id + that grain's own rng stream; a boundary pair +
+   its sample points; …) and calls the SAME pure function the serial path
+   calls — <code>fill_grain</code>, <code>_pair_curvature</code>, <code>_pair_report_fields</code> — so the
+   worker and the serial loop provably compute the identical thing, not two
+   hand-kept-in-sync implementations.</li>
+<li><strong><code>pool.map</code> in a fixed, meaningful order</strong> — grain id order for the
+   fill, <code>tess.adjacency()</code> order for curvature/boundaries — because
+   <code>ProcessPoolExecutor.map</code> preserves input order in its output regardless
+   of which worker finishes first, so <strong>positional reassembly</strong>
+   (<code>list(pool.map(...))</code>, or a lazy generator pulled in lockstep for the
+   curvature/boundaries drivers, which additionally skip empty-input pairs
+   without breaking that lockstep) is all that is needed to recover the
+   same grain-ordered/adjacency-ordered result the serial path would have
+   built. No result ever needs to carry its own index back to the parent —
+   the ORDER work was submitted in is enough.</li>
+<li><strong><code>max_workers=min(jobs, n_units)</code></strong> avoids spinning up worker processes
+   that would never receive a task (more workers than grains/pairs).</li>
+</ol>
+<p>The parallelism is therefore an execution-order optimization ONLY: every
+worker computes the exact bytes the serial loop would have computed for that
+same unit, and the parent reassembles them into the exact order the serial
+loop would have produced. This is what makes §5's determinism contract
+compatible with <code>--jobs</code> at all, and it is the same shape the LAMMPS/extxyz
+writers (<code>io/lammps.py</code>, <code>io/xyz.py</code>) use for their row-chunk formatting, and
+that <code>atoms/overlap.py</code> uses at the THREAD (not process) level — scipy's own
+<code>workers=</code> argument — for its neighbour-pair discovery.</p>
+<h2 id="7-extension-points">7. Extension points</h2>
+<p>grainsmith is designed so that the whole fill/overlap/analysis stack depends only
+on abstract interfaces. The three most useful extension points:</p>
+<h3 id="71-a-new-tessellation-backend">7.1 A new tessellation backend</h3>
+<p>Subclass <code>tessellation.base.Tessellation</code> and implement its interface — the fill,
+overlap, and analysis stages will then work with your backend unchanged. The
+required contract is five abstract methods and two abstract properties:</p>
+<table>
+<thead>
+<tr>
+<th>Member</th>
+<th>Signature</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>grain_of</code></td>
+<td><code>(X:(N,3)) -&gt; (N,) int32</code></td>
+<td>grain index for each point (periodic images folded to home id)</td>
+</tr>
+<tr>
+<td><code>owns</code></td>
+<td><code>(X:(N,3), i:int) -&gt; (N,) bool</code></td>
+<td>does the <strong>home</strong> cell of grain <code>i</code> own each unwrapped point? (the fill uses this to place each torus point exactly once)</td>
+</tr>
+<tr>
+<td><code>margin</code></td>
+<td><code>(X:(N,3), i:int) -&gt; (N,) float64</code></td>
+<td>signed distance to grain <code>i</code>'s boundary (+ inside), Å</td>
+</tr>
+<tr>
+<td><code>adjacency</code></td>
+<td><code>() -&gt; list[(i,j)]</code></td>
+<td>adjacent grain pairs, <code>i &lt; j</code></td>
+</tr>
+<tr>
+<td><code>bounding_radius</code></td>
+<td><code>(i:int) -&gt; float</code></td>
+<td>bounding-sphere radius at <code>seeds[i]</code> (bounds the fill's lattice enumeration)</td>
+</tr>
+<tr>
+<td><code>seeds</code></td>
+<td>property <code>-&gt; (N,3)</code></td>
+<td>seed positions</td>
+</tr>
+<tr>
+<td><code>n_grains</code></td>
+<td>property <code>-&gt; int</code></td>
+<td>grain count</td>
+</tr>
+</tbody>
+</table>
+<p>The distinction between <code>grain_of</code> and <code>owns</code> is the key to grainsmith's
+image-exact periodic fill: <code>grain_of</code> folds periodic images of a grain onto its
+home id, while <code>owns</code> distinguishes the home cell from its images so the home
+cells tile the torus exactly once — no wrap-and-deduplicate step, valid for any
+incommensurate lattice orientation.</p>
+<p>Two further methods are OPTIONAL overrides — a subclass that skips them still
+works correctly, just without the optimization each one unlocks:</p>
+<ul>
+<li><strong><code>cell_vertices_rel(i) -&gt; (V,3) | None</code></strong> — cell vertices relative to
+  <code>seeds[i]</code> for a tight oriented fill bounding box; return <code>None</code> (the base
+  default) for curved/voxel backends, which falls back to the
+  <code>bounding_radius</code> sphere.</li>
+<li><strong><code>gb_shell_lower_bound(pos, grain, cutoff, workers=1) -&gt; (N,) bool | None</code></strong>
+  — a certified pre-filter mask that lets <code>atoms.overlap.remove_overlaps</code>
+  and gate G7 search a certified SUBSET of atoms instead of the full
+  population before building a neighbour-search tree. The base
+  implementation always returns <code>None</code> ("no certified bound; search
+  everything"), which is always correct, just not the fastest option.</li>
+</ul>
+<p><strong>The 1-Lipschitz certificate.</strong> A backend may only return a real mask
+  when its membership "distance" <code>d(x)</code> is <strong>1-Lipschitz in <code>x</code></strong>, i.e.
+  <code>|d(x) - d(y)| &lt;= |x - y|</code>. Under that condition the <em>replica-aware
+  margin</em> <code>m_rep(x) = (second-best generalized distance to a periodic
+  replica seed − best) / 2</code> satisfies <code>m_rep(x) &lt;= |x - y|</code> for any pair
+  <code>(x, y)</code> within <code>cutoff</code>, so the shell <code>{x : m_rep(x) &lt;= cutoff}</code> is a
+  certified SUPERSET of every true overlap-pair endpoint — searching only
+  the shell finds the identical pair set as searching everything, just from
+  a smaller tree (<code>tessellation/_shell_knn.py</code>'s <code>certified_knn_shell_mask</code>
+  implements this k-NN route; <code>FlatTessellation</code> and the additive-weights
+  <code>WeightedTessellation</code> use it, since plain-Euclidean and constant-offset
+  additive distances are both 1-Lipschitz). A SECOND, independent
+  certificate needs no Lipschitz bound at all: for a backend whose cells are
+  exact convex polytopes with stored planar faces, the true margin equals
+  the minimum distance to any of the cell's own supporting hyperplanes — an
+  EXACT computation, not an approximation — which is what
+  <code>PowerTessellation</code> uses instead of inheriting <code>Flat</code>'s k-NN shortcut,
+  because the power (Laguerre) distance <code>‖x−c‖² − w</code> is quadratic (its
+  Lipschitz constant grows without bound as <code>‖x−c‖</code> grows), so the
+  1-Lipschitz argument does not carry over to nonzero weights even though
+  the polytope-face argument still does.</p>
+<p>Backends whose distance is neither 1-Lipschitz nor backed by an exact
+  convex-polytope margin correctly decline the optimization by overriding
+  the method to always return <code>None</code>, each with its own documented reason:
+  <code>AnisotropicTessellation</code> (Lipschitz constant <code>1/s_min</code> for the smallest
+  metric semi-axis, <code>&gt; 1</code> for any non-degenerate aspect ratio),
+  <code>WarpTessellation</code> (the warped margin is a documented PROXY, not proven
+  1-Lipschitz in the unwarped coordinate the cutoff is measured in),
+  <code>PerturbedDistanceTessellation</code> (Lipschitz constant <code>1 + amplitude ·
+  |grad η|</code>, <code>&gt; 1</code> whenever the perturbation is nonzero — the entire point
+  of that backend), <code>SingleCrystalTessellation</code> (no other-grain boundary to
+  overlap against on a non-periodic axis), and <code>VoxelTessellation</code>
+  (the margin is a voxel-center EDT estimate with a documented <code>~h</code> bias,
+  not an exact distance). A new backend is under no obligation to implement
+  this override — the base <code>None</code> always works.</p>
+<h3 id="72-a-new-orientation-sampler">7.2 A new orientation sampler</h3>
+<p>Add a function to <code>orientation.samplers</code> returning an <code>(n, 4)</code> array of unit
+quaternions (scalar-first, <code>w ≥ 0</code>), then wire it into <code>OrientationConfig</code> in
+<code>config.schema</code>. Existing samplers (<code>random_uniform</code>, <code>fiber_texture</code>,
+<code>odf_components</code>, <code>fixed_orientation</code>, <code>from_list</code>) are the templates; reuse the
+<code>quaternion</code> helpers so your output matches the active-rotation convention
+(<code>v_lab = R(q) @ v_crystal</code>).</p>
+<h3 id="73-a-new-output-writer">7.3 A new output writer</h3>
+<p>Add a <code>write_*</code> function to a module under <code>io/</code>, using
+<code>io.common.atomic_writer(path)</code> for crash-safe writes and accepting a
+<code>Provenance</code> object for the reproducibility header. Register it in the write
+section of <code>pipeline.run()</code> (near the other <code>write_*</code> calls) and expose a
+toggle in <code>OutputConfig</code>.</p>
+<h2 id="8-testing-conventions">8. Testing conventions</h2>
+<pre><code class="language-bash">pip install &quot;.[test]&quot;        # pytest, pytest-cov, ase, httpx, psutil
+pytest                       # full suite
+pytest -k bunge              # a focused subset
+</code></pre>
+<p>The suite lives under <code>tests/</code>, roughly one <code>test_&lt;module&gt;.py</code> per
+<code>src/grainsmith/&lt;module&gt;.py</code>, plus cross-cutting files: <code>test_end_to_end.py</code>
+(full pipeline runs against shipped example configs), <code>test_fuzz.py</code>
+(randomized config generation), and <code>test_docs.py</code> (§9). Session-scoped
+fixtures in <code>conftest.py</code> resolve a handful of example configs by name (e.g.
+the B2 NiAl flat-boundary and FCC Cu curved-warp examples) so tests don't
+hardcode paths independently. The suite runs entirely from <code>tests/</code>; a
+handful of tests exercise optional local tooling and skip gracefully when
+it isn't present in the checkout.</p>
+<p>Key test families: crystallography round-trips (<code>test_spacegroup</code>,
+<code>test_cif</code>), the Bunge/MTEX convention pin (<code>test_quaternion</code>), CSL/Σ tables
+(<code>test_analysis</code>), the SDOT Jacobian/convergence checks (<code>test_power</code>), and
+the overlap gate (<code>test_overlap</code>).</p>
+<p><strong>Determinism/<code>jobs</code>-invariance batteries.</strong> Anywhere the codebase claims an
+output is independent of <code>jobs</code> or of the numba/NumPy dispatch (§5, §6), a
+test proves it with exact byte equality rather than a numeric tolerance —
+typically <code>array.tobytes()</code> compared directly, or a written file's SHA-256
+hash. Representative examples: <code>test_curvature.py</code>'s
+<code>test_analyze_curvature_jobs_parallel_matches_serial*</code> family compares
+<code>PairCurvature.H/K/areas/points.tobytes()</code> between <code>jobs=1</code> and <code>jobs&gt;1</code>
+runs (including a degenerate-mask case and a mixed-empty-pair case);
+<code>test_overlap.py</code>'s <code>test_determinism_jobs1_vs_jobs8_synthetic_ties</code>
+and its <code>.pos/.species/.grain.tobytes()</code> comparisons do the same for
+overlap removal; <code>test_owns_kernel.py</code> and <code>test_perturbed_kernel.py</code>
+monkeypatch each module's <code>_USE_NUMBA</code> flag to force both dispatch paths on
+the same input and assert identical output. Several of these also run a
+true end-to-end <code>generate</code> and byte-compare the resulting
+<code>polycrystal.data</code> file across <code>--jobs</code> values
+(<code>test_e2e_curved_rerun_byte_identical_across_jobs</code>) — the same guarantee
+manual.md's "Determinism" section promises the CLI user, pinned at the
+file level, not just the in-memory array level.</p>
+<p><strong>Engineered tie cases.</strong> Several kernels have an explicit, documented
+tie-break rule (e.g. "first-minimum wins, strict <code>&lt;</code>" on scan order — see
+§5.3 and the K1/K3 docstrings in <code>perturbed.py</code>). Rather than hoping a
+randomized test happens to hit a tie, these are pinned with HAND-BUILT
+inputs engineered so specific candidates are exactly equidistant, or land
+exactly on a periodic-boundary half-<code>L</code> <code>np.rint</code> rounding boundary:
+<code>test_perturbed_kernel.py</code>'s R1–R3 cases (<code>test_r1_margin_min_image_half_l_np_rint_tie</code>,
+<code>test_r3_engineered_tie_four_cases</code>, parametrized over "replica index below
+home_idx" / "above home_idx" combinations) and <code>test_owns_kernel.py</code>'s
+<code>test_owns_kernel_tie_rule</code> / <code>test_sqrt_rounding_collision_tie</code>. A test
+that only exercises typical, well-separated geometry would never catch a
+reduction-order regression in the tie path — these exist specifically
+because that path is otherwise invisible to coverage.</p>
+<p><strong>Env-gated slow validations.</strong> A few tests replay an expensive, realistic
+scenario (a full curved system at production scale) rather than a synthetic
+unit case, and are skipped by default so the ordinary <code>pytest</code> run stays
+fast: <code>test_owns_kernel.py</code>'s numba-vs-NumPy mask-equality replay against
+the shipped paper Fig. 2 curved system is gated by
+<code>GRAINSMITH_RUN_FIG2_VALIDATION=1</code> (registered as the <code>fig2_validation</code>
+pytest marker in <code>conftest.py</code>), and <code>test_perturbed_kernel.py</code> has the
+analogous <code>GRAINSMITH_RUN_PERTURBED_FIG2_VALIDATION=1</code> gate for
+<code>perturbed_distance</code>. Set the environment variable (any of <code>1</code>/<code>true</code>/
+<code>yes</code>/<code>on</code>) to opt in when touching the numba kernels or their dispatch
+logic; CI does not run them by default.</p>
+<h2 id="9-docs-tooling">9. Docs tooling</h2>
+<p>Two files under <code>docs/</code> are <strong>generated</strong>, not hand-written, and a test
+(<code>tests/test_docs.py</code>) fails the build if either has drifted from its
+generator:</p>
+<h3 id="the-drift-proof-documentation-tests">The drift-proof documentation tests</h3>
+<p><code>docs/config_reference.md</code> is <strong>generated</strong> from the pydantic schema by
+<code>tools/gen_config_reference.py</code>, and <code>test_config_reference_is_not_stale</code>
+asserts the committed file matches what the generator produces from the
+current schema. If you change <code>config/schema.py</code>, regenerate it:</p>
+<pre><code class="language-bash">python -m tools.gen_config_reference        # rewrite docs/config_reference.md
+</code></pre>
+<p>Then the drift test passes again. <strong>Never hand-edit <code>config_reference.md</code></strong> — the
+schema is the source of truth, and the test will fail on any manual change.
+The same test file also checks that every <code>G&lt;n&gt;</code> id referenced in <code>qa.py</code>
+appears in <code>docs/gates.md</code>, and that every configurable and fixed output
+filename appears in <code>docs/outputs.md</code> — so a new gate or a new output file
+that never made it into the prose docs fails CI too, not just a schema
+change.</p>
+<h3 id="rebuilding-the-html-docs-mirror">Rebuilding the HTML docs mirror</h3>
+<p><code>docs/html/</code> is a themed HTML mirror of the Markdown pages under <code>docs/</code>,
+built by <code>tools/build_docs_html.py</code> (a pure-Python Markdown engine; no
+external binary needed, though <code>pandoc</code> is an optional fallback). The
+Markdown under <code>docs/</code> is the source of truth — only regenerate the mirror
+after editing a page:</p>
+<pre><code class="language-bash">pip install &quot;.[docs]&quot;                  # markdown
+python -m tools.build_docs_html         # rewrite docs/html/
+</code></pre>
+<p><code>test_html_docs_are_not_stale</code> re-renders every page in memory (pinned to
+the <code>markdown</code> engine specifically, since that is what produced the
+committed files — a <code>pandoc</code>-rendered comparison would flag drift that
+isn't there) and byte-compares it against the committed <code>docs/html/*.html</code>.
+Both generators are deterministic (no timestamps, no filesystem-order
+dependence), so a mismatch is always genuine drift, never CI noise.</p>
+<h2 id="10-dev-install--qa-gates-as-the-runtime-interface">10. Dev install &amp; QA gates as the runtime interface</h2>
+<p>For working on the engine itself, an editable install skips repackaging on
+every change:</p>
+<pre><code class="language-bash">pip install -e . --no-deps        # into the project's own env; --no-deps
+                                   # avoids re-resolving already-installed
+                                   # dependencies on every reinstall
+pip install &quot;.[test,docs,perf,dev]&quot;   # pytest suite, HTML docs builder,
+                                       # numba speed-up, ruff + mypy
+</code></pre>
+<p>The optional-extras map lives in <code>pyproject.toml</code>: <code>test</code> (pytest,
+pytest-cov, ase, httpx, psutil), <code>docs</code> (markdown, for §9), <code>perf</code> (numba,
+for §5.3), <code>dev</code> (ruff, mypy), plus the feature extras a user install would
+also reach for — <code>cif</code> (ase), <code>mesh</code> (scikit-image), <code>import</code> (h5py),
+<code>monitor</code> (psutil), <code>bench</code> (matplotlib).</p>
+<p><strong>QA gates are the runtime interface, not just a validation afterthought.</strong>
+Every physical constraint the engine enforces surfaces through one registry:
+<code>qa.QAGates</code> accumulates one <code>GateResult(gate, passed, measured, message)</code>
+per check into a single ordered list, written verbatim into <code>summary.csv</code>'s
+<code>gates</code> section regardless of which gates a given run exercised. Two verbs
+distinguish severity: <code>QAGates.require(result)</code> raises
+<code>errors.QAGateError</code> immediately on a failing HARD gate, aborting the run
+with the gate's own actionable message; <code>QAGates.record(result)</code> only
+appends, for WARN gates that should complete the run but still flag a
+quality concern. The CLI's one-line summary (<code>OK: &lt;atoms&gt; atoms, &lt;grains&gt;
+grains, &lt;boundaries&gt; boundaries; N/N QA gates passed; outputs in &lt;dir&gt;
+(&lt;s&gt; s).</code>, or <code>WARN: ...; k/N QA gates passed [WARN gates: g1, g2]; ...</code>
+when any gate failed) is generated straight from this same list
+(<code>cli._cmd_generate</code>) — so a caller working programmatically gets the exact
+same information via <code>RunResult.gates.results()</code> that the CLI prints, just
+as <code>GateResult</code> objects instead of a formatted string. See
+<a href="gates.html">gates.md</a> for the full G1–G26 catalogue: what each one checks,
+its threshold constant (collected in <code>constants.py</code> as the single source
+for those constants, per the module-layout convention in §1), and what to
+do when it fires.</p>
+<h2 id="11-where-to-go-next">11. Where to go next</h2>
+<ul>
+<li><strong>Pipeline &amp; module map</strong> → <a href="architecture.html">architecture</a></li>
+<li><strong>Grain-geometry backends</strong> → <a href="geometry.html">geometry</a></li>
+<li><strong>Every config field</strong> → <a href="config_reference.html">configuration reference</a></li>
+<li><strong>Physics &amp; conventions</strong> → <a href="physics.html">physics</a></li>
+<li><strong>The QA gate catalogue</strong> → <a href="gates.html">gates</a></li>
+</ul>
+<div class="prevnext">
+<a class="prev" href="outputs.html"><span>← Previous</span><strong>Outputs</strong></a>
+<a class="next" href="faq.html"><span>Next →</span><strong>FAQ &amp; troubleshooting</strong></a>
+</div>
+</article>
+<aside class="toc" aria-label="On this page"><div class="toc-title">On this page</div><ul>
+<li class="toc-l2"><a href="#1-repository-layout">1. Repository layout</a></li>
+<li class="toc-l2"><a href="#2-programmatic-entry-point">2. Programmatic entry point</a></li>
+<li class="toc-l3"><a href="#building-a-config-in-code">Building a config in code</a></li>
+<li class="toc-l2"><a href="#3-data-object-contracts">3. Data-object contracts</a></li>
+<li class="toc-l3"><a href="#runresult">RunResult</a></li>
+<li class="toc-l3"><a href="#crystaldata">CrystalData</a></li>
+<li class="toc-l3"><a href="#atomblock">AtomBlock</a></li>
+<li class="toc-l2"><a href="#4-public-api-by-subpackage">4. Public API by subpackage</a></li>
+<li class="toc-l3"><a href="#crystal--lattice--symmetry">crystal — lattice &amp; symmetry</a></li>
+<li class="toc-l3"><a href="#orientation--orientation-algebra--sampling">orientation — orientation algebra &amp; sampling</a></li>
+<li class="toc-l3"><a href="#tessellation--grain-partition-backends">tessellation — grain-partition backends</a></li>
+<li class="toc-l3"><a href="#atoms--fill--overlap">atoms — fill &amp; overlap</a></li>
+<li class="toc-l3"><a href="#analysis--reports--statistics">analysis — reports &amp; statistics</a></li>
+<li class="toc-l3"><a href="#io--output-writers">io — output writers</a></li>
+<li class="toc-l3"><a href="#config--schema--resolution">config — schema &amp; resolution</a></li>
+<li class="toc-l2"><a href="#5-the-determinism-contract">5. The determinism contract</a></li>
+<li class="toc-l3"><a href="#51-one-seed-many-independent-streams">5.1 One seed, many independent streams</a></li>
+<li class="toc-l3"><a href="#52-ordered-reassembly-after-a-process-pool">5.2 Ordered reassembly after a process pool</a></li>
+<li class="toc-l3"><a href="#53-numba-kernels-are-ieee-exact-never-an-approximation">5.3 Numba kernels are IEEE-exact, never an approximation</a></li>
+<li class="toc-l3"><a href="#54-how-the-contract-is-tested">5.4 How the contract is tested</a></li>
+<li class="toc-l2"><a href="#6-the-parallel-pattern">6. The parallel pattern</a></li>
+<li class="toc-l2"><a href="#7-extension-points">7. Extension points</a></li>
+<li class="toc-l3"><a href="#71-a-new-tessellation-backend">7.1 A new tessellation backend</a></li>
+<li class="toc-l3"><a href="#72-a-new-orientation-sampler">7.2 A new orientation sampler</a></li>
+<li class="toc-l3"><a href="#73-a-new-output-writer">7.3 A new output writer</a></li>
+<li class="toc-l2"><a href="#8-testing-conventions">8. Testing conventions</a></li>
+<li class="toc-l2"><a href="#9-docs-tooling">9. Docs tooling</a></li>
+<li class="toc-l3"><a href="#the-drift-proof-documentation-tests">The drift-proof documentation tests</a></li>
+<li class="toc-l3"><a href="#rebuilding-the-html-docs-mirror">Rebuilding the HTML docs mirror</a></li>
+<li class="toc-l2"><a href="#10-dev-install--qa-gates-as-the-runtime-interface">10. Dev install &amp; QA gates as the runtime interface</a></li>
+<li class="toc-l2"><a href="#11-where-to-go-next">11. Where to go next</a></li>
+</ul></aside>
+</div>
+</main>
+</body>
+</html>

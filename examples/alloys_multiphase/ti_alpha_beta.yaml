@@ -1,0 +1,113 @@
+# ===================== grainsmith run configuration =====================
+# Two-phase Ti — HCP alpha + BCC beta with prescribed VOLUME fractions.
+#
+# WHAT THIS TEACHES
+#   * The top-level `phases:` list replaces `crystal:`: each phase
+#     carries its own space group, lattice and Wyckoff sites.  Here both
+#     phases are titanium — alpha (P6_3/mmc, HCP) and beta (Im-3m, BCC),
+#     the classic alpha+beta alloy microstructure class (Ti-6Al-4V family).
+#   * `fraction:` is a VOLUME fraction (the metallographic convention).
+#     Grains are partitioned DETERMINISTICALLY (greedy over the measured
+#     cell volumes — no extra rng stream), and gate G15 (warn-only)
+#     re-measures the achieved fractions; the deviation floor is the
+#     largest single grain (increase grains.number for finer resolution).
+#   * boundaries.csv gains phase_i/phase_j columns; cross-phase rows
+#     report `character: interphase` with NaN misorientation (no common
+#     point group) but KEEP the per-frame boundary-plane Miller indices
+#     (habit planes — what interface researchers need).  grains.csv
+#     gains a `phase` column.
+#   * Texture outputs split per phase: mdf_alpha.csv / mdf_beta.csv, each
+#     against its OWN point group's haar_random reference, and
+#     odf_mtex_<phase>.txt with within-phase volume weights.  Mackenzie's
+#     1958 law is the CUBIC case, so it is the right reference for the BCC
+#     beta phase only; HCP alpha (P6_3/mmc, 12 proper rotations) gets a
+#     differently shaped curve reaching ~94° — cf.
+#     texture/mg_hcp_basal_fibre_curved.yaml.
+#   * The overlap cutoff "0.85*d_nn" resolves against the SMALLEST phase
+#     d_nn (conservative); G8 expects sum_p rho_p·V_p atoms and G9 checks
+#     the volume-weighted composition mix.
+#   * Honest v1 limits (config-time errors): orientation is
+#     random_uniform/from_list only, no mdf_target, no CSL — those need
+#     a single point group.  Interphase ORIENTATION RELATIONSHIPS
+#     (Burgers OR) and lamellar morphologies are documented follow-ups;
+#     voxel_import remains the escape hatch for real lamellar fields.
+#
+# HOW TO RUN
+#   grainsmith validate examples/alloys_multiphase/ti_alpha_beta.yaml
+#   grainsmith generate examples/alloys_multiphase/ti_alpha_beta.yaml
+#   Check grains.csv's phase column, boundaries.csv's interphase rows
+#   (character: interphase, NaN misorientation), and gate G15's achieved
+#   vs target volume fractions in summary.csv.
+
+meta:
+  title: "Ti alpha+beta, 12 grains, 60/40 volume fractions"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 41526
+
+box:
+  lengths: [60.0, 60.0, 60.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 12
+  min_seed_distance: auto
+  lloyd_iterations: 0
+
+phases:
+  - name: alpha
+    fraction: 0.6
+    crystal:
+      space_group:
+        number: 194            # P6_3/mmc (HCP)
+      lattice:
+        a: 2.951               # alpha-Ti, Å
+        c: 4.684
+      wyckoff_sites:
+        - {element: Ti, coords: [0.3333333333333333, 0.6666666666666666, 0.25], letter: c}
+  - name: beta
+    fraction: 0.4
+    crystal:
+      space_group:
+        number: 229            # Im-3m (BCC)
+      lattice:
+        a: 3.32                # beta-Ti, Å
+      wyckoff_sites:
+        - {element: Ti, coords: [0.0, 0.0, 0.0], letter: a}
+
+orientation:
+  scheme: random_uniform
+
+boundaries:
+  geometry: flat
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"        # min(d_nn_alpha, d_nn_beta) = 2.875 Å (beta)
+    policy: delete_shallower
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false                   # undefined across phases (resolve Rule 22)
+  per_atom_margin: false
+
+output:
+  directory: ./out_ti_alpha_beta
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

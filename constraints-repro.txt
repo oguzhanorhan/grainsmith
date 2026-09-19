@@ -1,0 +1,58 @@
+# grainsmith reproducibility constraints — the exact dependency versions of the
+# repository's own development environment (.venv, measured 2026-09-01 against
+# grainsmith 1.1.0, tag v1.1).
+#
+# Use:
+#     python -m venv .venv-repro && . .venv-repro/bin/activate
+#     pip install -c constraints-repro.txt -e ".[test]"
+#
+# WHY this exists. `pyproject.toml` deliberately pins only LOWER bounds
+# (numpy>=1.24, scipy>=1.11, spglib>=2.1) so grainsmith stays installable in a
+# researcher's existing stack. But `numpy.random.Generator` gives NO
+# cross-version bit-stream guarantee, `scipy.spatial.transform.Rotation.random`
+# gives none either, and spglib's symmetry-operation ORDER defines the basis
+# atom order — so a version bump can change a structure entirely, not merely in
+# the last bit. This file is the pin set to use when you need to reproduce a
+# specific archived run rather than merely to run grainsmith.
+#
+# WHAT THIS FILE CANNOT PIN.
+#   * The Python interpreter. This environment is CPython 3.11.15; pip
+#     constraints cannot express that. Match it yourself.
+#   * The BLAS. numpy's `@` is where cross-machine last-bit differences come
+#     from, and the BLAS a numpy build links is a property of the BUILD, not of
+#     the version string. This environment's numpy is a conda-forge build
+#     against generic BLAS 3.9.0; `pip install numpy==2.4.6` fetches a PyPI
+#     wheel with a bundled OpenBLAS, i.e. a DIFFERENT BLAS at the same version
+#     number. Byte-identity is therefore not guaranteed by this file alone —
+#     the environment section of summary.csv / microstructure.json records what
+#     actually ran, and `grainsmith verify` checks integrity, not portability.
+#   * The optional accelerator. numba is NOT installed in this environment, so
+#     runs here take the pure-NumPy owns() path. That path is bit-identical to
+#     the numba kernel (the repo's own A/B tests pin this), so its absence is
+#     recorded, not pinned. Set GRAINSMITH_NO_NUMBA=1 to force the same path
+#     in an environment that does have numba.
+
+# --- core runtime (pyproject [project].dependencies) ---
+numpy==2.4.6
+scipy==1.17.1
+spglib==2.7.0
+PyYAML==6.0.3
+pydantic==2.13.4
+pydantic-core==2.46.4
+annotated-types==0.7.0
+typing-inspection==0.4.2
+typing_extensions==4.16.0
+
+# --- optional extras present in this environment ---
+ase==3.29.0             # [cif]
+scikit-image==0.26.0    # [mesh]
+psutil==7.2.2           # [monitor]
+matplotlib==3.11.0      # [bench]
+Markdown==3.10.2        # [docs]
+
+# --- test tooling ---
+pytest==9.1.1
+
+# NOT installed here, hence deliberately unpinned: numba ([perf]), h5py
+# ([import]), pytest-cov, ruff, mypy, httpx. Pinning a version this repository
+# has never actually run would be a fabricated claim, not a reproducibility aid.

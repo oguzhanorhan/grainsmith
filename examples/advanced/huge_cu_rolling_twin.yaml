@@ -1,0 +1,160 @@
+# ===================== grainsmith run configuration =====================
+# HUGE TIER — FCC Cu, beta-fibre rolling texture + Sigma3-angle-enriched
+# boundary network, in a 1500 A cube. ~2.9e8 atoms, 256 grains (~29 nm).
+# Cluster job. Box-expanded sibling of adv_cu_rolling_twin.yaml (228 A,
+# 64 grains, ~1e6 atoms).
+#
+# WHY THIS ONE IS WORTH RUNNING BIG
+# ---------------------------------
+# Texture and boundary-network statistics are the two quantities in this
+# code base that are most obviously sample-size limited. At 64 grains the
+# realised volume fractions of a four-component ODF are quantised by the
+# grain count itself, and the misorientation-angle histogram is built from
+# a few hundred boundaries. At 256 grains there are ~1700 boundaries and
+# the component volume fractions have room to land on their targets. This
+# file exists so those distributions can be measured where they are
+# actually representative.
+#
+# It also carries the full ODF bookkeeping, which is what a reader should
+# take from it:
+#   * component_weight_basis: volume -- each weight below is a fraction of
+#     MATERIAL, the conventional definition of an ODF, not a fraction of
+#     GRAINS. Gate G25 prints configured vs realised-by-count vs
+#     realised-by-volume so the difference is a number, not a claim.
+#   * mdf_target.odf_drift_max -- annealing permutes which grain carries
+#     which orientation, which leaves the grain-COUNT-weighted distribution
+#     invariant but NOT the volume-weighted ODF: a swap of grains a, b
+#     moves |V_a - V_b| / sum(V) of its mass. This is a HARD per-swap veto;
+#     gate G22 re-measures the drift independently afterwards.
+#   * The target is the disorientation-ANGLE marginal, not a full MDF. The
+#     Sigma3 Brandon window it optimises is NECESSARY but not sufficient
+#     for Sigma3 -- true CSL also needs the <111> axis, which the energy
+#     never sees. Gate G23 reports the window fraction and the true CSL
+#     Sigma3 fraction side by side; expect the second well below the first.
+#
+# GEOMETRY (computed from the installed code)
+# -------------------------------------------
+#   * N = 256 grains in a 1500.0 A cube -> r_ws = 146.55 A, d_eq = 29.3 nm.
+#   * Cu FCC a = 3.615 A -> 4 atoms/cell, d_nn = 2.5562 A, 8.935 g/cm3.
+#     286 million atoms before overlap removal.
+#   * Geometry is FLAT, so there is no analysis-grid Nyquist constraint
+#     here (contrast huge_pdau_perturbed.yaml, where the 384-voxel cap
+#     forces l_min up). Flat also means exact polyhedral cell volumes and
+#     a vertices.csv.
+#
+# THE BETA FIBRE. Euler centres in Bunge (phi1, PHI, phi2), the classical
+# FCC cold-rolling components, unchanged from the 1e6-atom sibling:
+#     Copper {112}<111>   (90.0,    35.2644, 45.0)
+#     S      {123}<634>   (59.0,    36.7,    63.4)
+#     Brass  {110}<112>   (35.2644, 45.0,     0.0)
+#     Cube   {001}<100>   ( 0.0,     0.0,     0.0)   recrystallisation
+#
+# RESOURCES
+# ---------
+#   * 286e6 x 36 B = 10.3 GB for the atom arrays; the post-fill sort holds
+#     old + new + index simultaneously (~23 GB) and the writers add more.
+#     Budget >= 64 GB and expect 35-45 GB resident.
+#   * lloyd_iterations: 2 costs two extra centroidal passes over 256 grains
+#     -- cheap next to the fill, and it is what makes the grains equiaxed
+#     enough for the volume-basis partition to be well conditioned.
+#   * The assignment anneal is O(annealing_steps) with O(neighbours) work
+#     per accepted swap; 40000 steps at 256 grains is seconds, not minutes.
+#
+# Run:
+#   grainsmith validate examples/advanced/huge_cu_rolling_twin.yaml
+#   grainsmith generate examples/advanced/huge_cu_rolling_twin.yaml --jobs 32
+# =========================================================================
+
+meta:
+  title: "HUGE: FCC Cu beta-fibre rolling texture + Sigma3-angle target, 1500 A box, 256 grains"
+  verbose: 1
+
+runtime:
+  # Per-ALLOCATION guard, not a total-RSS cap; also the budget the parallel
+  # fill divides by the worker count. Flat geometry means no voxel field,
+  # so the largest single arrays are the concatenated atom arrays.
+  memory_limit_gb: 32.0
+
+seed:
+  mode: fixed
+  value: 314159
+
+box:
+  lengths: [1500.0, 1500.0, 1500.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 256
+  min_seed_distance: auto     # -> r_ws = 146.55 A
+  lloyd_iterations: 2         # centroidal relaxation -> equiaxed grains
+
+crystal:
+  space_group:
+    number: 225               # Fm-3m (FCC)
+  lattice:
+    a: 3.615                  # Cu, A
+  wyckoff_sites:
+    - element: Cu
+      coords: [0.0, 0.0, 0.0]
+      letter: a
+
+orientation:
+  scheme: odf_components
+  component_weight_basis: volume     # weights ARE volume fractions (G25)
+  components:
+    - {euler_bunge_deg: [90.0,     35.2644, 45.0], weight: 0.30, spread_deg: 8.0}   # Copper
+    - {euler_bunge_deg: [59.0,     36.7,    63.4], weight: 0.30, spread_deg: 8.0}   # S
+    - {euler_bunge_deg: [35.2644,  45.0,     0.0], weight: 0.25, spread_deg: 8.0}   # Brass
+    - {euler_bunge_deg: [0.0,       0.0,     0.0], weight: 0.15, spread_deg: 8.0}   # Cube
+  mdf_target:
+    type: sigma3_angle_enriched   # ANGLE window only; 'csl_enriched' is a
+                                  # deprecated alias that warns
+    sigma3_fraction: 0.4          # mixture coefficient, NOT the resulting
+                                  # window mass (the Haar base already has
+                                  # mass inside the 60 deg window)
+    annealing_steps: 40000        # more grains -> more swap space to search
+    t0: 0.05
+    cooling: 0.9995
+    chi2_max: 1.0                 # G12 warn threshold (chi2 in [0, 2])
+    odf_drift_max: 0.02           # hard cap on volume-weighted ODF drift.
+                                  # Tighter than the 60 A examples because
+                                  # one swap moves O(1/N) of the ODF mass
+                                  # and N is large here -- at 256 grains a
+                                  # single swap can only move ~0.4% of it,
+                                  # so this bounds the walk without
+                                  # freezing it.
+
+boundaries:
+  geometry: flat
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: true                   # REQUIRED for the angle-window vs true-CSL
+                              # comparison this example is built around
+  statistics: true
+  per_atom_margin: false
+  section: {axis: z, position: 0.5}
+  mdf_bins: 40
+
+output:
+  directory: ./out_huge_cu_rolling_twin
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  methods_snippet: true

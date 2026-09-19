@@ -1,0 +1,105 @@
+# ===================== grainsmith run configuration =====================
+# FCC Cu, 8 grains, 480³ Å, curved grain boundaries (domain-warp method).
+# Production scale: ~9×10⁶ atoms, a size where --jobs (parallel fill)
+# actually matters.
+#
+# WHAT THIS TEACHES
+#   * boundaries.curved.method: warp with physically meaningful amplitude
+#     and correlation_length — a Gaussian domain-warp displacement field
+#     u(x) applied to the flat Voronoi assignment, giving smoothly curved
+#     grain boundaries instead of flat facets.
+#   * The gate G6 clip/gradient interplay: where ‖u‖ saturates at the
+#     seed-containment clip A_clip = msd/4, the gradient scales as
+#     ~A_clip/correlation_length independent of amplitude — shortening
+#     correlation_length (not raising amplitude) is what trips the G6
+#     bijectivity guard. Try correlation_length: 15 to see it ABORT the
+#     run — G6 is a hard constraint enforced at construction (warp.py),
+#     not a warning.
+#   * At this scale (production-sized, ~9×10⁶ atoms), --jobs (parallel
+#     fill across grains) is what makes the run practical — try
+#     --jobs 0 (all cores) and compare wall time against --jobs 1.
+#   * analysis.gb_curvature on a genuinely curved geometry: gb_curvature.csv
+#     reports nonzero H/K per boundary sample (gate G16), the curved
+#     counterpart to basics/b2_nial_flat.yaml's exact-zero flat case.
+#
+# HOW TO RUN
+#   grainsmith validate examples/grain_geometry/fcc_cu_curved_warp.yaml
+#   grainsmith generate examples/grain_geometry/fcc_cu_curved_warp.yaml --jobs 0
+#   Check gb_curvature.csv for the nonzero H/K samples and
+#   diagnostics/warp_field_stats.dat (meta.verbose >= 3) for the warp
+#   field's own gradient/amplitude summary.
+
+meta:
+  title: "FCC Cu, 8 grains, 480³ Å, curved GBs (domain warp)"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 987654
+
+box:
+  lengths: [480.0, 480.0, 480.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 8
+  min_seed_distance: auto
+  lloyd_iterations: 0
+
+crystal:
+  space_group:
+    number: 225           # Fm-3m (FCC)
+    setting: null
+  lattice:
+    a: 3.615              # Cu lattice parameter, Å
+  wyckoff_sites:
+    - {element: Cu, coords: [0.0, 0.0, 0.0], letter: a}
+
+orientation:
+  scheme: random_uniform
+
+boundaries:
+  geometry: curved
+  curved:
+    method: warp
+    base: flat
+    amplitude: 25.0          # RMS per component of u(x), Å
+    correlation_length: 120.0  # Gaussian correlation length ℓ, Å.
+                            # NOTE on G6: where ‖u‖ saturates at the seed-
+                            # containment clip A_clip = msd/4, the gradient
+                            # scales as ~A_clip/ℓ independent of amplitude;
+                            # ℓ = 15 Å trips the bijectivity guard
+                            # (max‖∇u‖ ≈ 0.50) for this box/grain count.
+    # (weight_sigma / aspect_ratio_range are inert for method: warp — they
+    #  apply only to the additive_weights / anisotropic methods respectively.)
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false
+  per_atom_margin: false
+  gb_curvature: true  # per-boundary H/K + gb_curvature.csv (genuinely curved here)
+
+output:
+  directory: ./out_fcc_cu_curved
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false
+    format: ply

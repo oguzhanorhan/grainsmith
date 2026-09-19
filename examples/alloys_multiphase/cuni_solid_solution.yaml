@@ -1,0 +1,85 @@
+# ===================== grainsmith run configuration =====================
+# Example: Cu90-Ni10 random FCC solid solution, 6 grains.
+#
+# WHAT THIS TEACHES
+#   * Stochastic site occupancy: one Wyckoff site shared by two species —
+#     `element: {Cu: 0.90, Ni: 0.10}` samples each lattice site
+#     independently (occupancies must sum to 1 ± 1e-6, validated at G1).
+#   * Gate G9 (composition drift): summary.csv reports nominal vs final
+#     per-species fractions; GB overlap deletions perturb them slightly
+#     (warn-only above 1 % per species).
+#   * Per-grain deterministic rng streams: re-running this config — with
+#     ANY `--jobs` value — reproduces the exact same Cu/Ni site assignment.
+#
+# NOTE: midpoint_merge overlap policy is forbidden for multi-species
+# systems (merging a Cu-Ni pair would silently change the composition) —
+# grainsmith raises a ConfigError if you try.
+#
+# HOW TO RUN
+#   grainsmith validate examples/alloys_multiphase/cuni_solid_solution.yaml
+#   grainsmith generate examples/alloys_multiphase/cuni_solid_solution.yaml
+#   Check summary.csv's composition section (nominal vs final Cu/Ni
+#   fractions, gate G9).
+
+meta:
+  title: "Cu90-Ni10 random solid solution, 6 grains, 50^3 A"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 271828
+
+box:
+  lengths: [50.0, 50.0, 50.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 6
+  min_seed_distance: auto
+  lloyd_iterations: 0
+
+crystal:
+  space_group:
+    number: 225              # Fm-3m
+  lattice:
+    a: 3.606                 # Vegard interpolation Cu(3.615)/Ni(3.524), Å
+  wyckoff_sites:
+    - element: {Cu: 0.90, Ni: 0.10}    # random alloy on the 4a site
+      coords: [0.0, 0.0, 0.0]
+      letter: a
+
+orientation:
+  scheme: random_uniform
+
+boundaries:
+  geometry: flat
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower   # midpoint_merge would raise: multi-species
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false
+  per_atom_margin: false
+
+output:
+  directory: ./out_cuni_solid_solution
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+    # masses: {Cu: 63.546, Ni: 58.693}   # override defaults if needed
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FAQ &amp; troubleshooting · grainsmith</title>
+<style>
+
+:root{
+  --sidebar-w: 300px; --toc-w: 240px;
+  --accent:#b5651d; --accent-2:#1f6f8b;
+  --ink:#1a1f24; --ink-soft:#4a545e; --line:#e3e7ea;
+  --bg:#ffffff; --bg-side:#1c2530; --bg-side-2:#243040;
+  --code-bg:#f5f7f9; --side-ink:#c9d3de; --side-ink-soft:#8a97a6;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:Georgia,"Times New Roman",Times,serif;
+  color:var(--ink); background:var(--bg); line-height:1.68; font-size:16px;
+}
+/* ---- full-screen layout: fixed sidebar + fluid content ---- */
+.sidebar{
+  position:fixed; top:0; left:0; width:var(--sidebar-w); height:100vh;
+  overflow-y:auto; background:var(--bg-side); color:var(--side-ink);
+  padding:22px 0 40px; z-index:20;
+}
+.brand{padding:6px 24px 20px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:14px;}
+.brand a{color:#fff;font-weight:700;font-size:1.35rem;text-decoration:none;letter-spacing:.5px;}
+.brand-sub{display:block;color:var(--side-ink-soft);font-size:.8rem;margin-top:2px;}
+.nav-group{margin:0 0 6px;}
+.nav-group-title{
+  padding:12px 24px 5px;font-size:.72rem;text-transform:uppercase;
+  letter-spacing:.09em;color:var(--side-ink-soft);font-weight:700;
+}
+.nav-group ul{list-style:none;margin:0;padding:0;}
+.nav-group li a{
+  display:block;padding:6px 24px 6px 28px;color:var(--side-ink);
+  text-decoration:none;font-size:.92rem;border-left:3px solid transparent;
+}
+.nav-group li a:hover{background:var(--bg-side-2);color:#fff;}
+.nav-group li.active a{
+  color:#fff;border-left-color:var(--accent);background:var(--bg-side-2);font-weight:600;
+}
+.content{margin-left:var(--sidebar-w);min-height:100vh;}
+.content-inner{
+  display:grid;grid-template-columns:minmax(0,1fr) var(--toc-w);
+  gap:48px;max-width:1500px;margin:0 auto;padding:52px 64px 96px;
+}
+article{min-width:0;}
+/* ---- in-page TOC (sticky, right rail) ---- */
+.toc{position:sticky;top:36px;align-self:start;font-size:.86rem;
+  border-left:1px solid var(--line);padding-left:18px;max-height:calc(100vh-72px);overflow-y:auto;}
+.toc-title{font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--ink-soft);margin-bottom:10px;}
+.toc ul{list-style:none;margin:0;padding:0;}
+.toc li{margin:3px 0;}
+.toc li a{color:var(--ink-soft);text-decoration:none;display:block;line-height:1.4;}
+.toc li a:hover{color:var(--accent);}
+.toc-l3{padding-left:14px;font-size:.82rem;}
+/* ---- typography ---- */
+article h1{font-size:2.05rem;line-height:1.2;margin:.1em 0 .7em;font-weight:750;letter-spacing:-.01em;}
+article h2{font-size:1.5rem;margin:1.9em 0 .6em;padding-bottom:.28em;
+  border-bottom:2px solid var(--line);font-weight:700;}
+article h3{font-size:1.18rem;margin:1.6em 0 .5em;font-weight:650;}
+article h4{font-size:1.02rem;margin:1.3em 0 .4em;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;}
+article p{margin:.85em 0;}
+article a{color:var(--accent-2);text-decoration:none;}
+article a:hover{text-decoration:underline;}
+article strong{font-weight:650;}
+article img{max-width:100%;height:auto;display:block;margin:1.4em auto;
+  border:1px solid var(--line);border-radius:8px;background:#fff;}
+article ul,article ol{padding-left:1.5em;margin:.7em 0;}
+article li{margin:.32em 0;}
+article blockquote{
+  margin:1.3em 0;padding:.7em 1.2em;border-left:4px solid var(--accent);
+  background:#fbf6f0;color:var(--ink);border-radius:0 6px 6px 0;
+}
+article blockquote p{margin:.4em 0;}
+/* ---- display math (MathJax typesets these; this is the no-JS/offline fallback) ---- */
+.math-display{
+  margin:1.5em 0;padding:.9em 1.2em;text-align:center;overflow-x:auto;
+  font-family:"Cambria Math","STIX Two Math",Cambria,"Times New Roman",serif;
+  font-size:1.05rem;color:var(--ink);
+}
+/* ---- code ---- */
+code{font-family:"SF Mono",SFMono-Regular,ui-monospace,Menlo,Consolas,monospace;
+  font-size:.88em;background:var(--code-bg);padding:.12em .38em;border-radius:4px;
+  color:#b03a2e;border:1px solid var(--line);}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;
+  padding:16px 18px;overflow-x:auto;margin:1.2em 0;line-height:1.5;}
+pre code{background:none;border:none;padding:0;color:var(--ink);font-size:.86rem;}
+/* ---- tables (wide, striped, scrollable) ---- */
+article table{border-collapse:collapse;width:100%;margin:1.3em 0;font-size:.9rem;display:block;overflow-x:auto;}
+article thead th{background:#2c3844;color:#fff;text-align:left;padding:9px 12px;font-weight:600;white-space:nowrap;}
+article tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top;}
+article tbody tr:nth-child(even){background:#f8fafb;}
+article tbody code{white-space:nowrap;}
+/* ---- prev/next ---- */
+.prevnext{display:flex;justify-content:space-between;gap:16px;margin-top:3.5em;
+  padding-top:1.6em;border-top:1px solid var(--line);}
+.prevnext a{flex:1;max-width:48%;padding:14px 18px;border:1px solid var(--line);
+  border-radius:8px;text-decoration:none;color:var(--ink);background:#fcfdfe;}
+.prevnext a:hover{border-color:var(--accent);background:#fbf6f0;}
+.prevnext .next{text-align:right;}
+.prevnext span{display:block;font-size:.78rem;color:var(--ink-soft);margin-bottom:3px;}
+.prevnext strong{font-size:.98rem;color:var(--accent-2);font-weight:600;}
+/* ---- mobile ---- */
+.menu-toggle{display:none;position:fixed;top:12px;left:12px;z-index:30;
+  background:var(--bg-side);color:#fff;border:none;border-radius:6px;
+  width:42px;height:42px;font-size:1.3rem;cursor:pointer;}
+@media (max-width:1080px){
+  .content-inner{grid-template-columns:minmax(0,1fr);}
+  .toc{display:none;}
+}
+@media (max-width:820px){
+  .menu-toggle{display:block;}
+  .sidebar{transform:translateX(-100%);transition:transform .2s ease;}
+  body.nav-open .sidebar{transform:translateX(0);}
+  .content{margin-left:0;}
+  .content-inner{padding:64px 22px 72px;}
+}
+
+</style>
+<script>
+window.MathJax = {
+  tex: { displayMath: [['\\[', '\\]']], processEscapes: true },
+  options: { enableMenu: false }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</head>
+<body>
+<button class="menu-toggle" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+<nav class="sidebar" aria-label="Documentation navigation">
+<div class="brand"><a href="index.html">grainsmith</a><span class="brand-sub">documentation</span></div>
+<div class="nav-group"><div class="nav-group-title">Getting started</div><ul>
+<li><a href="index.html">Overview</a></li>
+<li><a href="manual.html">User manual</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Concepts &amp; physics</div><ul>
+<li><a href="architecture.html">Architecture</a></li>
+<li><a href="geometry.html">Grain geometry</a></li>
+<li><a href="physics.html">Physics &amp; conventions</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Reference</div><ul>
+<li><a href="config_reference.html">Configuration reference</a></li>
+<li><a href="gates.html">QA gates (G1–G26)</a></li>
+<li><a href="outputs.html">Outputs</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Developer</div><ul>
+<li><a href="developer.html">Developer guide</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Help</div><ul>
+<li class="active"><a href="faq.html">FAQ &amp; troubleshooting</a></li>
+</ul></div>
+</nav>
+<main class="content">
+<div class="content-inner">
+<article>
+<h1>grainsmith FAQ &amp; troubleshooting</h1>
+<p>Quick answers to the common failure modes. Gate thresholds and remedies are in
+<code>docs/gates.md</code>; config fields in <code>docs/config_reference.md</code>.</p>
+<h2 id="gate-failures">Gate failures</h2>
+<p><strong>G1 "extra fields not permitted" / unknown key.</strong> Every config model is
+<code>extra='forbid'</code>, so a misspelt key is an error. Check the spelling against
+<code>docs/config_reference.md</code>. Common slips: <code>wyckoff_sites</code> (not <code>wyckoff</code>),
+<code>size_distribution</code> under <code>grains</code>, <code>overlap_removal</code> under <code>boundaries</code>.</p>
+<p><strong>G1 "exactly one of crystal or phases".</strong> Use <code>crystal:</code> for single-phase,
+<code>phases:</code> (a list of ≥ 2) for multiphase — never both.</p>
+<p><strong>G1 "'cif' is mutually exclusive with the manual ... trio".</strong> Inside a
+<code>crystal:</code> (or per-phase <code>crystal:</code>) block, <code>cif: {file: ...}</code> and the manual
+<code>space_group</code> / <code>lattice</code> / <code>wyckoff_sites</code> trio cannot both be set — pick one
+input form. Conversely, "provide either 'cif' ... or the manual trio" means
+neither was given; and "requires space_group, lattice, AND wyckoff_sites all
+set" means the manual trio is incomplete (no <code>cif</code> present either). See
+<code>docs/manual.md</code> § <em>Crystal input</em> for the CIF path, or
+<code>examples/cif/tini_cif_polycrystal.yaml</code> for a worked example. A CIF whose own
+<code>_symmetry_Int_Tables_number</code> disagrees with what spglib detects is NOT an
+error — only a logged WARNing; spglib's detection is always authoritative.
+Partial or mixed site occupancy in a CIF raises a clear ConfigError (use the
+manual <code>wyckoff_sites</code> path with an explicit <code>{element: {...}, ...}</code> dict
+instead).</p>
+<p><strong>G2 round-trip failed (wrong space group).</strong> The expanded motif did not
+reproduce the requested ITA number. Causes: wrong Wyckoff <code>coords</code>, a <em>free</em>
+Wyckoff parameter left symbolic (substitute a number, e.g. O 4f x=0.305), an
+incompatible <code>setting</code> (origin choice 2, or R vs H), or two Wyckoff sites placed
+at coincident coordinates. Use <code>grainsmith info --sg &lt;N&gt; --site "x,y,z"</code> to see
+the orbit.</p>
+<p><strong>G6 warp bijectivity (clip/gradient).</strong> The warp amplitude is too large for the
+length scale. Reduce <code>boundaries.curved.amplitude</code> (hard cap:
+≤ <code>min_seed_distance</code>/4), or increase <code>correlation_length</code>. <code>warp</code> only ever
+accepts <code>spectrum: gaussian</code> — a <code>ConfigError</code> (<code>method 'warp' does not accept
+spectrum 'self_affine'</code>) means you want <code>boundaries.curved.method:
+perturbed_distance</code> instead, the only method the <code>self_affine</code>
+spectrum is legal on; see <a href="geometry.html#4b-perturbed-distance--genuinely-self-affine-grain-boundaries">geometry.md §4b</a>.</p>
+<p><strong>G7 atoms closer than cutoff.</strong> Overlap removal is off or too weak. Set
+<code>boundaries.overlap_removal.enabled: true</code> and/or raise <code>cutoff</code> (e.g.
+<code>0.85*d_nn</code> → <code>0.9*d_nn</code>).</p>
+<p><strong>G8 atom count off (WARN &gt; 2 %, FAIL &gt; 5 %).</strong> Large deviation usually means an
+unexpectedly large overlap-deletion count or a density/occupancy mismatch. Check
+the deletion count and composition in <code>summary.csv</code>, and the lattice parameters.</p>
+<p><strong>G11 volume targeting failed.</strong> The SDOT fit could not hit <code>vol_tol</code>. Increase
+<code>size_distribution.max_iter</code>, reduce <code>sigma_log</code> (a narrower distribution is
+easier), or increase <code>grains.number</code>. The target spread may be infeasible for the
+seed set. <strong>Note on combining with curved/self-affine boundaries:</strong> when a
+<code>size_distribution</code> is used <em>together</em> with a <code>warp</code> boundary, the volume target
+is enforced on the <strong>unwarped power base</strong> (the warp then displaces the
+boundaries, so the realized per-grain volumes deviate from the targets, bounded
+by the G6 gradient guard). G11 reports the base error and its message says so —
+do not read a warp+SDOT PASS as a guarantee on the realized warped cells. For
+equiaxed shapes <em>with</em> tight volumes, prefer the centroidal loop
+(<code>centroidal_iterations</code>) instead of a warp.</p>
+<p><strong>G12 angle-histogram χ² above threshold (WARN).</strong> Increase <code>mdf_target.annealing_steps</code>. The
+achievable Σ3 area fraction is <strong>bounded by the twin content of the fixed
+orientation set</strong> because the assignment-annealing is <strong>conserved-texture</strong> — it
+only permutes a fixed orientation multiset over the (fixed) Voronoi neighbour
+graph, and the NUMBER-weighted orientation distribution (not the volume-weighted
+ODF) is what stays invariant by construction. Measured behaviour
+(<code>sigma3_angle_enriched</code> sweep, <code>sigma3_fraction</code> 0.1–0.5 x 3 seeds, case <code>M2</code> of the MDF
+validation campaign — local validation tooling, not published with this repository): the realised <strong>Brandon
+angular-window</strong> area fraction (<code>brandon_area_frac</code>, angle only) climbs with the
+target but stays within roughly <strong>0.24–0.44</strong> across the whole sweep, while the
+<strong>true CSL Σ3 area fraction</strong> (<code>sigma3_area_frac</code>, angle AND ⟨111⟩ axis, from
+<code>statistics.csv</code>) stays far smaller throughout, roughly <strong>0.02–0.06</strong> — because
+the annealing objective enforces only the 60° Brandon angle window, never the
+axis condition CSL classification also requires. The method <em>shapes</em> the
+disorientation-angle marginal toward the target under that ceiling; it does not hit an
+arbitrary target, and reaching a higher <em>true</em> Σ3 fraction needs orientations
+that are actually twin-related (e.g. two <code>odf_components</code> 60° ⟨111⟩ apart), which
+this objective alone cannot add — see <code>docs/physics.md</code> §4.</p>
+<p><strong>What does annealing actually preserve, and is the ODF itself safe?</strong>
+Only the NUMBER-weighted orientation distribution is invariant by
+construction (see above) — the ODF as conventionally defined is
+<strong>volume</strong>-weighted, and annealing's own drift there is a separate,
+optionally controlled term (<code>mdf_target.odf_drift_max</code>, gate <strong>G22</strong>).
+The default <code>null</code> measures drift without constraining it. But that is
+only half the picture: the volume-weighted ODF can already be off target
+<em>before</em> annealing ever runs, through <code>orientation.scheme: odf_components</code>
+itself — <code>component_weight_basis: "count"</code> realises
+each component's configured <code>weight</code> as a GRAIN-COUNT fraction, not a
+volume fraction, and the two can differ substantially on a small,
+broad-<code>size_distribution</code> grain population (measured 24-grain case:
+configured 0.500/0.500 realised as 0.745/0.255 in volume — a 0.245
+total-variation gap, twelve times the annealer's typical 0.02 cap). Set
+<code>component_weight_basis: "volume"</code> (the default from this revision on) to
+reduce that gap with deterministic whole-grain partitioning. Finite-grain
+granularity remains; exact volume matching is generally impossible.
+Gate <strong>G25</strong> reports both the residual component-fraction error and the
+size-component correlation. See <code>docs/physics.md</code> §4's component-fraction
+error budget, which is an inequality rather than an exact decomposition
+of the full continuous ODF error.</p>
+<p><strong>G13 Hurst off target (WARN).</strong> A finite-band bias is expected (measured): the
+back-estimated <strong>absolute</strong> H is <strong>low-biased</strong> (≈ −0.114 measured), although the
+<em>relative</em> ordering across target H is faithful. If you need a specific
+roughness, raise the target H to compensate, and widen the scale-free band: lower
+<code>l_min</code>, raise <code>l_max</code> (≤ min(L)/2), and use a finer <code>analysis.voxel_grid</code> for
+more octaves.</p>
+<p><strong>G14 incommensurate single crystal (WARN).</strong> For <code>grains.number: 1</code>, use a box
+that is an integer number of lattice repeats and/or an identity orientation;
+otherwise the periodic faces are self-boundary defects (sometimes intended).</p>
+<p><strong>G15 phase fractions off (WARN).</strong> Fraction resolution is limited by grain count
+(deviation floor V_max/V_box). Increase <code>grains.number</code>.</p>
+<p><strong>G16 curvature samples degenerate (WARN).</strong> More than 5 % of grain-boundary
+level-set curvature samples were dropped as degenerate (gradient magnitude
+below <code>CURV_GRAD_MIN</code>). Raise <code>analysis.voxel_grid</code> for finer level-set
+sampling; near-planar curved backends may legitimately report near-zero H
+everywhere, which is not itself a problem.</p>
+<p><strong>G17 dopant composition/enrichment off target (WARN).</strong> A dopant's achieved
+atom fraction drifted more than 1 percentage point from its nominal
+<code>concentration</code>, or the achieved enrichment came out more than 15 % off the
+target <code>enrichment</code>. This is often statistical noise when the expected
+bulk-dopant count is small (see the rule of thumb in <code>docs/gates.md</code>).
+Raise <code>concentration</code> or shrink <code>shell_width</code> to grow the candidate pools, or
+increase <code>grains.number</code> for more sites.</p>
+<p><strong>G18 dopant min-distance violation.</strong> An interstitial dopant site ended up
+closer than its <code>min_distance</code> to another atom on the final re-verification
+pass. Lower <code>min_distance</code>, choose a different interstitial site preset, or
+lower the dopant <code>concentration</code>.</p>
+<p><strong>G19 perturbed_distance reassigned-voxel fraction (WARN).</strong> More than 2 % of
+voxels needed majority-vote reassignment to repair disconnected fragments
+during <code>perturbed_distance</code> construction. This is a repair-severity signal,
+not a pass/fail test — the structure is always usable (repair either
+converges or the constructor raises <code>TessellationError</code> outright, which
+never reaches <code>summary.csv</code>). A large fraction usually means the amplitude
+is aggressive relative to <code>min_seed_distance</code>; reduce <code>amplitude</code> or raise
+<code>correlation_length</code>/<code>l_min</code>.</p>
+<p><strong>G20 box-counting roughness index (informational, WARN-eligible).</strong> <code>d_b</code>
+in <code>summary.csv</code> is a local-roughness diagnostic from a box-counting fit
+over the synthesis band, not a converged fractal-dimension certificate at
+MD-typical grain sizes (see <code>docs/physics.md</code> §5b and <code>docs/gates.md</code>).
+<code>d_b = n/a</code> means no sampled (grain, section) combination yielded a usable
+fit (grains too small relative to the section resolution).</p>
+<p><strong>G21 Gauss-Bonnet residual (WARN).</strong> The per-grain face-interior curvature
+residual exceeded one topological unit (4π). This is a standing, coarse
+fidelity caveat on the <code>gb_curvature.csv</code> H/K columns for the current
+estimator — it routinely fires on ordinary curved runs (and even near-flat
+ones), and does <strong>not</strong> shrink by refining <code>analysis.voxel_grid</code> over the
+tested range. It never touches the atomistic output itself (G3/G4/G7
+already certify that independently); treat a WARN here as a reminder to
+read curvature numbers with that caveat in mind, not as an actionable
+defect by itself. See <code>docs/gates.md</code> G21 for the calibration numbers.</p>
+<p><strong>My crystal isn't fcc/bcc/hcp — can I still add interstitials?</strong> Yes: give
+explicit <code>sites: {coords: [[x, y, z]]}</code> — any of the 230 space groups works.
+One representative per interstitial orbit is enough: by default
+(<code>expand_orbit: true</code>) it is expanded to the full symmetry orbit of the host
+space group (the log reports "N listed site(s) -&gt; M site(s)/cell"). This
+also works with <code>crystal.cif</code> input, where the spglib-<em>detected</em> group
+drives the expansion. Set <code>expand_orbit: false</code> only if you deliberately
+want a symmetry-breaking partial sublattice — then you must list every
+equivalent site yourself.</p>
+<p><strong>How do I check the dopants actually segregated to the GBs?</strong> Look at
+<code>doping_profile.csv</code> / run <code>gnuplot doping_profile.plt</code> in the output
+directory: the bottom panel plots the local dopant fraction c(d) against
+GB distance — with segregation it steps down at the shell edge from
+≈ enrichment × bulk level to the bulk level; without it the profile is flat
+at the nominal fraction. Gate G17's achieved enrichment is the shell/bulk
+ratio of the same quantity.</p>
+<h2 id="performance">Performance</h2>
+<p><strong>SDOT is slow for many grains.</strong> The SDOT solve scales with the grain count,
+not the box size (measured). N ≈ 100 is seconds; N ≈ 1000 can take ~1–2
+minutes on a typical core, and slower hardware scales up from there — these
+are honest, hardware-dependent numbers, not errors. The volume <em>accuracy</em>
+(G11) is unaffected.</p>
+<p><strong>Use <code>--jobs</code> for large fills.</strong> <code>grainsmith generate cfg.yaml --jobs 0</code> runs
+the per-grain atom fill, and (when <code>analysis.gb_curvature</code> is on) the
+per-boundary-pair GB-curvature analysis, on all cores <em>available to the
+process</em> (the cgroup/affinity mask — under a SLURM <code>--cpus-per-task</code>
+allocation that is the allocated cores, not the whole node). Speedup is
+near-ideal to ~4 workers and saturates around 8 (measured). <code>--jobs</code> also
+sets the thread count for the overlap-removal neighbour search and gate G7's
+fresh query, though that stage's own pair-processing loop stays serial. The
+tessellation and file I/O are serial and dominate very large runs, so total
+wall time improves less than the fill time alone. Outputs are bit-identical
+for any <code>--jobs</code>.</p>
+<p><strong>On SLURM / HPC clusters.</strong> grainsmith is a <strong>single-node</strong> program: one run
+= one node = one task, and all parallelism is <code>--jobs</code> worker processes
+inside that task. Never request <code>--nodes &gt; 1</code> or <code>--ntasks &gt; 1</code> for one run —
+each extra task would execute the full pipeline again into the same output
+directory. The best-parallelism operating point on a single node is
+<code>--jobs = grains.number</code> (the fill stage hands each grain its own worker, so
+every grain fills simultaneously; more cores than grains speed up only the
+per-boundary-pair analysis stage), with <code>--cpus-per-task</code> set to match. The
+numba kernels are disk-cached (<code>cache=True</code>) inside the installed package, so
+one small warm-up run after installation compiles everything once for every
+node that shares the filesystem. See <code>examples/hpc/</code> for ready-made
+cluster-scale configs, a submit-ready <code>job.sbatch</code> template, and the full
+cluster guide (<code>examples/hpc/README.md</code> — <code>sbatch</code>, the <code>salloc</code>
+interactive case, job arrays, pitfalls).</p>
+<p><strong>Memory for big runs.</strong> The 9.2-million-atom flagship example peaks at ~13 GB
+resident — budget <strong>≥ 16 GB RAM</strong> for production sizes; that is a measured
+total-RSS figure for one run, not a setting. Separately, the per-allocation
+memory guard (<code>runtime.memory_limit_gb</code>, <strong>16 GB by default</strong>, raised from a
+hard-coded 8 GB) blocks any single allocation — the per-grain
+lattice-enumeration grid (<code>atoms/fill.py</code>), the analysis voxel grid
+(<code>tessellation/voxel.py</code>), or the imported voxel-label EDT margin
+(<code>tessellation/voxel_import.py</code>) — whose estimated size exceeds it, with an
+actionable error instead of an OOM-kill. The two 16 GB numbers now coincide,
+but they are <strong>different things</strong> (a per-allocation cap you can raise in the
+YAML vs. a measured total-RSS figure for one example) — see <em>Memory guards</em> in
+the <a href="manual.html">user manual</a> for the total-RSS <code>--max-rss</code> monitor, which is
+what actually watches cumulative RSS. The effective budget enforced is
+<code>min(runtime.memory_limit_gb, detected physical RAM)</code> — a hard clamp: raising
+the config value past what the machine actually has does <strong>not</strong> raise the
+ceiling, physical RAM always wins (detected best-effort via <code>psutil</code>,
+<code>os.sysconf</code>, <code>/proc/meminfo</code>, or the Windows/macOS equivalents; if every path
+fails, the configured value is used unclamped and a warning is logged). The
+error names whichever bound tripped: if physical RAM is the smaller, binding
+bound, it names the detected RAM and advises reducing the box size / grain
+count or moving to a bigger machine; if your own <code>runtime.memory_limit_gb</code>
+bound with RAM to spare, it advises raising that setting instead. With <code>--jobs
+N</code>, up to N grains fill concurrently, each allocating its own grid, so budget
+for N times the per-allocation limit — but <strong>only</strong> for the fill stage: the
+analysis voxel grid and the voxel-import EDT margin are each one whole-box
+allocation on the single-threaded driver, unaffected by <code>--jobs</code>. On a
+RAM-limited host a very large run can still swap without the guard firing —
+size the box/grain count to your machine, or watch memory during the run. The
+effective budget is machine-dependent and never written to any output file —
+only your own <code>runtime.memory_limit_gb</code> is recorded, in
+<code>resolved_config.yaml</code>, so cross-machine reproducibility is unaffected.</p>
+<h2 id="windows-notes">Windows notes</h2>
+<ul>
+<li><strong>Console encoding (cp1254 etc.).</strong> Logs and CLI output are ASCII-safe so they
+  never crash on a non-UTF-8 Windows console. Output <em>files</em> are written UTF-8.</li>
+<li><strong>Paths with spaces / non-ASCII</strong> (e.g. <code>Masaüstü</code>) work; quote paths on the
+  command line.</li>
+<li><strong>gnuplot / OVITO are optional viewers.</strong> <code>view.plt</code> needs gnuplot installed to
+  render <code>view.png</code> (<code>gnuplot view.plt</code>); otherwise load <code>polycrystal.data</code> in
+  OVITO. grainsmith itself does not require either.</li>
+<li><strong>Optional extras.</strong> <code>.ply</code> mesh output needs <code>pip install ".[mesh]"</code>
+  (scikit-image); DREAM.3D HDF5 import needs <code>pip install ".[import]"</code> (h5py).
+  Without them, those specific features are skipped (and the matching tests are
+  skipped) — the core pipeline runs fully.</li>
+</ul>
+<h2 id="reproducibility">Reproducibility</h2>
+<p><strong>Will I get the same result twice?</strong> The <em>scientific payload</em> — yes,
+byte-for-byte, with a fixed <code>seed.value</code>, on the same platform and dependency
+versions, for any <code>--jobs</code> value. The <em>whole directory</em> — only with a frozen
+clock. Every file that permits comments carries a one-line provenance header
+containing the run's UTC timestamp, so by default two runs of the same config
+differ in that one line of each file (and <code>MANIFEST.txt</code>, which hashes those
+files, differs in every digest). Set <code>SOURCE_DATE_EPOCH</code> to freeze it:</p>
+<pre><code class="language-bash">SOURCE_DATE_EPOCH=1700000000 grainsmith generate config.yaml
+</code></pre>
+<p>That stamps the given epoch second instead of the wall clock and drops the
+wall-clock <code>timings,*_s</code> rows from <code>summary.csv</code>, which makes the entire output
+directory byte-identical between two runs — <code>MANIFEST.txt</code> included, with
+<code>run.log</code> the sole exception (it is a log, and <code>MANIFEST.txt</code> deliberately lists
+it without a digest).</p>
+<p><strong>Across machines?</strong> Not guaranteed, and not merely in the last bit. The atom
+fill multiplies matrices through NumPy's BLAS, so a different BLAS build or CPU
+architecture shifts a measurable fraction of coordinates by ~1 ulp — the grain
+structure, atom counts and species are unaffected, but the digests change. A
+different <em>version</em> of NumPy, SciPy or spglib can change the result outright:
+<code>numpy.random.Generator</code> gives no cross-version bit-stream guarantee. Install
+with <code>pip install -c constraints-repro.txt -e .</code> to pin the versions this
+repository was developed against, and check the <code>environment</code> section of
+<code>summary.csv</code> (BLAS name/version, OS, CPU architecture, numba state, <code>--jobs</code>)
+to see what actually produced a given run.</p>
+<p><strong>How do I check an archived run is intact?</strong> <code>grainsmith verify &lt;outdir&gt;</code> — see
+<em>Determinism and provenance</em> in the <a href="manual.html">user manual</a>.</p>
+<p>Use <code>seed.mode: entropy</code> to draw and record a fresh seed (saved in
+<code>summary.csv</code>).</p>
+<div class="prevnext">
+<a class="prev" href="developer.html"><span>← Previous</span><strong>Developer guide</strong></a>
+<span></span>
+</div>
+</article>
+<aside class="toc" aria-label="On this page"><div class="toc-title">On this page</div><ul>
+<li class="toc-l2"><a href="#gate-failures">Gate failures</a></li>
+<li class="toc-l2"><a href="#performance">Performance</a></li>
+<li class="toc-l2"><a href="#windows-notes">Windows notes</a></li>
+<li class="toc-l2"><a href="#reproducibility">Reproducibility</a></li>
+</ul></aside>
+</div>
+</main>
+</body>
+</html>

@@ -1,0 +1,1915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configuration reference · grainsmith</title>
+<style>
+
+:root{
+  --sidebar-w: 300px; --toc-w: 240px;
+  --accent:#b5651d; --accent-2:#1f6f8b;
+  --ink:#1a1f24; --ink-soft:#4a545e; --line:#e3e7ea;
+  --bg:#ffffff; --bg-side:#1c2530; --bg-side-2:#243040;
+  --code-bg:#f5f7f9; --side-ink:#c9d3de; --side-ink-soft:#8a97a6;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:Georgia,"Times New Roman",Times,serif;
+  color:var(--ink); background:var(--bg); line-height:1.68; font-size:16px;
+}
+/* ---- full-screen layout: fixed sidebar + fluid content ---- */
+.sidebar{
+  position:fixed; top:0; left:0; width:var(--sidebar-w); height:100vh;
+  overflow-y:auto; background:var(--bg-side); color:var(--side-ink);
+  padding:22px 0 40px; z-index:20;
+}
+.brand{padding:6px 24px 20px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:14px;}
+.brand a{color:#fff;font-weight:700;font-size:1.35rem;text-decoration:none;letter-spacing:.5px;}
+.brand-sub{display:block;color:var(--side-ink-soft);font-size:.8rem;margin-top:2px;}
+.nav-group{margin:0 0 6px;}
+.nav-group-title{
+  padding:12px 24px 5px;font-size:.72rem;text-transform:uppercase;
+  letter-spacing:.09em;color:var(--side-ink-soft);font-weight:700;
+}
+.nav-group ul{list-style:none;margin:0;padding:0;}
+.nav-group li a{
+  display:block;padding:6px 24px 6px 28px;color:var(--side-ink);
+  text-decoration:none;font-size:.92rem;border-left:3px solid transparent;
+}
+.nav-group li a:hover{background:var(--bg-side-2);color:#fff;}
+.nav-group li.active a{
+  color:#fff;border-left-color:var(--accent);background:var(--bg-side-2);font-weight:600;
+}
+.content{margin-left:var(--sidebar-w);min-height:100vh;}
+.content-inner{
+  display:grid;grid-template-columns:minmax(0,1fr) var(--toc-w);
+  gap:48px;max-width:1500px;margin:0 auto;padding:52px 64px 96px;
+}
+article{min-width:0;}
+/* ---- in-page TOC (sticky, right rail) ---- */
+.toc{position:sticky;top:36px;align-self:start;font-size:.86rem;
+  border-left:1px solid var(--line);padding-left:18px;max-height:calc(100vh-72px);overflow-y:auto;}
+.toc-title{font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--ink-soft);margin-bottom:10px;}
+.toc ul{list-style:none;margin:0;padding:0;}
+.toc li{margin:3px 0;}
+.toc li a{color:var(--ink-soft);text-decoration:none;display:block;line-height:1.4;}
+.toc li a:hover{color:var(--accent);}
+.toc-l3{padding-left:14px;font-size:.82rem;}
+/* ---- typography ---- */
+article h1{font-size:2.05rem;line-height:1.2;margin:.1em 0 .7em;font-weight:750;letter-spacing:-.01em;}
+article h2{font-size:1.5rem;margin:1.9em 0 .6em;padding-bottom:.28em;
+  border-bottom:2px solid var(--line);font-weight:700;}
+article h3{font-size:1.18rem;margin:1.6em 0 .5em;font-weight:650;}
+article h4{font-size:1.02rem;margin:1.3em 0 .4em;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;}
+article p{margin:.85em 0;}
+article a{color:var(--accent-2);text-decoration:none;}
+article a:hover{text-decoration:underline;}
+article strong{font-weight:650;}
+article img{max-width:100%;height:auto;display:block;margin:1.4em auto;
+  border:1px solid var(--line);border-radius:8px;background:#fff;}
+article ul,article ol{padding-left:1.5em;margin:.7em 0;}
+article li{margin:.32em 0;}
+article blockquote{
+  margin:1.3em 0;padding:.7em 1.2em;border-left:4px solid var(--accent);
+  background:#fbf6f0;color:var(--ink);border-radius:0 6px 6px 0;
+}
+article blockquote p{margin:.4em 0;}
+/* ---- display math (MathJax typesets these; this is the no-JS/offline fallback) ---- */
+.math-display{
+  margin:1.5em 0;padding:.9em 1.2em;text-align:center;overflow-x:auto;
+  font-family:"Cambria Math","STIX Two Math",Cambria,"Times New Roman",serif;
+  font-size:1.05rem;color:var(--ink);
+}
+/* ---- code ---- */
+code{font-family:"SF Mono",SFMono-Regular,ui-monospace,Menlo,Consolas,monospace;
+  font-size:.88em;background:var(--code-bg);padding:.12em .38em;border-radius:4px;
+  color:#b03a2e;border:1px solid var(--line);}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;
+  padding:16px 18px;overflow-x:auto;margin:1.2em 0;line-height:1.5;}
+pre code{background:none;border:none;padding:0;color:var(--ink);font-size:.86rem;}
+/* ---- tables (wide, striped, scrollable) ---- */
+article table{border-collapse:collapse;width:100%;margin:1.3em 0;font-size:.9rem;display:block;overflow-x:auto;}
+article thead th{background:#2c3844;color:#fff;text-align:left;padding:9px 12px;font-weight:600;white-space:nowrap;}
+article tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top;}
+article tbody tr:nth-child(even){background:#f8fafb;}
+article tbody code{white-space:nowrap;}
+/* ---- prev/next ---- */
+.prevnext{display:flex;justify-content:space-between;gap:16px;margin-top:3.5em;
+  padding-top:1.6em;border-top:1px solid var(--line);}
+.prevnext a{flex:1;max-width:48%;padding:14px 18px;border:1px solid var(--line);
+  border-radius:8px;text-decoration:none;color:var(--ink);background:#fcfdfe;}
+.prevnext a:hover{border-color:var(--accent);background:#fbf6f0;}
+.prevnext .next{text-align:right;}
+.prevnext span{display:block;font-size:.78rem;color:var(--ink-soft);margin-bottom:3px;}
+.prevnext strong{font-size:.98rem;color:var(--accent-2);font-weight:600;}
+/* ---- mobile ---- */
+.menu-toggle{display:none;position:fixed;top:12px;left:12px;z-index:30;
+  background:var(--bg-side);color:#fff;border:none;border-radius:6px;
+  width:42px;height:42px;font-size:1.3rem;cursor:pointer;}
+@media (max-width:1080px){
+  .content-inner{grid-template-columns:minmax(0,1fr);}
+  .toc{display:none;}
+}
+@media (max-width:820px){
+  .menu-toggle{display:block;}
+  .sidebar{transform:translateX(-100%);transition:transform .2s ease;}
+  body.nav-open .sidebar{transform:translateX(0);}
+  .content{margin-left:0;}
+  .content-inner{padding:64px 22px 72px;}
+}
+
+</style>
+<script>
+window.MathJax = {
+  tex: { displayMath: [['\\[', '\\]']], processEscapes: true },
+  options: { enableMenu: false }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</head>
+<body>
+<button class="menu-toggle" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+<nav class="sidebar" aria-label="Documentation navigation">
+<div class="brand"><a href="index.html">grainsmith</a><span class="brand-sub">documentation</span></div>
+<div class="nav-group"><div class="nav-group-title">Getting started</div><ul>
+<li><a href="index.html">Overview</a></li>
+<li><a href="manual.html">User manual</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Concepts &amp; physics</div><ul>
+<li><a href="architecture.html">Architecture</a></li>
+<li><a href="geometry.html">Grain geometry</a></li>
+<li><a href="physics.html">Physics &amp; conventions</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Reference</div><ul>
+<li class="active"><a href="config_reference.html">Configuration reference</a></li>
+<li><a href="gates.html">QA gates (G1–G26)</a></li>
+<li><a href="outputs.html">Outputs</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Developer</div><ul>
+<li><a href="developer.html">Developer guide</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-title">Help</div><ul>
+<li><a href="faq.html">FAQ &amp; troubleshooting</a></li>
+</ul></div>
+</nav>
+<main class="content">
+<div class="content-inner">
+<article>
+<h1>grainsmith configuration reference</h1>
+<blockquote>
+<p><strong>GENERATED FILE — do not edit by hand.</strong>
+Produced by <code>tools/gen_config_reference.py</code> from <code>grainsmith.config.schema</code>
+(the single source of truth). Regenerate after any schema change:
+<code>python -m tools.gen_config_reference</code>. A drift-proof test
+(<code>tests/test_docs.py</code>) fails if this file is out of sync with the schema.</p>
+</blockquote>
+<p>Every model below enforces <code>extra='forbid'</code> — an unknown key is a config error
+(gate G1), not a silent no-op. Cross-field rules that span models (e.g. "exactly
+one of <code>crystal</code> or <code>phases</code>") live in <code>config/resolve.py</code> and are documented in
+<code>docs/gates.md</code> (G1) and <code>docs/manual.md</code>, not here.</p>
+<h2 id="runconfig-root">RunConfig (root)</h2>
+<p><a id="runconfig"></a></p>
+<p>Top-level configuration model — the root of every grainsmith YAML file.</p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>meta</code></td>
+<td><a href="#metaconfig">MetaConfig</a></td>
+<td>(sub-block defaults)</td>
+<td>—</td>
+<td>Run metadata: title and verbosity level.</td>
+</tr>
+<tr>
+<td><code>seed</code></td>
+<td><a href="#seedconfig">SeedConfig</a></td>
+<td>(sub-block defaults)</td>
+<td>—</td>
+<td>RNG seed configuration (fixed or entropy).</td>
+</tr>
+<tr>
+<td><code>runtime</code></td>
+<td><a href="#runtimeconfig">RuntimeConfig</a></td>
+<td>(sub-block defaults)</td>
+<td>—</td>
+<td>Execution-resource knobs (§13 memory guard); never affects an output byte.</td>
+</tr>
+<tr>
+<td><code>box</code></td>
+<td><a href="#boxconfig">BoxConfig</a></td>
+<td><strong>required</strong></td>
+<td>—</td>
+<td>Simulation-box geometry (lengths, periodicity, vacuum).</td>
+</tr>
+<tr>
+<td><code>grains</code></td>
+<td><a href="#grainsconfig">GrainsConfig</a></td>
+<td><strong>required</strong></td>
+<td>—</td>
+<td>Grain count and seeding parameters.</td>
+</tr>
+<tr>
+<td><code>crystal</code></td>
+<td><a href="#crystalconfig">CrystalConfig</a> | null</td>
+<td><code>None</code></td>
+<td>—</td>
+<td>Crystal structure (space group, lattice, Wyckoff sites) — the single-phase form. Exactly one of 'crystal' or 'phases' must be set (resolve Rule 21).</td>
+</tr>
+<tr>
+<td><code>phases</code></td>
+<td>list[<a href="#phaseconfig">PhaseConfig</a>] | null</td>
+<td><code>None</code></td>
+<td>—</td>
+<td>Multiphase polycrystal definition: &gt;= 2 phases, each with its own crystal structure and a target VOLUME fraction (sum to 1). Mutually exclusive with 'crystal'. Grains are partitioned deterministically to match the fractions; gate G15 (warn) re-measures the achieved values.</td>
+</tr>
+<tr>
+<td><code>orientation</code></td>
+<td><a href="#orientationconfig">OrientationConfig</a></td>
+<td>(sub-block defaults)</td>
+<td>—</td>
+<td>Grain-orientation assignment scheme and parameters.</td>
+</tr>
+<tr>
+<td><code>boundaries</code></td>
+<td><a href="#boundariesconfig">BoundariesConfig</a></td>
+<td>(sub-block defaults)</td>
+<td>—</td>
+<td>Grain-boundary geometry (flat or curved) and overlap removal.</td>
+</tr>
+<tr>
+<td><code>doping</code></td>
+<td><a href="#dopingconfig">DopingConfig</a> | null</td>
+<td><code>None</code></td>
+<td>—</td>
+<td>Optional dopant insertion: GB-segregated substitutional and interstitial dopants, applied deterministically after overlap removal. Writes doping.csv; gates G17 (warn) and G18 (hard). Single-phase configs only.</td>
+</tr>
+<tr>
+<td><code>analysis</code></td>
+<td><a href="#analysisconfig">AnalysisConfig</a></td>
+<td>(sub-block defaults)</td>
+<td>—</td>
+<td>Post-generation analysis options (voxel grid, GB character, CSL).</td>
+</tr>
+<tr>
+<td><code>output</code></td>
+<td><a href="#outputconfig">OutputConfig</a></td>
+<td>(sub-block defaults)</td>
+<td>—</td>
+<td>Output directory and per-format file settings.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="metaconfig">MetaConfig</h2>
+<p><a id="metaconfig"></a></p>
+<p>Top-level run metadata.</p>
+<p><strong>Config path:</strong> <code>meta</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>title</code></td>
+<td>str</td>
+<td><code>'grainsmith run'</code></td>
+<td>—</td>
+<td>Free-text title embedded in output file headers and the run log.</td>
+</tr>
+<tr>
+<td><code>verbose</code></td>
+<td>int</td>
+<td><code>1</code></td>
+<td>≥ 0, ≤ 3</td>
+<td>Logging verbosity: 0=WARNING, 1=INFO, 2=DEBUG, 3=DEBUG + extra diagnostic file dumps.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="seedconfig">SeedConfig</h2>
+<p><a id="seedconfig"></a></p>
+<p>RNG seed configuration.</p>
+<p><strong>Config path:</strong> <code>seed</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mode</code></td>
+<td>one of: 'fixed' | 'entropy'</td>
+<td><code>'fixed'</code></td>
+<td>—</td>
+<td>Seed mode. 'fixed': use the integer in 'value' (reproducible). 'entropy': harvest OS entropy; the resulting integer is recorded in summary.csv for later reproduction.</td>
+</tr>
+<tr>
+<td><code>value</code></td>
+<td>int | null</td>
+<td><code>None</code></td>
+<td>—</td>
+<td>Integer seed. Required when mode == 'fixed'.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="runtimeconfig">RuntimeConfig</h2>
+<p><a id="runtimeconfig"></a></p>
+<p>Execution-resource knobs (§13) — never affects a single output byte.</p>
+<p><strong>Config path:</strong> <code>runtime</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>memory_limit_gb</code></td>
+<td>float</td>
+<td><code>16.0</code></td>
+<td>&gt; 0.0</td>
+<td>Per-allocation hard guard (decimal GB, §13): the estimated peak size of a single large allocation above which grainsmith raises a TessellationError instead of risking an OOM-kill. Applies to the per-grain lattice-enumeration grid (atoms/fill.py), the analysis voxel grid (tessellation/voxel.py), and the imported voxel-label EDT margin (tessellation/voxel_import.py). The EFFECTIVE budget actually enforced is min(this value, detected physical RAM) -- this value can never be raised past what the machine actually has (see memory.resolve_memory_budget). This is NOT a total-process memory cap -- that is the separate, optional '--max-rss' soft WARN monitor (memory.py), which watches cumulative RSS. Only the fill stage (atoms/fill.py) runs inside a '--jobs N' ProcessPoolExecutor: there, up to N grains fill concurrently, each allocating its own grid, so the machine needs headroom for N times this limit in the worst case; the voxel-grid and voxel-import guards each build exactly one grid on the single-threaded driver, unaffected by '--jobs'.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="boxconfig">BoxConfig</h2>
+<p><a id="boxconfig"></a></p>
+<p>Simulation-box geometry.</p>
+<p><strong>Config path:</strong> <code>box</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lengths</code></td>
+<td>list[float] | null</td>
+<td><code>None</code></td>
+<td>len ≥ 3, len ≤ 3</td>
+<td>Box edge lengths [Lx, Ly, Lz] in Å for an ORTHOGONAL box. Mutually exclusive with 'cells' (Rule 28).</td>
+</tr>
+<tr>
+<td><code>cells</code></td>
+<td>list[int] | null</td>
+<td><code>None</code></td>
+<td>len ≥ 3, len ≤ 3</td>
+<td>[n1, n2, n3] positive integer lattice multiples for a TRICLINIC single-crystal box: the box vectors are h_i = n_i * a_i, where a_i are the crystal's own conventional cell vectors (restricted-triclinic convention: a along +x, b in the xy-plane with positive y, c with positive z — exactly the form crystal.cell.cell_matrix() returns). Commensurability then holds EXACTLY by construction (gate G14 measures 0 misfit). Requires grains.number: 1, box.periodic all true, box.vacuum: 0, and an identity crystal orientation (an arbitrary rotation would break the box-vector/lab-axis alignment) — enforced in resolve.py Rule 28. Mutually exclusive with 'lengths'.</td>
+</tr>
+<tr>
+<td><code>resolved_h</code></td>
+<td>list[list[float]] | null</td>
+<td><code>None</code></td>
+<td>—</td>
+<td>DERIVED (not user-set): the resolved (3,3) LAMMPS-tilt-reduced box matrix for box.cells, written back onto this config by config/resolve.py Rule 28 — the same 'resolve once, cache on the config' pattern crystal.cif uses. Row-major nested list (row i = box vector component i across a, b, c). None for the box.lengths (orthogonal) path.</td>
+</tr>
+<tr>
+<td><code>periodic</code></td>
+<td>list[bool]</td>
+<td><code>[True, True, True]</code></td>
+<td>len ≥ 3, len ≤ 3</td>
+<td>Per-axis periodicity flags [px, py, pz]. Set an axis to false for slab / thin-film geometry.</td>
+</tr>
+<tr>
+<td><code>vacuum</code></td>
+<td>float</td>
+<td><code>0.0</code></td>
+<td>≥ 0.0</td>
+<td>Vacuum thickness in Å added on non-periodic axes. Requires at least one periodic=false axis (enforced in resolve.py).</td>
+</tr>
+</tbody>
+</table>
+<h2 id="grainsconfig">GrainsConfig</h2>
+<p><a id="grainsconfig"></a></p>
+<p>Grain count and seeding parameters.</p>
+<p><strong>Config path:</strong> <code>grains</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>number</code></td>
+<td>int | null</td>
+<td><code>None</code></td>
+<td>≥ 1</td>
+<td>Number of grains to generate. Required for all generated tessellations; for boundaries.geometry 'voxel_import' the count is DERIVED from the label field — omit it, or set it as a cross-check (a mismatch is an error).</td>
+</tr>
+<tr>
+<td><code>size_distribution</code></td>
+<td><a href="#sizedistributionconfig">SizeDistributionConfig</a> | null</td>
+<td><code>None</code></td>
+<td>—</td>
+<td>Optional target grain-size distribution. When set, the tessellation is a volume-fitted power (Laguerre) diagram; allowed with flat geometry or as the base of the warp method.</td>
+</tr>
+<tr>
+<td><code>min_seed_distance</code></td>
+<td>float | one of: 'auto'</td>
+<td><code>'auto'</code></td>
+<td>—</td>
+<td>Minimum centre-to-centre seed distance in Å for RSA placement. 'auto' = 1.0 × r_ws (Wigner–Seitz radius), safe below the RSA jamming limit.</td>
+</tr>
+<tr>
+<td><code>lloyd_iterations</code></td>
+<td>int</td>
+<td><code>0</code></td>
+<td>≥ 0</td>
+<td>Number of Lloyd centroidal-relaxation iterations (voxel-grid based). 0 = off (Poisson–Voronoi); &gt;0 produces more equiaxed grains.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="sizedistributionconfig">SizeDistributionConfig</h2>
+<p><a id="sizedistributionconfig"></a></p>
+<p>Target grain-size distribution (power/Laguerre + SDOT).</p>
+<p><strong>Config path:</strong> <code>grains.size_distribution</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>type</code></td>
+<td>one of: 'lognormal' | 'equal' | 'volumes'</td>
+<td><code>'lognormal'</code></td>
+<td>—</td>
+<td>Target volume model. 'lognormal': equivalent-sphere diameters d ~ LogN(0, sigma_log), V ∝ d³ (scale fixed by V_box/N — you prescribe the SHAPE). 'equal': V_box/N each. 'volumes': explicit relative volume list.</td>
+</tr>
+<tr>
+<td><code>sigma_log</code></td>
+<td>float</td>
+<td><code>0.35</code></td>
+<td>&gt; 0.0</td>
+<td>Lognormal shape parameter: std of ln(d).</td>
+</tr>
+<tr>
+<td><code>volumes</code></td>
+<td>list[float] | null</td>
+<td><code>None</code></td>
+<td>—</td>
+<td>Relative target volumes (type: volumes); length must equal grains.number; normalized to the box volume.</td>
+</tr>
+<tr>
+<td><code>vol_tol</code></td>
+<td>float</td>
+<td><code>0.001</code></td>
+<td>&gt; 0.0</td>
+<td>Gate G11 threshold: maximum relative per-grain volume error |V_i − V_i^target| / V_i^target on the final tessellation.</td>
+</tr>
+<tr>
+<td><code>max_iter</code></td>
+<td>int</td>
+<td><code>30</code></td>
+<td>≥ 1</td>
+<td>Maximum damped-Newton iterations of the SDOT fit.</td>
+</tr>
+<tr>
+<td><code>centroidal_iterations</code></td>
+<td>int</td>
+<td><code>0</code></td>
+<td>≥ 0</td>
+<td>Outer centroidal loop count (Kuhn et al. 2020): alternate volume fitting with moving seeds to power-cell centroids — equiaxed grains WITH prescribed volumes. 0 = off.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="crystalconfig">CrystalConfig</h2>
+<p><a id="crystalconfig"></a></p>
+<p>Crystal structure definition: EITHER a manual space group + Wyckoff-site motif, OR direct input from a CIF file (mutually exclusive — resolve.py Rule 27).</p>
+<p><strong>Config path:</strong> <code>crystal</code> · <code>phases[].crystal</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>space_group</code></td>
+<td><a href="#spacegroupconfig">SpaceGroupConfig</a> | null</td>
+<td><code>None</code></td>
+<td>—</td>
+<td>Space-group identification (international number + optional setting). Required for the manual path; forbidden together with 'cif'.</td>
+</tr>
+<tr>
+<td><code>lattice</code></td>
+<td><a href="#latticeconfig">LatticeConfig</a> | null</td>
+<td><code>None</code></td>
+<td>—</td>
+<td>Lattice parameters for the crystal family (§6.1). Required for the manual path; forbidden together with 'cif'.</td>
+</tr>
+<tr>
+<td><code>wyckoff_sites</code></td>
+<td>list[<a href="#wyckoffsiteconfig">WyckoffSiteConfig</a>] | null</td>
+<td><code>None</code></td>
+<td>len ≥ 1</td>
+<td>List of representative Wyckoff sites defining the motif. Required for the manual path; forbidden together with 'cif'.</td>
+</tr>
+<tr>
+<td><code>cif</code></td>
+<td><a href="#cifconfig">CifConfig</a> | null</td>
+<td><code>None</code></td>
+<td>—</td>
+<td>Direct CIF input (ASE read + spglib symmetry detection). Mutually exclusive with the space_group/lattice/wyckoff_sites trio — exactly one of the two input forms must be given.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="spacegroupconfig">SpaceGroupConfig</h2>
+<p><a id="spacegroupconfig"></a></p>
+<p>Space-group identification.</p>
+<p><strong>Config path:</strong> <code>crystal.space_group</code> · <code>phases[].crystal.space_group</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>number</code></td>
+<td>int</td>
+<td><strong>required</strong></td>
+<td>≥ 1, ≤ 230</td>
+<td>International (Hermann–Mauguin) space-group number, 1–230.</td>
+</tr>
+<tr>
+<td><code>setting</code></td>
+<td>str | null</td>
+<td><code>None</code></td>
+<td>—</td>
+<td>Optional setting string for groups with multiple standard settings, e.g. '2' (origin choice 2), 'H' or 'R' (rhombohedral). null = first / standard setting.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="latticeconfig">LatticeConfig</h2>
+<p><a id="latticeconfig"></a></p>
+<p>Lattice parameters — only the free parameters for the crystal family.</p>
+<p><strong>Config path:</strong> <code>crystal.lattice</code> · <code>phases[].crystal.lattice</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>a</code></td>
+<td>float | null</td>
+<td><code>None</code></td>
+<td>&gt; 0.0</td>
+<td>Lattice parameter a in Å.</td>
+</tr>
+<tr>
+<td><code>b</code></td>
+<td>float | null</td>
+<td><code>None</code></td>
+<td>&gt; 0.0</td>
+<td>Lattice parameter b in Å.</td>
+</tr>
+<tr>
+<td><code>c</code></td>
+<td>float | null</td>
+<td><code>None</code></td>
+<td>&gt; 0.0</td>
+<td>Lattice parameter c in Å.</td>
+</tr>
+<tr>
+<td><code>alpha</code></td>
+<td>float | null</td>
+<td><code>None</code></td>
+<td>&gt; 0.0, &lt; 180.0</td>
+<td>Lattice angle α (bc plane) in degrees.</td>
+</tr>
+<tr>
+<td><code>beta</code></td>
+<td>float | null</td>
+<td><code>None</code></td>
+<td>&gt; 0.0, &lt; 180.0</td>
+<td>Lattice angle β (ac plane) in degrees.</td>
+</tr>
+<tr>
+<td><code>gamma</code></td>
+<td>float | null</td>
+<td><code>None</code></td>
+<td>&gt; 0.0, &lt; 180.0</td>
+<td>Lattice angle γ (ab plane) in degrees.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="wyckoffsiteconfig">WyckoffSiteConfig</h2>
+<p><a id="wyckoffsiteconfig"></a></p>
+<p>One representative Wyckoff site (fractional coordinates + species).</p>
+<p><strong>Config path:</strong> <code>crystal.wyckoff_sites[]</code> · <code>phases[].crystal.wyckoff_sites[]</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>element</code></td>
+<td>str | dict[str, float]</td>
+<td><strong>required</strong></td>
+<td>—</td>
+<td>Element symbol (e.g. 'Ni') for a fully-occupied site, or an occupancy dict (e.g. {'Ti': 0.90, 'Al': 0.10}) for a solid solution. Occupancy values must sum to 1 ± 1e-6.</td>
+</tr>
+<tr>
+<td><code>coords</code></td>
+<td>list[float]</td>
+<td><strong>required</strong></td>
+<td>len ≥ 3, len ≤ 3</td>
+<td>Representative fractional coordinates [x, y, z] of the Wyckoff position. Free parameters must be substituted with numeric values.</td>
+</tr>
+<tr>
+<td><code>letter</code></td>
+<td>str | null</td>
+<td><code>None</code></td>
+<td>—</td>
+<td>Wyckoff letter (e.g. 'a', 'b', '4c'). Optional; if provided, the crystal module verifies it matches the detected site symmetry.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="cifconfig">CifConfig</h2>
+<p><a id="cifconfig"></a></p>
+<p>Direct crystal-structure input from a CIF file (ASE + spglib path).</p>
+<p><strong>Config path:</strong> <code>crystal.cif</code> · <code>phases[].crystal.cif</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>file</code></td>
+<td>str</td>
+<td><strong>required</strong></td>
+<td>—</td>
+<td>Path to a CIF file (any format ase.io.read accepts for '.cif'). Read with ASE; the space group is then determined by spglib — the file's own _symmetry_Int_Tables_number (if present) is cross-checked against the spglib-detected number; a mismatch only WARNS (the spglib-detected group is always the one used), since a CIF legally under-declaring its own symmetry (e.g. exporting every atom under 'P 1') is common and not itself an error. A relative path is resolved against the working directory first, then against the directory of the YAML file it appears in.</td>
+</tr>
+<tr>
+<td><code>symprec</code></td>
+<td>float</td>
+<td><code>0.0001</code></td>
+<td>&gt; 0.0</td>
+<td>spglib symmetry-detection tolerance (Å-scale fractional distance) used for the CIF structure — analogous to constants.VERIFY_SYMPREC used for the manual-path G2 round-trip. Loosen for CIFs with larger coordinate roundoff (e.g. Rietveld-refined structures); tighten to separate nearly-degenerate settings.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="phaseconfig">PhaseConfig</h2>
+<p><a id="phaseconfig"></a></p>
+<p>One phase of a multiphase polycrystal.</p>
+<p><strong>Config path:</strong> <code>phases[]</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td>str</td>
+<td><strong>required</strong></td>
+<td>len ≥ 1, pattern <code>^[A-Za-z0-9_-]+$</code></td>
+<td>Phase name (e.g. 'alpha', 'beta', 'Cu_fcc'); must be unique and match [A-Za-z0-9_-]+ — it appears in grains.csv / boundaries.csv columns, summary sections, and per-phase output filenames (mdf_<name>.csv, odf_mtex_<name>.txt).</td>
+</tr>
+<tr>
+<td><code>fraction</code></td>
+<td>float</td>
+<td><strong>required</strong></td>
+<td>&gt; 0.0, &lt; 1.0</td>
+<td>Target VOLUME fraction of this phase (the metallographic convention). Fractions must sum to 1 ± 1e-6; the achieved fractions are re-measured by gate G15 (warn — the deviation floor is set by the largest single grain).</td>
+</tr>
+<tr>
+<td><code>crystal</code></td>
+<td><a href="#crystalconfig">CrystalConfig</a></td>
+<td><strong>required</strong></td>
+<td>—</td>
+<td>Crystal structure of this phase (space group, lattice, Wyckoff sites) — phases may differ in structure AND in elements (e.g. HCP Ti / BCC Ti, or FCC Cu / BCC Fe).</td>
+</tr>
+</tbody>
+</table>
+<h2 id="orientationconfig">OrientationConfig</h2>
+<p><a id="orientationconfig"></a></p>
+<p>Grain-orientation assignment scheme and parameters.</p>
+<p><strong>Config path:</strong> <code>orientation</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scheme</code></td>
+<td>one of: 'random_uniform' | 'fixed' | 'fiber' | 'from_list' | 'odf_components' | 'imported'</td>
+<td><code>'random_uniform'</code></td>
+<td>—</td>
+<td>Orientation assignment scheme. 'random_uniform': Haar-uniform random SO(3). 'fixed': same orientation for all grains (use 'fixed' sub-block). 'fiber': crystal axis aligned to a sample direction with angular spread. 'from_list': explicit per-grain list (length must equal grains.number). 'odf_components': weighted texture components (use 'components' list). 'imported': per-grain Euler angles from the voxel_import file (requires boundaries.voxel_import.euler_dataset).</td>
+</tr>
+<tr>
+<td><code>fixed</code></td>
+<td><a href="#orientationfixedconfig">OrientationFixedConfig</a> | null</td>
+<td><code>None</code></td>
+<td>—</td>
+<td>Used when scheme == 'fixed'. Specifies the single shared orientation.</td>
+</tr>
+<tr>
+<td><code>fiber</code></td>
+<td><a href="#orientationfiberconfig">OrientationFiberConfig</a> | null</td>
+<td><code>None</code></td>
+<td>—</td>
+<td>Used when scheme == 'fiber'. Specifies fiber-texture parameters.</td>
+</tr>
+<tr>
+<td><code>from_list</code></td>
+<td>list[<a href="#orientationfixedconfig">OrientationFixedConfig</a>] | null</td>
+<td><code>None</code></td>
+<td>—</td>
+<td>Used when scheme == 'from_list'. One entry per grain; length must equal grains.number (checked at generation time).</td>
+</tr>
+<tr>
+<td><code>components</code></td>
+<td>list[<a href="#odfcomponentconfig">OdfComponentConfig</a>] | null</td>
+<td><code>None</code></td>
+<td>—</td>
+<td>Used when scheme == 'odf_components': list of weighted texture components (Euler centre + spread, fiber, or one uniform random fraction).</td>
+</tr>
+<tr>
+<td><code>component_weight_basis</code></td>
+<td>one of: 'volume' | 'count'</td>
+<td><code>'volume'</code></td>
+<td>—</td>
+<td>How each OdfComponentConfig.weight is realised. 'volume' (default): weight is the VOLUME fraction of material in the component — the physical definition of the ODF; grains are partitioned deterministically (orientation.odf.volume_balanced_partition) so the realised volume fractions match the configured weights, at the cost of a size-component correlation that gate G25 reports. 'count': weight is realised as a GRAIN-COUNT fraction via an i.i.d. categorical draw (the pre-1.2 behaviour); the realised VOLUME fractions then differ from the configured weights by an amount set by the grain-size distribution (measured 0.745/0.255 for a configured 0.500/0.500 at 24 grains, sigma_log 0.5). Ignored unless scheme == 'odf_components'.</td>
+</tr>
+<tr>
+<td><code>mdf_target</code></td>
+<td><a href="#mdftargetconfig">MdfTargetConfig</a> | null</td>
+<td><code>None</code></td>
+<td>—</td>
+<td>Optional boundary-area-weighted disorientation-angle target (any scheme): orientation-assignment annealing pulls the neighbor misorientation-angle distribution toward the target. The NUMBER-weighted orientation distribution is invariant by construction; the VOLUME-weighted ODF is not, but mdf_target.odf_drift_max can bound its drift. Gate G12 (warn).</td>
+</tr>
+</tbody>
+</table>
+<h2 id="orientationfixedconfig">OrientationFixedConfig</h2>
+<p><a id="orientationfixedconfig"></a></p>
+<p>Orientation specification for a single grain (one sub-key must be set).</p>
+<p><strong>Config path:</strong> <code>orientation.fixed</code> · <code>orientation.from_list[]</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hkl_uvw</code></td>
+<td><a href="#orientationfixedhkluvw">OrientationFixedHklUvw</a> | null</td>
+<td><code>None</code></td>
+<td>—</td>
+<td>Fix orientation by (hkl) plane parallel to lab +z and [uvw] along lab +x.</td>
+</tr>
+<tr>
+<td><code>euler_bunge_deg</code></td>
+<td>list[float] | null</td>
+<td><code>None</code></td>
+<td>len ≥ 3, len ≤ 3</td>
+<td>Bunge Euler angles (φ1, Φ, φ2) in degrees.</td>
+</tr>
+<tr>
+<td><code>axis_angle</code></td>
+<td><a href="#axisangleconfig">AxisAngleConfig</a> | null</td>
+<td><code>None</code></td>
+<td>—</td>
+<td>Orientation as a rotation axis + angle.</td>
+</tr>
+<tr>
+<td><code>quaternion</code></td>
+<td>list[float] | null</td>
+<td><code>None</code></td>
+<td>len ≥ 4, len ≤ 4</td>
+<td>Orientation quaternion (w, x, y, z) — scalar-first, unit norm.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="orientationfixedhkluvw">OrientationFixedHklUvw</h2>
+<p><a id="orientationfixedhkluvw"></a></p>
+<p>Fix orientation by aligning a crystal plane and direction to lab axes.</p>
+<p><strong>Config path:</strong> <code>orientation.fixed.hkl_uvw</code> · <code>orientation.from_list[].hkl_uvw</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>plane</code></td>
+<td>list[int]</td>
+<td><strong>required</strong></td>
+<td>len ≥ 3, len ≤ 3</td>
+<td>Miller indices (h k l) of the crystal plane to align with lab +z.</td>
+</tr>
+<tr>
+<td><code>direction</code></td>
+<td>list[int]</td>
+<td><strong>required</strong></td>
+<td>len ≥ 3, len ≤ 3</td>
+<td>Miller direction [u v w] to align with lab +x.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="axisangleconfig">AxisAngleConfig</h2>
+<p><a id="axisangleconfig"></a></p>
+<p>Rotation expressed as an axis vector and an angle.</p>
+<p><strong>Config path:</strong> <code>orientation.fixed.axis_angle</code> · <code>orientation.from_list[].axis_angle</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>axis</code></td>
+<td>list[float]</td>
+<td><strong>required</strong></td>
+<td>len ≥ 3, len ≤ 3</td>
+<td>Rotation axis vector (need not be unit length; will be normalised).</td>
+</tr>
+<tr>
+<td><code>angle_deg</code></td>
+<td>float</td>
+<td><strong>required</strong></td>
+<td>—</td>
+<td>Rotation angle in degrees.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="orientationfiberconfig">OrientationFiberConfig</h2>
+<p><a id="orientationfiberconfig"></a></p>
+<p>Fiber-texture orientation parameters.</p>
+<p><strong>Config path:</strong> <code>orientation.fiber</code> · <code>orientation.components[].fiber</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>crystal_axis</code></td>
+<td>list[float]</td>
+<td><strong>required</strong></td>
+<td>len ≥ 3, len ≤ 3</td>
+<td>Crystal axis <u v w> to align with the sample direction.</td>
+</tr>
+<tr>
+<td><code>sample_direction</code></td>
+<td>str</td>
+<td><code>'z'</code></td>
+<td>—</td>
+<td>Sample direction to align to: 'x', 'y', or 'z'.</td>
+</tr>
+<tr>
+<td><code>spread_deg</code></td>
+<td>float</td>
+<td><code>10.0</code></td>
+<td>≥ 0.0, ≤ 180.0</td>
+<td>Gaussian angular spread (standard deviation) around the fiber axis in degrees.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="odfcomponentconfig">OdfComponentConfig</h2>
+<p><a id="odfcomponentconfig"></a></p>
+<p>One ODF texture component.</p>
+<p><strong>Config path:</strong> <code>orientation.components[]</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>euler_bunge_deg</code></td>
+<td>list[float] | null</td>
+<td><code>None</code></td>
+<td>len ≥ 3, len ≤ 3</td>
+<td>Component centre as Bunge Euler angles (φ1, Φ, φ2) in degrees, e.g. Cu/S/Brass rolling components.</td>
+</tr>
+<tr>
+<td><code>fiber</code></td>
+<td><a href="#orientationfiberconfig">OrientationFiberConfig</a> | null</td>
+<td><code>None</code></td>
+<td>—</td>
+<td>Fiber component reusing the fiber machinery (crystal_axis / sample_direction / spread_deg).</td>
+</tr>
+<tr>
+<td><code>random</code></td>
+<td>bool</td>
+<td><code>False</code></td>
+<td>—</td>
+<td>Haar-uniform 'random fraction' component for partially textured states. At most one such component is allowed.</td>
+</tr>
+<tr>
+<td><code>weight</code></td>
+<td>float</td>
+<td><strong>required</strong></td>
+<td>&gt; 0.0</td>
+<td>Relative component weight (normalized). How it is realised depends on orientation.component_weight_basis: under 'volume' (default) it is the target VOLUME fraction of material assigned to this component (deterministic grain-to-component partition); under 'count' grains draw their component from the categorical distribution ∝ weight, so it is a GRAIN-COUNT fraction instead.</td>
+</tr>
+<tr>
+<td><code>spread_deg</code></td>
+<td>float</td>
+<td><code>0.0</code></td>
+<td>≥ 0.0, ≤ 180.0</td>
+<td>Isotropic angular spread (std of the rotation angle, degrees) around an euler_bunge_deg centre — SO(3) von Mises–Fisher small-angle surrogate with exact Haar sin²(θ/2) correction. 0 reduces the component to a fixed orientation. Ignored for fiber components (they carry their own spread_deg) and forbidden for random components.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="mdftargetconfig">MdfTargetConfig</h2>
+<p><a id="mdftargetconfig"></a></p>
+<p>Boundary-area-weighted disorientation-angle target via assignment annealing.</p>
+<p><strong>Config path:</strong> <code>orientation.mdf_target</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>type</code></td>
+<td>one of: 'mackenzie' | 'haar_random' | 'csl_enriched' | 'sigma3_angle_enriched' | 'histogram'</td>
+<td><code>'haar_random'</code></td>
+<td>—</td>
+<td>Target for the boundary-AREA-weighted marginal distribution of the disorientation ANGLE — this is NOT a misorientation distribution function (an MDF is a density over the full misorientation space; this objective never sees the misorientation axis). 'haar_random': the random-pair disorientation-angle reference of the ACTUAL point group; this estimates the Mackenzie cubic law only for the 24-rotation proper group of m-3m. Other point groups have different references. 'mackenzie' is a deprecated alias for 'haar_random'. 'sigma3_angle_enriched': 'haar_random' base mixed with a window-only distribution using sigma3_fraction as the mixture coefficient in the Σ3 Brandon ANGULAR window 60° ± 15°/√3 — this enforces only the NECESSARY angular condition; the ⟨111⟩ axis condition that CSL classification also requires is NOT part of the objective (cubic only). 'csl_enriched' is a deprecated alias for 'sigma3_angle_enriched'. 'histogram': explicit bin_edges + densities.</td>
+</tr>
+<tr>
+<td><code>sigma3_fraction</code></td>
+<td>float</td>
+<td><code>0.3</code></td>
+<td>&gt; 0.0, &lt; 1.0</td>
+<td>sigma3_angle_enriched (and its deprecated alias csl_enriched): mixture coefficient f in target = (1-f)<em>haar_random + f</em>angle_window, where angle_window is supported on 60° ± 15°/√3. This is NOT the total target window fraction: the Haar reference already has mass in that window. This is angle-only — the realised CSL Σ3 AREA fraction (the true class, axis condition included) is measured separately; compare it against the realised angle-window fraction in G23.</td>
+</tr>
+<tr>
+<td><code>bin_edges</code></td>
+<td>list[float] | null</td>
+<td><code>None</code></td>
+<td>—</td>
+<td>histogram: increasing misorientation-angle bin edges in degrees over [0, θ_max]; length = len(densities) + 1.</td>
+</tr>
+<tr>
+<td><code>densities</code></td>
+<td>list[float] | null</td>
+<td><code>None</code></td>
+<td>—</td>
+<td>histogram: non-negative target densities per bin (normalized internally to unit integral).</td>
+</tr>
+<tr>
+<td><code>annealing_steps</code></td>
+<td>int</td>
+<td><code>20000</code></td>
+<td>≥ 0</td>
+<td>Number of swap moves of the simulated annealing. 0 = no annealing — only measure the χ² distance (gate G12).</td>
+</tr>
+<tr>
+<td><code>t0</code></td>
+<td>float</td>
+<td><code>0.05</code></td>
+<td>&gt; 0.0</td>
+<td>Initial annealing temperature (χ² energy units).</td>
+</tr>
+<tr>
+<td><code>cooling</code></td>
+<td>float</td>
+<td><code>0.995</code></td>
+<td>&gt; 0.0, &lt; 1.0</td>
+<td>Geometric cooling ratio: T_k = t0 · cooling^k.</td>
+</tr>
+<tr>
+<td><code>chi2_max</code></td>
+<td>float</td>
+<td><code>0.5</code></td>
+<td>&gt; 0.0</td>
+<td>Gate G12 threshold (warn): symmetric χ² distance between the re-measured area-weighted disorientation-angle histogram and the target. The default covers the multinomial sampling noise floor ~n_bins/n_pairs of typical runs (e.g. 40 bins / 150 pairs ≈ 0.27).</td>
+</tr>
+<tr>
+<td><code>odf_drift_max</code></td>
+<td>float | null</td>
+<td><code>None</code></td>
+<td>≥ 0.0</td>
+<td>Hard cap on d_TV(f_V(π), f_V(π₀)) — the total-variation drift of the VOLUME-weighted ODF away from the sampler's own assignment π₀ — enforced on every ACCEPTED swap of the annealing. None (default): the drift is measured and reported but never constrained. Measured trade-off on a 60-grain lognormal test case: a cap of 0.01 already recovers about half of the achievable χ² reduction, and 0.05 about three quarters — pick a value with that trade-off in mind. See orientation/odf.py.</td>
+</tr>
+<tr>
+<td><code>odf_kernel_halfwidth_deg</code></td>
+<td>float</td>
+<td><code>10.0</code></td>
+<td>&gt; 0.0, &lt; 180.0</td>
+<td>Requested de la Vallée Poussin kernel half-width (degrees) for the volume-weighted ODF diagnostic. The degree is rounded to the nearest positive integer to keep the kernel positive semidefinite; the effective half-width is reported separately (at most 90 degrees). Configures the DIAGNOSTIC only — it has no effect on odf_drift_max, which caps the un-smoothed (atomic) drift and, by the Markov-contraction argument, therefore already bounds the TV of kernel-smoothed densities at every half-width simultaneously (not the separate MMD norm) (orientation/odf.py).</td>
+</tr>
+<tr>
+<td><code>odf_null_samples</code></td>
+<td>int</td>
+<td><code>256</code></td>
+<td>≥ 1</td>
+<td>Sample count for the ODF kernel-discrepancy null distribution (orientation.odf.null_mmd). Configures the DIAGNOSTIC only; has no effect on the annealing itself or on odf_drift_max.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="boundariesconfig">BoundariesConfig</h2>
+<p><a id="boundariesconfig"></a></p>
+<p>Grain-boundary geometry and overlap removal.</p>
+<p><strong>Config path:</strong> <code>boundaries</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>geometry</code></td>
+<td>one of: 'flat' | 'curved' | 'voxel_import'</td>
+<td><code>'flat'</code></td>
+<td>—</td>
+<td>Boundary geometry. 'flat': planar Voronoi faces (Qhull). 'curved': domain-warp or weighted-Voronoi method (use 'curved' sub-block). 'voxel_import': externally produced voxel label field (use 'voxel_import' sub-block).</td>
+</tr>
+<tr>
+<td><code>curved</code></td>
+<td><a href="#curvedboundaryconfig">CurvedBoundaryConfig</a> | null</td>
+<td><code>None</code></td>
+<td>—</td>
+<td>Curved-boundary parameters. Used when geometry == 'curved'. Providing this block with geometry == 'flat' is a config error (it would otherwise be silently ignored).</td>
+</tr>
+<tr>
+<td><code>voxel_import</code></td>
+<td><a href="#voxelimportconfig">VoxelImportConfig</a> | null</td>
+<td><code>None</code></td>
+<td>—</td>
+<td>Imported label-field parameters. Required when geometry == 'voxel_import'.</td>
+</tr>
+<tr>
+<td><code>overlap_removal</code></td>
+<td><a href="#overlapremovalconfig">OverlapRemovalConfig</a></td>
+<td>(sub-block defaults)</td>
+<td>—</td>
+<td>Atom-overlap removal settings applied after the fill stage.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="curvedboundaryconfig">CurvedBoundaryConfig</h2>
+<p><a id="curvedboundaryconfig"></a></p>
+<p>Parameters for curved-boundary methods (§3.3, §6.6).</p>
+<p><strong>Config path:</strong> <code>boundaries.curved</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>method</code></td>
+<td>one of: 'warp' | 'additive_weights' | 'anisotropic' | 'perturbed_distance'</td>
+<td><code>'warp'</code></td>
+<td>—</td>
+<td>Curved-boundary method. 'warp': domain-warped Voronoi via periodic GRF (default, §6.6). 'additive_weights': Johnson–Mehl / Apollonius diagram. 'anisotropic': per-grain ellipsoidal metric (GBPD family). 'perturbed_distance': level-set membership argmin_i[d_pbc(x,s_i) − amplitude·η_i(x)] with an INDEPENDENT per-grain scalar field η_i (the same spectrum/hurst/l_min/l_max/amplitude schema keys warp also declares, reused verbatim) — unlike warp's coordinate diffeomorphism (bijective, so it cannot change the flat-Voronoi surface's fractal dimension; this is WHY warp does not accept spectrum: self_affine at all), this method perturbs the ASSIGNMENT RULE itself and so can produce a genuinely self-affine grain boundary whose box-counting dimension responds to hurst — the only method that accepts spectrum: self_affine (docs/physics.md §5b). G6 (bijectivity) does not apply; a seed-containment guard and an exact seed-ownership check replace it. G5 is a repair-and-report gate here (reassigned_fraction), not a hard failure.</td>
+</tr>
+<tr>
+<td><code>base</code></td>
+<td>one of: 'flat' | 'additive_weights' | 'anisotropic' | 'power'</td>
+<td><code>'flat'</code></td>
+<td>—</td>
+<td>Base tessellation for the warp method (ignored for other methods). 'power' requires grains.size_distribution (a volume-fitted Laguerre base) — and is implied when size_distribution is present with base 'flat'.</td>
+</tr>
+<tr>
+<td><code>amplitude</code></td>
+<td>float</td>
+<td><code>4.0</code></td>
+<td>≥ 0.0</td>
+<td>Warp-field RMS amplitude per component in Å. Hard constraint: amplitude ≤ min_seed_distance / 4 (enforced downstream).</td>
+</tr>
+<tr>
+<td><code>correlation_length</code></td>
+<td>float</td>
+<td><code>15.0</code></td>
+<td>&gt; 0.0</td>
+<td>Gaussian correlation length ℓ in Å — the boundary 'waviness wavelength'. Larger ℓ produces smoother, more gently curved boundaries. Used only by the gaussian spectrum; ignored by perturbed_distance's self_affine spectrum (band limits l_min/l_max take its place there — warp does not accept self_affine at all, so this key and self_affine are never both active together).</td>
+</tr>
+<tr>
+<td><code>spectrum</code></td>
+<td>one of: 'gaussian' | 'self_affine'</td>
+<td><code>'gaussian'</code></td>
+<td>—</td>
+<td>Field amplitude spectrum (restricted per-method — see below). 'gaussian': single-scale exp(−k²ℓ²/4) (default, bit-identical); the ONLY spectrum 'warp' accepts — a ConfigError rejects 'warp' + 'self_affine' (warp is a coordinate diffeomorphism, which cannot change the flat-Voronoi surface's fractal dimension, so a self-affine spectrum on it would be undetectable in the as-built boundary; docs/physics.md §5b). 'self_affine': band-limited power law √Φ(k) ∝ k^(−(3+2H)/2) for k ∈ [2π/l_max, 2π/l_min] — scale-free roughness with field fractal dimension D = 3 − hurst; valid ONLY with method: perturbed_distance, where perturbing the assignment rule (not the coordinate) lets the boundary's own box-counting dimension respond to hurst (gate G20 measures it; gate G13 is its Hurst-back-estimation analogue, also perturbed_distance-only).</td>
+</tr>
+<tr>
+<td><code>hurst</code></td>
+<td>float</td>
+<td><code>0.8</code></td>
+<td>&gt; 0.0, ≤ 1.0</td>
+<td>Hurst exponent H ∈ (0, 1] of the self_affine spectrum (perturbed_distance only; surface PSD C(q) ∝ q^(−2−2H); typical metal surfaces/GBs: 0.7–0.9).</td>
+</tr>
+<tr>
+<td><code>l_min</code></td>
+<td>float</td>
+<td><code>8.0</code></td>
+<td>&gt; 0.0</td>
+<td>Shortest roughness wavelength in Å (self_affine band upper k-limit 2π/l_min; perturbed_distance only — warp never consumes l_min at all, since it cannot accept spectrum: self_affine in the first place). Must satisfy l_min ≥ 2·h_field (grid Nyquist, checked against the actual field grid at construction) and l_min &lt; l_max. perturbed_distance has no bijectivity guard (no G6) to tie l_min to an amplitude ceiling: its amplitude ceiling (ETA_CLIP/PERTURBED_DISTANCE_SAFETY, seed-containment + exact seed-ownership) is a function of min_seed_distance only and does not depend on l_min.</td>
+</tr>
+<tr>
+<td><code>l_max</code></td>
+<td>float</td>
+<td><code>60.0</code></td>
+<td>&gt; 0.0</td>
+<td>Longest roughness wavelength in Å (self_affine band lower k-limit 2π/l_max; perturbed_distance only). Must satisfy l_min &lt; l_max ≤ min(L)/2.</td>
+</tr>
+<tr>
+<td><code>amplitude_convention</code></td>
+<td>one of: 'total_rms' | 'reference_wavelength'</td>
+<td><code>'total_rms'</code></td>
+<td>—</td>
+<td>How <code>amplitude</code> (self_affine only; opt-in) scales the band-limited η field. 'total_rms' (default, UNCHANGED behavior): <code>amplitude</code> is the field's total RMS over the WHOLE synthesis band [l_min, l_max] — widening the band (more octaves) REDISTRIBUTES this fixed budget across more scales rather than adding to it, so at fixed <code>amplitude</code> adding a coarse octave can paradoxically REDUCE small-scale (l_min-scale) roughness — see docs/physics.md §5b for the measured reversal this causes in specific GB area (S_V). 'reference_wavelength': <code>amplitude</code> instead fixes the RMS power contributed by ONE reference octave anchored at <code>reference_wavelength</code> (default l_max), leaving every other resolved octave's contribution free to ACCUMULATE on top — restoring the expected (monotonic) coarse-octave response and giving <code>amplitude</code> a stable physical meaning (Å-RMS at a named wavelength) independent of how many octaves the band happens to span. Exact, invertible mapping to the default convention: <code>amplitude_total_rms = amplitude_A0 / kappa(hurst, l_min, l_max, reference_wavelength)</code> — see <code>tessellation.warp.reference_shell_kappa</code>. Valid only with spectrum: self_affine (perturbed_distance only); the seed-containment guard binds the REALIZED total-RMS-equivalent amplitude in either convention, never just the raw <code>amplitude</code> value, so switching convention cannot weaken it.</td>
+</tr>
+<tr>
+<td><code>reference_wavelength</code></td>
+<td>float | null</td>
+<td><code>None</code></td>
+<td>&gt; 0.0</td>
+<td>Anchor wavelength in Å for the top reference octave [reference_wavelength/2, reference_wavelength] that <code>amplitude_convention: reference_wavelength</code> fixes the RMS power of (self_affine only). Default <code>None</code> = l_max (an anchor that MOVES with the band — natural when l_max already represents the physical grain radius). A fixed absolute wavelength can be given instead — required for a band-WIDTH scan at constant grain size to accumulate variance monotonically in both directions (the l_max-anchored default does not, by construction, correct THAT specific diagnostic — see docs/physics.md §5b). Must lie within [l_min, l_max] when given; must not be set under <code>amplitude_convention: total_rms</code> (a silently-ignored field is a config error here, not a no-op).</td>
+</tr>
+<tr>
+<td><code>weight_sigma</code></td>
+<td>float</td>
+<td><code>0.0</code></td>
+<td>≥ 0.0</td>
+<td>Weight spread σ_w in Å for the additive_weights method. Constraint: σ_w ≤ min_seed_distance / 6.</td>
+</tr>
+<tr>
+<td><code>aspect_ratio_range</code></td>
+<td>list[float]</td>
+<td><code>[1.0, 1.0]</code></td>
+<td>len ≥ 2, len ≤ 2</td>
+<td>Allowed range [min, max] of per-grain aspect ratios for the anisotropic method.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="voxelimportconfig">VoxelImportConfig</h2>
+<p><a id="voxelimportconfig"></a></p>
+<p>Imported voxel label field.</p>
+<p><strong>Config path:</strong> <code>boundaries.voxel_import</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>file</code></td>
+<td>str</td>
+<td><strong>required</strong></td>
+<td>—</td>
+<td>Path to the label field: .npy (3D integer array, internal (Nx, Ny, Nz) layout) or DREAM.3D HDF5 (.dream3d/.h5/.hdf5; requires the [import] extra / h5py). The grid shape comes from the file; box.lengths from the config. A relative path is resolved against the working directory first, then against the directory of the YAML file it appears in.</td>
+</tr>
+<tr>
+<td><code>dataset</code></td>
+<td>str | null</td>
+<td><code>None</code></td>
+<td>—</td>
+<td>HDF5 path to the FeatureIds cell array (required for DREAM.3D files), e.g. 'DataContainers/SyntheticVolumeDataContainer/CellData/FeatureIds'. Ignored for .npy.</td>
+</tr>
+<tr>
+<td><code>relabel</code></td>
+<td>bool</td>
+<td><code>True</code></td>
+<td>—</td>
+<td>Compact arbitrary grain ids to 0 … N−1 (the original → compact map is recorded in summary.csv). When false, the field must already be compact.</td>
+</tr>
+<tr>
+<td><code>strict_connectivity</code></td>
+<td>bool</td>
+<td><code>False</code></td>
+<td>—</td>
+<td>Gate G5 severity for the imported field: external microstructures may legitimately contain disconnected or wrap-spanning grains, so G5 is demoted to WARN by default; set true to hard-fail on fragmented grains.</td>
+</tr>
+<tr>
+<td><code>euler_dataset</code></td>
+<td>str | null</td>
+<td><code>None</code></td>
+<td>—</td>
+<td>Optional HDF5 path to per-grain Bunge Euler angles (N, 3), indexed by the ORIGINAL feature ids (e.g. DREAM.3D '.../Grain Data/AvgEulerAngles'). Required by orientation.scheme 'imported'.</td>
+</tr>
+<tr>
+<td><code>euler_degrees</code></td>
+<td>bool</td>
+<td><code>False</code></td>
+<td>—</td>
+<td>Unit of euler_dataset angles: false = radians (the DREAM.3D convention), true = degrees.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="overlapremovalconfig">OverlapRemovalConfig</h2>
+<p><a id="overlapremovalconfig"></a></p>
+<p>Atom-overlap removal parameters (§6.9).</p>
+<p><strong>Config path:</strong> <code>boundaries.overlap_removal</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enabled</code></td>
+<td>bool</td>
+<td><code>True</code></td>
+<td>—</td>
+<td>Whether to run the GB overlap-removal pass.</td>
+</tr>
+<tr>
+<td><code>cutoff</code></td>
+<td>float | str</td>
+<td><code>'0.85*d_nn'</code></td>
+<td>—</td>
+<td>Overlap cutoff as an absolute distance in Å, or as an expression referencing 'd_nn' (nearest-neighbour distance of the ideal crystal). Example: '0.85*d_nn' (default) or '1.5' (Å).</td>
+</tr>
+<tr>
+<td><code>policy</code></td>
+<td>one of: 'delete_shallower' | 'keep_lower_id' | 'midpoint_merge'</td>
+<td><code>'delete_shallower'</code></td>
+<td>—</td>
+<td>Deletion policy for overlapping inter-grain atom pairs. 'delete_shallower': remove the atom with smaller boundary margin. 'keep_lower_id': always keep the atom belonging to the lower grain id. 'midpoint_merge': replace the pair with one atom at the midpoint (single-species systems only).</td>
+</tr>
+</tbody>
+</table>
+<h2 id="dopingconfig">DopingConfig</h2>
+<p><a id="dopingconfig"></a></p>
+<p>Dopant insertion stage — runs after overlap removal.</p>
+<p><strong>Config path:</strong> <code>doping</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>dopants</code></td>
+<td>list[<a href="#dopantconfig">DopantConfig</a>]</td>
+<td><strong>required</strong></td>
+<td>len ≥ 1</td>
+<td>Dopants applied sequentially in list order; later dopants see earlier ones as atoms.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="dopantconfig">DopantConfig</h2>
+<p><a id="dopantconfig"></a></p>
+<p>One dopant species and its placement rule.</p>
+<p><strong>Config path:</strong> <code>doping.dopants[]</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>element</code></td>
+<td>str</td>
+<td><strong>required</strong></td>
+<td>—</td>
+<td>Dopant element symbol (e.g. 'C'). Must have a known mass (constants.ATOMIC_MASSES or an output.lammps.masses override) — checked at config time.</td>
+</tr>
+<tr>
+<td><code>mode</code></td>
+<td>one of: 'substitutional' | 'interstitial'</td>
+<td><strong>required</strong></td>
+<td>—</td>
+<td>substitutional: replace host atoms in place. interstitial: insert new atoms on an interstitial sublattice of the host crystal.</td>
+</tr>
+<tr>
+<td><code>concentration</code></td>
+<td>float</td>
+<td><strong>required</strong></td>
+<td>&gt; 0.0, &lt; 1.0</td>
+<td>Target dopant atom fraction of the FINAL structure (n_dopant / n_total_after_doping).</td>
+</tr>
+<tr>
+<td><code>sites</code></td>
+<td>one of: 'fcc_octahedral' | 'fcc_tetrahedral' | 'bcc_octahedral' | 'bcc_tetrahedral' | 'hcp_octahedral' | 'hcp_tetrahedral' | <a href="#sitescoordsconfig">SitesCoordsConfig</a> | null</td>
+<td><code>None</code></td>
+<td>—</td>
+<td>Interstitial only: named preset (fcc_<em> requires SG 225, bcc_</em> SG 229, hcp_* SG 194 with the motif on Wyckoff 2c) or explicit fractional coords for any other structure (any of the 230 space groups; orbit-expanded by default, see SitesCoordsConfig).</td>
+</tr>
+<tr>
+<td><code>host</code></td>
+<td>str | null</td>
+<td><code>None</code></td>
+<td>—</td>
+<td>Substitutional only: replace only this host species. Default: any host species (earlier dopants are never replaced).</td>
+</tr>
+<tr>
+<td><code>min_distance</code></td>
+<td>float | null</td>
+<td><code>None</code></td>
+<td>&gt; 0.0</td>
+<td>Interstitial only, Å: candidate sites closer than this to ANY atom (host, earlier dopants, or accepted sites of this dopant) are rejected; gate G18 re-verifies after placement (hard).</td>
+</tr>
+<tr>
+<td><code>gb_segregation</code></td>
+<td><a href="#gbsegregationconfig">GbSegregationConfig</a></td>
+<td>(sub-block defaults)</td>
+<td>—</td>
+<td>GB-segregation control (disabled ⇒ uniform).</td>
+</tr>
+</tbody>
+</table>
+<h2 id="sitescoordsconfig">SitesCoordsConfig</h2>
+<p><a id="sitescoordsconfig"></a></p>
+<p>Explicit interstitial sublattice (all 230 space groups).</p>
+<p><strong>Config path:</strong> <code>doping.dopants[].sites</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>coords</code></td>
+<td>list[list[float]]</td>
+<td><strong>required</strong></td>
+<td>len ≥ 1</td>
+<td>Fractional coordinates [[x, y, z], ...] of the interstitial sites in the conventional cell. Each entry must have exactly 3 components in [0, 1). With expand_orbit (default) one representative per orbit suffices; the full orbit is generated automatically.</td>
+</tr>
+<tr>
+<td><code>expand_orbit</code></td>
+<td>bool</td>
+<td><code>True</code></td>
+<td>—</td>
+<td>Expand each coordinate to its full symmetry orbit under the host space group (spglib, same Hall setting as the host crystal) with duplicate removal — physically correct default: an interstitial sublattice must respect the host's site symmetry. Set false to use the listed coordinates verbatim (deliberate symmetry-breaking escape hatch; you must list every equivalent site yourself or the sublattice will be incomplete).</td>
+</tr>
+</tbody>
+</table>
+<h2 id="gbsegregationconfig">GbSegregationConfig</h2>
+<p><a id="gbsegregationconfig"></a></p>
+<p>GB-segregation control for one dopant.</p>
+<p><strong>Config path:</strong> <code>doping.dopants[].gb_segregation</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enabled</code></td>
+<td>bool</td>
+<td><code>False</code></td>
+<td>—</td>
+<td>Enable preferential placement in a shell around grain boundaries. Disabled (default): uniform placement over the grain interior.</td>
+</tr>
+<tr>
+<td><code>shell_width</code></td>
+<td>float</td>
+<td><code>5.0</code></td>
+<td>&gt; 0.0</td>
+<td>Shell half-thickness in Å: a site with distance-to-GB ≤ shell_width belongs to the GB shell (distance via Tessellation.margin).</td>
+</tr>
+<tr>
+<td><code>enrichment</code></td>
+<td>float</td>
+<td><code>1.0</code></td>
+<td>&gt; 0.0</td>
+<td>Target enrichment E = c_shell / c_bulk. 1.0 means no preference; large E concentrates dopants at boundaries. Infeasible combinations (required shell probability &gt; 1) raise ConfigError at placement time.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="analysisconfig">AnalysisConfig</h2>
+<p><a id="analysisconfig"></a></p>
+<p>Post-generation analysis options.</p>
+<p><strong>Config path:</strong> <code>analysis</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>statistics</code></td>
+<td>bool</td>
+<td><code>True</code></td>
+<td>—</td>
+<td>Write the publication statistics outputs: statistics.csv (grain-size + log-normal fit, sphericity, S_V, triple-junction L_V, GB character/CSL area fractions; phase-aware) and microstructure.json (the machine-readable record of the whole run — dataset-repository ready).</td>
+</tr>
+<tr>
+<td><code>section</code></td>
+<td><a href="#sectionconfig">SectionConfig</a> | null</td>
+<td><code>None</code></td>
+<td>—</td>
+<td>Optional EBSD-like 2D section export (slice_<axis><position>.csv).</td>
+</tr>
+<tr>
+<td><code>voxel_grid</code></td>
+<td>int | one of: 'auto'</td>
+<td><code>'auto'</code></td>
+<td>—</td>
+<td>Voxel grid resolution. 'auto': derive from ℓ/4 and r_ws/10, capped at VOXEL_GRID_MAX³. Integer: explicit number of voxels along the shortest box edge.</td>
+</tr>
+<tr>
+<td><code>gb_character</code></td>
+<td>bool</td>
+<td><code>True</code></td>
+<td>—</td>
+<td>Compute per-boundary GB character (tilt/twist/mixed) and boundary-plane Miller indices for both crystal frames.</td>
+</tr>
+<tr>
+<td><code>csl</code></td>
+<td>bool</td>
+<td><code>False</code></td>
+<td>—</td>
+<td>Attempt CSL Σ assignment using the built-in cubic CSL table. Requires a cubic point group (enforced in resolve.py); ignored otherwise with a ConfigError.</td>
+</tr>
+<tr>
+<td><code>gb_curvature</code></td>
+<td>bool</td>
+<td><code>False</code></td>
+<td>—</td>
+<td>Compute local grain-boundary mean/Gaussian curvature (H in 1/Å, K in 1/Å²) at the boundary sample points: appends six area-weighted per-boundary columns to boundaries.csv and writes the local samples to gb_curvature.csv (fixed name). Flat geometry writes exact zeros — planar boundaries have no curvature by construction. Sign: H &gt; 0 means grain_i is locally convex. Not supported with geometry 'voxel_import' (piecewise-constant margins; rejected at config time).</td>
+</tr>
+<tr>
+<td><code>per_atom_margin</code></td>
+<td>bool</td>
+<td><code>False</code></td>
+<td>—</td>
+<td>Add a 'gb_margin' column (signed distance to nearest GB in Å) to the extended XYZ output.</td>
+</tr>
+<tr>
+<td><code>mdf_bins</code></td>
+<td>int</td>
+<td><code>40</code></td>
+<td>≥ 4</td>
+<td>Number of misorientation-angle bins for mdf.csv and for the haar_random/sigma3_angle_enriched angle targets over [0, θ_max] of the point group.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="sectionconfig">SectionConfig</h2>
+<p><a id="sectionconfig"></a></p>
+<p>EBSD-like 2D section export.</p>
+<p><strong>Config path:</strong> <code>analysis.section</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>axis</code></td>
+<td>one of: 'x' | 'y' | 'z'</td>
+<td><code>'z'</code></td>
+<td>—</td>
+<td>Box axis NORMAL to the section plane.</td>
+</tr>
+<tr>
+<td><code>position</code></td>
+<td>float</td>
+<td><code>0.5</code></td>
+<td>≥ 0.0, &lt; 1.0</td>
+<td>Fractional position of the plane along the axis (0 = low box face, 0.5 = midplane).</td>
+</tr>
+</tbody>
+</table>
+<h2 id="outputconfig">OutputConfig</h2>
+<p><a id="outputconfig"></a></p>
+<p>All output-file settings.</p>
+<p><strong>Config path:</strong> <code>output</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>directory</code></td>
+<td>str</td>
+<td><code>'./out'</code></td>
+<td>—</td>
+<td>Output directory. Created if it does not exist. The resolved config, run log, and all output files are written here.</td>
+</tr>
+<tr>
+<td><code>methods_snippet</code></td>
+<td>bool</td>
+<td><code>True</code></td>
+<td>—</td>
+<td>Write METHODS.md: an auto-generated methods paragraph describing the exact algorithm chain of THIS run with parameter values and numbered literature citations — a copy-paste starting point for the paper.</td>
+</tr>
+<tr>
+<td><code>lammps</code></td>
+<td><a href="#outputlammpsconfig">OutputLammpsConfig</a></td>
+<td>(sub-block defaults)</td>
+<td>—</td>
+<td>LAMMPS data-file output settings.</td>
+</tr>
+<tr>
+<td><code>xyz</code></td>
+<td><a href="#outputxyzconfig">OutputXyzConfig</a></td>
+<td>(sub-block defaults)</td>
+<td>—</td>
+<td>Extended XYZ output settings.</td>
+</tr>
+<tr>
+<td><code>csv</code></td>
+<td><a href="#outputcsvconfig">OutputCsvConfig</a></td>
+<td>(sub-block defaults)</td>
+<td>—</td>
+<td>CSV report filenames.</td>
+</tr>
+<tr>
+<td><code>gnuplot</code></td>
+<td><a href="#outputgnuplotconfig">OutputGnuplotConfig</a></td>
+<td>(sub-block defaults)</td>
+<td>—</td>
+<td>Gnuplot visualization bundle settings.</td>
+</tr>
+<tr>
+<td><code>mesh</code></td>
+<td><a href="#outputmeshconfig">OutputMeshConfig</a></td>
+<td>(sub-block defaults)</td>
+<td>—</td>
+<td>Optional boundary mesh output (curved geometry only).</td>
+</tr>
+</tbody>
+</table>
+<h2 id="outputlammpsconfig">OutputLammpsConfig</h2>
+<p><a id="outputlammpsconfig"></a></p>
+<p>LAMMPS data-file output settings.</p>
+<p><strong>Config path:</strong> <code>output.lammps</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>filename</code></td>
+<td>str</td>
+<td><code>'polycrystal.data'</code></td>
+<td>—</td>
+<td>Output filename for the LAMMPS data file.</td>
+</tr>
+<tr>
+<td><code>atom_style</code></td>
+<td>one of: 'atomic' | 'molecular'</td>
+<td><code>'atomic'</code></td>
+<td>—</td>
+<td>LAMMPS atom_style. 'atomic': id type x y z. 'molecular': id mol type x y z with mol = grain_id (1-based), enabling per-grain coloring in OVITO via molecule-id.</td>
+</tr>
+<tr>
+<td><code>masses</code></td>
+<td>dict[str, float] | null</td>
+<td><code>None</code></td>
+<td>—</td>
+<td>Optional per-element mass overrides in amu for the Masses section (e.g. {Fe: 55.0}). Elements not listed fall back to constants.ATOMIC_MASSES; unknown elements without an override raise a ConfigError.</td>
+</tr>
+<tr>
+<td><code>g10_readback</code></td>
+<td>one of: 'full' | 'sampled' | 'off'</td>
+<td><code>'sampled'</code></td>
+<td>—</td>
+<td>How gate G10 verifies the written LAMMPS data file (§9). 'full': re-parse every atom row (O(N), strongest, slowest — use for CI/paranoid runs). 'sampled' (default): parse the header plus the first and last g10_readback_sample atom rows — O(1) in N, catches catastrophic writer/encoding/truncation breakage without the full re-read. 'off': skip the on-disk read-back entirely (the writer's counts and bounds are still asserted by construction).</td>
+</tr>
+<tr>
+<td><code>g10_readback_sample</code></td>
+<td>int</td>
+<td><code>1000</code></td>
+<td>≥ 1</td>
+<td>Number of leading and trailing atom rows re-parsed when g10_readback='sampled'. Ignored for 'full'/'off'.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="outputxyzconfig">OutputXyzConfig</h2>
+<p><a id="outputxyzconfig"></a></p>
+<p>Extended XYZ output settings.</p>
+<p><strong>Config path:</strong> <code>output.xyz</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enabled</code></td>
+<td>bool</td>
+<td><code>True</code></td>
+<td>—</td>
+<td>Write an extended XYZ file.</td>
+</tr>
+<tr>
+<td><code>filename</code></td>
+<td>str</td>
+<td><code>'polycrystal.extxyz'</code></td>
+<td>—</td>
+<td>Output filename for the extended XYZ file.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="outputcsvconfig">OutputCsvConfig</h2>
+<p><a id="outputcsvconfig"></a></p>
+<p>CSV report filenames.</p>
+<p><strong>Config path:</strong> <code>output.csv</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>grains</code></td>
+<td>str</td>
+<td><code>'grains.csv'</code></td>
+<td>—</td>
+<td>Filename for the per-grain CSV report.</td>
+</tr>
+<tr>
+<td><code>boundaries</code></td>
+<td>str</td>
+<td><code>'boundaries.csv'</code></td>
+<td>—</td>
+<td>Filename for the per-boundary CSV report.</td>
+</tr>
+<tr>
+<td><code>vertices</code></td>
+<td>str</td>
+<td><code>'vertices.csv'</code></td>
+<td>—</td>
+<td>Filename for the Voronoi vertex CSV report (flat geometry only — legacy dump.dat parity).</td>
+</tr>
+<tr>
+<td><code>summary</code></td>
+<td>str</td>
+<td><code>'summary.csv'</code></td>
+<td>—</td>
+<td>Filename for the long-format summary CSV (QA gate results, versions, timings, composition).</td>
+</tr>
+</tbody>
+</table>
+<h2 id="outputgnuplotconfig">OutputGnuplotConfig</h2>
+<p><a id="outputgnuplotconfig"></a></p>
+<p>Gnuplot visualization bundle settings.</p>
+<p><strong>Config path:</strong> <code>output.gnuplot</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enabled</code></td>
+<td>bool</td>
+<td><code>True</code></td>
+<td>—</td>
+<td>Write gnuplot data files (seeds.dat, edges.dat / gb_points.dat, box.dat) and a ready-to-run view.plt script.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="outputmeshconfig">OutputMeshConfig</h2>
+<p><a id="outputmeshconfig"></a></p>
+<p>Boundary mesh output settings (curved geometry, optional).</p>
+<p><strong>Config path:</strong> <code>output.mesh</code></p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>default</th>
+<th>constraints</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enabled</code></td>
+<td>bool</td>
+<td><code>False</code></td>
+<td>—</td>
+<td>Write a boundary mesh file (marching-cubes per grain pair). Requires the 'mesh' optional extra (scikit-image).</td>
+</tr>
+<tr>
+<td><code>format</code></td>
+<td>one of: 'ply'</td>
+<td><code>'ply'</code></td>
+<td>—</td>
+<td>Mesh file format. 'ply' is the only supported format.</td>
+</tr>
+</tbody>
+</table>
+<div class="prevnext">
+<a class="prev" href="physics.html"><span>← Previous</span><strong>Physics &amp; conventions</strong></a>
+<a class="next" href="gates.html"><span>Next →</span><strong>QA gates (G1–G26)</strong></a>
+</div>
+</article>
+<aside class="toc" aria-label="On this page"><div class="toc-title">On this page</div><ul>
+<li class="toc-l2"><a href="#runconfig-root">RunConfig (root)</a></li>
+<li class="toc-l2"><a href="#metaconfig">MetaConfig</a></li>
+<li class="toc-l2"><a href="#seedconfig">SeedConfig</a></li>
+<li class="toc-l2"><a href="#runtimeconfig">RuntimeConfig</a></li>
+<li class="toc-l2"><a href="#boxconfig">BoxConfig</a></li>
+<li class="toc-l2"><a href="#grainsconfig">GrainsConfig</a></li>
+<li class="toc-l2"><a href="#sizedistributionconfig">SizeDistributionConfig</a></li>
+<li class="toc-l2"><a href="#crystalconfig">CrystalConfig</a></li>
+<li class="toc-l2"><a href="#spacegroupconfig">SpaceGroupConfig</a></li>
+<li class="toc-l2"><a href="#latticeconfig">LatticeConfig</a></li>
+<li class="toc-l2"><a href="#wyckoffsiteconfig">WyckoffSiteConfig</a></li>
+<li class="toc-l2"><a href="#cifconfig">CifConfig</a></li>
+<li class="toc-l2"><a href="#phaseconfig">PhaseConfig</a></li>
+<li class="toc-l2"><a href="#orientationconfig">OrientationConfig</a></li>
+<li class="toc-l2"><a href="#orientationfixedconfig">OrientationFixedConfig</a></li>
+<li class="toc-l2"><a href="#orientationfixedhkluvw">OrientationFixedHklUvw</a></li>
+<li class="toc-l2"><a href="#axisangleconfig">AxisAngleConfig</a></li>
+<li class="toc-l2"><a href="#orientationfiberconfig">OrientationFiberConfig</a></li>
+<li class="toc-l2"><a href="#odfcomponentconfig">OdfComponentConfig</a></li>
+<li class="toc-l2"><a href="#mdftargetconfig">MdfTargetConfig</a></li>
+<li class="toc-l2"><a href="#boundariesconfig">BoundariesConfig</a></li>
+<li class="toc-l2"><a href="#curvedboundaryconfig">CurvedBoundaryConfig</a></li>
+<li class="toc-l2"><a href="#voxelimportconfig">VoxelImportConfig</a></li>
+<li class="toc-l2"><a href="#overlapremovalconfig">OverlapRemovalConfig</a></li>
+<li class="toc-l2"><a href="#dopingconfig">DopingConfig</a></li>
+<li class="toc-l2"><a href="#dopantconfig">DopantConfig</a></li>
+<li class="toc-l2"><a href="#sitescoordsconfig">SitesCoordsConfig</a></li>
+<li class="toc-l2"><a href="#gbsegregationconfig">GbSegregationConfig</a></li>
+<li class="toc-l2"><a href="#analysisconfig">AnalysisConfig</a></li>
+<li class="toc-l2"><a href="#sectionconfig">SectionConfig</a></li>
+<li class="toc-l2"><a href="#outputconfig">OutputConfig</a></li>
+<li class="toc-l2"><a href="#outputlammpsconfig">OutputLammpsConfig</a></li>
+<li class="toc-l2"><a href="#outputxyzconfig">OutputXyzConfig</a></li>
+<li class="toc-l2"><a href="#outputcsvconfig">OutputCsvConfig</a></li>
+<li class="toc-l2"><a href="#outputgnuplotconfig">OutputGnuplotConfig</a></li>
+<li class="toc-l2"><a href="#outputmeshconfig">OutputMeshConfig</a></li>
+</ul></aside>
+</div>
+</main>
+</body>
+</html>

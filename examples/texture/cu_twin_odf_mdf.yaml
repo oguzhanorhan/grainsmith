@@ -1,0 +1,128 @@
+# ===================== grainsmith run configuration =====================
+# FCC Cu with ODF texture COMPONENTS and a Σ3-enriched MDF target.
+#
+# WHAT THIS TEACHES
+#   * orientation.scheme: odf_components — grains are assigned to weighted
+#     texture components; a single '{random: true}' component models a
+#     partially textured state.  Here: two components related by the Σ3
+#     twin rotation 60° ⟨111⟩, each weight: 0.5.
+#   * orientation.component_weight_basis: volume (set explicitly below,
+#     rather than relying on the default) — 'weight' is the VOLUME
+#     fraction of material in each component, the physical definition of
+#     the ODF.  Grains are partitioned deterministically
+#     (orientation.odf.volume_balanced_partition) so the two components'
+#     realised volume fractions match 0.5/0.5, instead of a categorical
+#     'weight'-as-GRAIN-COUNT draw whose realised volume split can be far
+#     off target on a small, broad-sigma grain population (a measured
+#     24-grain, sigma_log 0.5 case: configured 0.500/0.500 realised as
+#     0.745/0.255 under the count basis). The cost is a deterministic
+#     size-component correlation (the largest grain lands in whichever
+#     component is furthest short of its volume target); gate G25 reports
+#     it per component (mean grain volume) alongside the three volume-TV
+#     numbers, so the trade-off is visible, not hidden.
+#     Each Euler component carries an isotropic spread (Haar-corrected
+#     Gaussian angle law, exact rejection sampling).
+#   * orientation.mdf_target — simulated annealing permutes WHICH grain
+#     gets WHICH orientation (the NUMBER-weighted orientation distribution
+#     is invariant by construction; the VOLUME-weighted ODF is not in
+#     general — its drift is measured, and can be capped via
+#     odf_drift_max, gate G22) so the area-weighted neighbor
+#     disorientation-ANGLE distribution approaches the target.
+#     'sigma3_angle_enriched' moves sigma3_fraction of the target
+#     mass into the Σ3 Brandon ANGULAR window 60° ± 15°/√3 (the ⟨111⟩
+#     axis condition of true CSL Σ3 is NOT part of the objective —
+#     gate G23 reports both Σ3 measures side by side).
+#     IMPORTANT: the energy sees misorientation ANGLES — real Σ3
+#     enrichment needs twin-related pairs in the orientation set, which
+#     is exactly what the two components below provide.  Compare the
+#     csl_sigma column of boundaries.csv (analysis.csl: true) against a
+#     run with annealing_steps: 0.
+#   * Gate G12 (warn-only) re-measures the final MDF–target χ² distance;
+#     mdf.csv tabulates generated / Haar-random-reference / target
+#     densities, odf_mtex.txt is directly loadable in MTEX.
+#
+# HOW TO RUN
+#   grainsmith validate examples/texture/cu_twin_odf_mdf.yaml
+#   grainsmith generate examples/texture/cu_twin_odf_mdf.yaml
+#   Check boundaries.csv's csl_sigma column for the Σ3 fraction and
+#   mdf.csv / odf_mtex.txt for the texture/misorientation densities.
+
+meta:
+  title: "FCC Cu, 14 grains, Σ3 twin components + sigma3_angle_enriched MDF target"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 222324
+
+box:
+  lengths: [60.0, 60.0, 60.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 14
+  min_seed_distance: auto
+  lloyd_iterations: 0
+
+crystal:
+  space_group:
+    number: 225              # Fm-3m
+  lattice:
+    a: 3.615                 # Cu, Å
+  wyckoff_sites:
+    - {element: Cu, coords: [0.0, 0.0, 0.0], letter: a}
+
+orientation:
+  scheme: odf_components
+  # weight below is a VOLUME fraction (the physical ODF definition), not a
+  # grain-count fraction -- see header and gate G25.
+  component_weight_basis: volume
+  components:
+    # Cube-oriented matrix component
+    - {euler_bunge_deg: [0.0, 0.0, 0.0], weight: 0.5, spread_deg: 4.0}
+    # Its exact Σ3 twin partner: 60° about ⟨111⟩
+    - {euler_bunge_deg: [45.0, 70.528779365509308, 45.0],
+       weight: 0.5, spread_deg: 4.0}
+  mdf_target:
+    type: sigma3_angle_enriched
+    sigma3_fraction: 0.5     # mixture coefficient of the Σ3-window term
+                             # in the target MDF, NOT the resulting window
+                             # fraction: the Haar-random reference already
+                             # carries mass inside that window.
+    annealing_steps: 20000
+    t0: 0.05
+    cooling: 0.995
+    chi2_max: 1.0            # G12 warn threshold (χ² ∈ [0, 2])
+
+boundaries:
+  geometry: flat
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: true                  # boundaries.csv csl_sigma column (Σ3 audit)
+  per_atom_margin: false
+  mdf_bins: 40
+
+output:
+  directory: ./out_cu_twin_mdf
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

@@ -1,0 +1,87 @@
+# ===================== grainsmith run configuration =====================
+# B2 NiAl, 10 grains, 150³ Å, flat Voronoi grain boundaries.
+# Runs at the legacy Fortran core's own scale (same grain count, same
+# box) — the baseline reading of the whole pipeline before anything
+# curved, textured or multiphase.  That legacy core descends from the
+# Voronoi construction of Allen & Tildesley's Program F.35 (Computer
+# Simulation of Liquids, OUP 1987; see CITATION.cff); the book itself is
+# not reproduced here, so this file claims lineage, not byte-level
+# reproduction.
+#
+# WHAT THIS TEACHES
+#   * The baseline construction: an ordered B2 compound (two Wyckoff
+#     sites, Ni + Al) tessellated with flat Voronoi grain boundaries —
+#     the simplest geometry grainsmith produces.
+#   * analysis.gb_curvature on a FLAT geometry: gb_curvature.csv reports
+#     H = K = 0 exactly for every sample — the reference case to compare
+#     against a genuinely curved boundary (grain_geometry/fcc_cu_curved_warp.yaml).
+#
+# HOW TO RUN
+#   grainsmith validate examples/basics/b2_nial_flat.yaml
+#   grainsmith generate examples/basics/b2_nial_flat.yaml
+#   Check grains.csv / boundaries.csv for the tessellation and
+#   gb_curvature.csv for the exact-zero flat-geometry curvature.
+
+meta:
+  title: "B2 NiAl, 10 grains, flat GBs (legacy-parity example)"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 123432
+
+box:
+  lengths: [150.0, 150.0, 150.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 10
+  min_seed_distance: auto
+  lloyd_iterations: 0
+
+crystal:
+  space_group:
+    number: 221
+    setting: null
+  lattice:
+    a: 2.88
+  wyckoff_sites:
+    - {element: Ni, coords: [0.0, 0.0, 0.0], letter: a}
+    - {element: Al, coords: [0.5, 0.5, 0.5], letter: b}
+
+orientation:
+  scheme: random_uniform
+
+boundaries:
+  geometry: flat
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false
+  per_atom_margin: false
+  gb_curvature: true  # per-boundary H/K + gb_curvature.csv (flat ⇒ exactly 0)
+
+output:
+  directory: ./out_b2_flat
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false
+    format: ply

@@ -1,0 +1,100 @@
+# ===================== grainsmith run configuration =====================
+# FCC Cu with CURVED boundaries AND a prescribed log-normal size
+# distribution — the ONE legal way to combine the two.
+#
+# WHAT THIS TEACHES
+#   * Volume targeting (grains.size_distribution) exists only for the
+#     power/Laguerre diagram: flat geometry, or — as here — the `warp`
+#     method drawn over `base: power`. The other curved methods
+#     (anisotropic, additive_weights, perturbed_distance) have NO volume
+#     handle, and combining them with size_distribution is refused at
+#     gate G1 ("requires flat geometry or the warp method").
+#   * boundaries.curved.base: power — Rule 12 pairs the two blocks: a
+#     power base REQUIRES size_distribution (the Laguerre weights are
+#     fitted to the target volumes), and size_distribution + curved
+#     REQUIRES method: warp (Rule 10).
+#   * Gate G11 is measured on the UNWARPED power base — its summary
+#     message says so explicitly, because the warp deliberately displaces
+#     boundaries, so realized cell volumes deviate from the targets
+#     (bounded by the G6 ‖∇u‖ < 0.5 guard).
+#   * Gate G6 (warp bijectivity): amplitude / correlation_length below
+#     are chosen to keep max‖∇u‖ safely under 0.5 — raise the amplitude
+#     and G6 aborts with the exact measured gradient.
+#
+# HOW TO RUN
+#   grainsmith validate examples/grain_geometry/cu_curved_sizes.yaml
+#   grainsmith generate examples/grain_geometry/cu_curved_sizes.yaml
+#   Check summary.csv: gate G6 (measured max‖∇u‖), gate G11's
+#   "measured on the UNWARPED power base" note, and the
+#   size_distribution section (sdot_iterations, max_rel_volume_error).
+
+meta:
+  title: "FCC Cu, 12 grains, curved (warp) boundaries with lognormal volumes"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 192024
+
+box:
+  lengths: [60.0, 60.0, 60.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 12
+  min_seed_distance: auto
+  lloyd_iterations: 0
+  size_distribution:
+    type: lognormal          # equal / volumes work identically here
+    sigma_log: 0.35
+    vol_tol: 1.0e-3
+    max_iter: 30
+    centroidal_iterations: 0
+
+crystal:
+  space_group:
+    number: 225              # Fm-3m
+  lattice:
+    a: 3.615                 # Cu, Å
+  wyckoff_sites:
+    - {element: Cu, coords: [0.0, 0.0, 0.0], letter: a}
+
+orientation:
+  scheme: random_uniform
+
+boundaries:
+  geometry: curved
+  curved:
+    method: warp
+    base: power              # Rule 12: power base <-> size_distribution
+    amplitude: 1.2           # Å; keeps max‖∇u‖ well under the G6 0.5 cap
+    correlation_length: 15.0
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false
+  per_atom_margin: false
+
+output:
+  directory: ./out_cu_curved_sizes
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

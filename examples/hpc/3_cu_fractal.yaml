@@ -1,0 +1,97 @@
+# ===================== grainsmith run configuration =====================
+# HPC tier 3/3: FCC Cu, 10 grains, 360³ Å, SELF-AFFINE fractal GBs via
+# perturbed_distance, H = 0.8 (~4.0×10⁶ atoms).
+#
+# The SLURM recipe and the single-node parallel model are described in
+# 1_cu_flat.yaml's header and apply here unchanged: one node, one task,
+# --jobs = grains.number (10) = --cpus-per-task for the best fill
+# parallelism.
+#
+# WHAT THIS TEACHES (beyond 1_cu_flat.yaml)
+#   * `perturbed_distance` + `spectrum: self_affine` — genuinely fractal
+#     grain boundaries (level-set assignment) at production scale; the
+#     elemental single-phase sibling of the adv_pdau_perturbed
+#     flagship, with its warn-only gates G13/G19/G20.
+#
+# AMPLITUDE CALIBRATION (this geometry)
+#   min_seed_distance: auto resolves to r_ws ≈ 103.7 Å (360³ Å, N = 10),
+#   so the seed-containment ceiling is A_max = min_seed_distance/12
+#   ≈ 8.6 Å. amplitude: 3.6 Å sits at ~40% of that ceiling — the same
+#   absolute GB-roughness scale the flagship uses, chosen for physical
+#   plausibility rather than to stress the guard.
+#
+# HOW TO RUN
+#   grainsmith validate examples/hpc/3_cu_fractal.yaml
+#   grainsmith generate examples/hpc/3_cu_fractal.yaml --jobs 10
+
+meta:
+  title: "FCC Cu, 10 grains, self-affine fractal GBs, H = 0.8 (HPC)"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 282930
+
+box:
+  lengths: [360.0, 360.0, 360.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 10                 # == the recommended --jobs (see header)
+  min_seed_distance: auto
+  lloyd_iterations: 0
+
+crystal:
+  space_group:
+    number: 225              # Fm-3m
+  lattice:
+    a: 3.615                 # Cu, Å
+  wyckoff_sites:
+    - {element: Cu, coords: [0.0, 0.0, 0.0], letter: a}
+
+orientation:
+  scheme: random_uniform
+
+boundaries:
+  geometry: curved
+  curved:
+    method: perturbed_distance
+    spectrum: self_affine
+    amplitude: 3.6             # Å; ~40% of A_max ≈ 8.6 Å here — see the
+                               # AMPLITUDE CALIBRATION note above.
+    hurst: 0.8                 # typical metal GB range (schema default band
+                               # 0.7-0.9); H's effect on D_b is weak here
+                               # relative to amplitude.
+    l_min: 12.0                # >= 2*h_field for the resolved grid
+    l_max: 40.0                # <= min(L)/2 = 180 Å here
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower   # elemental Cu — midpoint_merge would also
+                               # be legal; kept for contrast with
+                               # 2_cu_curved.yaml.
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false
+  per_atom_margin: false
+
+output:
+  directory: ./out_hpc_cu_fractal
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

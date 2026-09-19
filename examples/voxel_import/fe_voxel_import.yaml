@@ -1,0 +1,86 @@
+# ===================== grainsmith run configuration =====================
+# BCC Fe atomized from an IMPORTED voxel label field.
+#
+# WHAT THIS TEACHES
+#   * boundaries.geometry: voxel_import — an externally produced
+#     microstructure (Potts/phase-field grain growth, DREAM.3D synthetic
+#     or 3D-EBSD reconstruction) is wrapped as a tessellation and filled
+#     with atoms by the unchanged fill/overlap/analysis stack.  Here the
+#     field is a shipped 32³ .npy (8 grains, a voxelized Voronoi); for
+#     DREAM.3D HDF5 set file/dataset (+ the [import] extra / h5py) and
+#     optionally euler_dataset + orientation.scheme: imported to carry
+#     the per-grain orientations over.
+#   * grains.number is DERIVED from the label field — it is omitted here
+#     (setting it acts as a cross-check; a mismatch is an error).
+#   * The grid shape comes from the file; box.lengths from this config
+#     (50 Å ⇒ ~1.56 Å voxels).  Voxel-resolution consequences are honest:
+#     GB areas/normals are voxel estimates, margins are signed-EDT
+#     voxel-center values.
+#   * Gate G5 is demoted to WARN for imports (strict_connectivity:
+#     false): external fields may legitimately contain disconnected or
+#     wrap-spanning grains.  summary.csv records the derived grain count
+#     and the relabel map (when ids were compacted).
+#
+# HOW TO RUN
+#   grainsmith validate examples/voxel_import/fe_voxel_import.yaml
+#   grainsmith generate examples/voxel_import/fe_voxel_import.yaml
+#   (the label-field path below is resolved relative to this file, so this
+#   runs from any working directory)
+#   Check summary.csv for the derived grain count and relabel map.
+
+meta:
+  title: "BCC Fe, 8 grains imported from a voxel label field (.npy)"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 252627
+
+box:
+  lengths: [50.0, 50.0, 50.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains: {}                   # number derived from the label field
+
+crystal:
+  space_group:
+    number: 229              # Im-3m
+  lattice:
+    a: 2.866                 # Fe, Å
+  wyckoff_sites:
+    - {element: Fe, coords: [0.0, 0.0, 0.0], letter: a}
+
+orientation:
+  scheme: random_uniform     # or 'imported' with a DREAM.3D euler_dataset
+
+boundaries:
+  geometry: voxel_import
+  voxel_import:
+    file: ../assets/labels_voronoi8_32.npy   # resolved relative to this file
+    relabel: true
+    strict_connectivity: false
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false
+  per_atom_margin: false
+
+output:
+  directory: ./out_fe_import
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

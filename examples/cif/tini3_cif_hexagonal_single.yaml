@@ -1,0 +1,102 @@
+# ===================== grainsmith run configuration =====================
+# TiNi3 (D0_24, hexagonal P6_3/mmc) TRICLINIC SINGLE CRYSTAL — crystal
+# structure read directly from a Materials Project CIF file
+# (examples/assets/TiNi3.cif; the file's own header under-declares its
+# symmetry as P1, spglib independently detects the true P6_3/mmc, see
+# test_cif.py), box built as exact lattice multiples of the crystal's own
+# hexagonal cell via box.cells.
+#
+# WHAT THIS TEACHES
+#   * Hexagonal gamma = 120 deg exercises the OTHER off-diagonal tilt
+#     factor than the monoclinic TiNi example (cif/tini_cif_triclinic_single.yaml,
+#     which tilts via beta -> xz): here gamma tilts the b vector into -x,
+#     producing an XY tilt factor instead. With 5x5x3 cells the resolved
+#     restricted-triclinic box matrix is
+#         a = (25.268006,   0,          0        )
+#         b = (-12.634003,  21.882736,  0        )
+#         c = ( 0,           0,        24.694296)  Å
+#     i.e. xy = -12.634003 Å, xz = 0, yz = 0. Note b_x = b*cos(120 deg)
+#     = -b/2 exactly (per hexagonal-cell convention), and H = A @
+#     diag(n1,n2,n3) scales the b column by n2, so xy = n2*b_x =
+#     -n2*b/2 — for n1 == n2 (as here) this lands EXACTLY on the LAMMPS
+#     restricted-triclinic bound |xy| <= ax/2 (ax = n1*a, so ax/2 = n1*a/2
+#     = n2*b/2 when a == b and n1 == n2, the hexagonal a==b constraint
+#     plus this file's equal in-plane multiples): a worked
+#     example of the boundary case reduce_triclinic_tilts must handle
+#     without flipping the sign to the other (numerically equivalent)
+#     +ax/2 bound.
+#   * Same box.cells preconditions as the monoclinic example: grains.number:
+#     1, box.periodic all true + vacuum 0, identity orientation.fixed — see
+#     cif/tini_cif_triclinic_single.yaml for the full rationale and
+#     config/resolve.py Rule 28 for the enforcement.
+#   * Exact atom count: 5*5*3 cells x 16 atoms/cell (TiNi3.cif's expanded
+#     Wyckoff basis under the spglib-detected P6_3/mmc symmetry) = 1200
+#     atoms exactly, 0 deleted by overlap removal (cutoff 0.85*d_nn) —
+#     the perfect hexagonal single crystal, exactly periodic by
+#     construction (gate G14 misfit = 0), instead of the small but
+#     nonzero self-boundary strain an orthogonal box would force on this
+#     non-orthogonal (gamma != 90 deg) lattice.
+#
+# HOW TO RUN
+#   grainsmith validate examples/cif/tini3_cif_hexagonal_single.yaml
+#   grainsmith generate examples/cif/tini3_cif_hexagonal_single.yaml
+#   Check summary.csv for gate G14 (misfit exactly 0) and the atom count
+#   (exactly 1200); inspect the xy tilt line in polycrystal.data.
+
+meta:
+  title: "TiNi3 (P6_3/mmc hexagonal), triclinic single crystal, 5x5x3 cells, crystal from CIF"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 141421356      # no stage consumes randomness here (single crystal)
+
+box:
+  cells: [5, 5, 3]       # box = 5x5x3 exact repeats of TiNi3's own cell
+  periodic: [true, true, true]   # box.cells requires all-periodic
+  vacuum: 0.0                    # box.cells requires zero vacuum
+
+grains:
+  number: 1              # box.cells is single-crystal only (Rule 28)
+
+crystal:
+  cif:
+    file: ../assets/TiNi3.cif   # resolved relative to this file
+    symprec: 1.0e-4
+
+orientation:
+  scheme: fixed
+  fixed:
+    euler_bunge_deg: [0.0, 0.0, 0.0]   # box.cells REQUIRES identity orientation
+
+boundaries:
+  geometry: flat             # required for the single-crystal backend
+  overlap_removal:
+    enabled: true             # no-op here (0 deletions); cleans the box
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false                  # hexagonal is not cubic — CSL is undefined here
+  per_atom_margin: false
+  section: null                # NOT supported with box.cells (Rule 28)
+
+output:
+  directory: ./out_tini3_cif_hexagonal_single
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

@@ -1,0 +1,104 @@
+# ===================== grainsmith run configuration =====================
+# Anatase TiO2 (from CIF) + 1 at% Li, GB-segregated octahedral
+# interstitials via symmetry orbit expansion.
+#
+# WHAT THIS TEACHES
+#   * crystal.cif with a LOW-SYMMETRY CIF: the file declares P 1 (a
+#     pymatgen conventional-standard export), spglib detects the true
+#     group I4_1/amd (SG 141, anatase) and reduces the 12 listed atoms
+#     to 2 Wyckoff sites (Ti 4a + O 8e). grainsmith always uses the
+#     DETECTED group and warns about the declared/detected mismatch.
+#   * Interstitial orbit expansion (sites.coords + expand_orbit, the
+#     default): ONE representative of the vacant octahedral site —
+#     Wyckoff 4b, [0, 0, 0.5] in the I4_1/amd origin-choice-2 frame —
+#     expands to all 4 equivalent sites per conventional cell under the
+#     host space group detected from the CIF. This is the lithium
+#     intercalation sublattice of anatase (Li_xTiO2 battery anodes);
+#     the site sits 1.95 A from the nearest host atom.
+#   * GB segregation on a CIF-sourced host: enrichment E = 4 in a 3 A
+#     shell; check the dopant--GB distance profile in doping_profile.csv
+#     and doping_profile.plt (gnuplot bundle).
+#   * Gates G17 (achieved vs nominal fraction, warn) and G18
+#     (min-distance re-verification, hard) run unchanged.
+#
+# Physics note: min_distance = 1.6 A accepts the ideal 4b geometry
+# (host spacing 1.95 A) while rejecting any site squeezed by grain-
+# boundary overlap; Li-O in lithiated anatase is ~1.9-2.1 A.
+#
+# HOW TO RUN
+#   grainsmith validate examples/doping/tio2_cif_li_interstitial.yaml
+#   grainsmith generate examples/doping/tio2_cif_li_interstitial.yaml
+#   Check doping.csv for the per-grain shell/bulk split and
+#   doping_profile.csv / doping_profile.plt for the enrichment profile.
+
+meta:
+  title: "Anatase TiO2 (CIF) + 1 at% Li octahedral interstitials, GB-segregated"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 271828
+
+box:
+  lengths: [60.0, 60.0, 60.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 6
+  min_seed_distance: auto
+  lloyd_iterations: 0
+
+crystal:
+  cif:
+    file: ../assets/TiO2_mp-390_conventional_standard.cif  # resolved relative to this file
+    # symprec: 1.0e-4 (default) — detects I4_1/amd from the P 1 file
+
+orientation:
+  scheme: random_uniform
+
+boundaries:
+  geometry: flat
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower
+
+doping:
+  dopants:
+    - element: Li
+      mode: interstitial
+      sites:
+        coords: [[0.0, 0.0, 0.5]]   # Wyckoff 4b representative;
+                                    # expand_orbit: true (default) ->
+                                    # 4 sites/cell under SG 141
+      concentration: 0.01
+      min_distance: 1.6             # A; ideal 4b-host spacing is 1.95
+      gb_segregation:
+        enabled: true
+        shell_width: 3.0
+        enrichment: 4.0
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false
+  per_atom_margin: false
+
+output:
+  directory: ./out_tio2_li_interstitial
+  lammps:
+    filename: polycrystal.data
+    atom_style: atomic
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

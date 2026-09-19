@@ -1,0 +1,161 @@
+# ===================== grainsmith run configuration =====================
+# alpha-Fe (BCC), cold-rolling texture on self-affine curved grain
+# boundaries. ~20.7 nm grains in a 36 nm cube, ~3.96e6 atoms.
+#
+# WHAT THIS EXAMPLE IS FOR
+# ------------------------
+# The SAMPLER half of the ODF question, isolated. The Cu example in this
+# directory bounds the drift the assignment ANNEALER introduces; this one
+# deliberately configures NO mdf_target at all, so the permutation is the
+# identity and the annealer contributes exactly zero. What is left is the
+# term that is easy to overlook:
+#
+#   Even with no annealing whatsoever, asking for "40% of the material in
+#   the rotated-cube component" is not the same as "40% of the GRAINS in
+#   it". With unequal grain volumes the two differ, and only the first is
+#   an ODF in the conventional, volume-weighted sense.
+#   `component_weight_basis: volume` (the default) partitions grains
+#   deterministically so the VOLUME fractions match the weights below;
+#   under `count` each grain instead draws its component i.i.d. and the
+#   realised volume fractions scatter. Gate G25 prints configured vs
+#   realised-by-count vs realised-by-volume for every component, so the
+#   size of that term is a number in summary.csv, not an assumption.
+#
+#   Gate G26 then reports the floor beneath even a perfect volume-balanced
+#   sampler: the exported structure is weighted by ATOMS per grain, and
+#   overlap removal strips a boundary shell that costs small grains
+#   proportionally more. Switch component_weight_basis to `count`, re-run,
+#   and compare the three G25 numbers -- that contrast is the point of the
+#   example.
+#
+# THE TEXTURE. Cold-rolled low-carbon steel is one of the most measured
+# textures in metallurgy. Its BCC rolling texture is usually described as
+# two fibres; the three discrete components below are the classical
+# landmarks on them, in Bunge (phi1, PHI, phi2) convention:
+#     {001}<110>  rotated cube      (0, 0, 45)      alpha-fibre end
+#     {112}<110>  alpha-fibre       (0, 35.26, 45)
+#     {111}<110>  gamma-fibre       (0, 54.74, 45)
+# The gamma fibre carries the largest share in a well-recrystallised sheet
+# and is the component associated with good deep-drawability, so it gets
+# the largest weight here.
+#
+# GEOMETRY (verified against the installed code)
+# ----------------------------------------------
+#   * N=10 grains in a 360.0 A cube -> r_ws = 103.66 A, d_eq = 20.7 nm;
+#     min_seed_distance: auto resolves to that same r_ws.
+#   * alpha-Fe BCC a = 2.866 A -> 2 atoms/cell, d_nn = 2.4820 A,
+#     7.878 g/cm3, 24 proper point-group rotations. 3,963,775 atoms before
+#     overlap removal.
+#   * l_min = 4.96 A = 2*d_nn. Grid heuristic -> 291^3, UNCAPPED, so
+#     h_field = 360/291 = 1.237 A and l_min >= 2*h_field clears with
+#     +100.5% margin. This is the finest grid of the three examples --
+#     BCC Fe has the shortest d_nn, so it asks the most of the field.
+#   * l_max = 103.7 A ~= r_ws; <= min(L)/2 = 180 A. Band = 4.39 octaves.
+#   * amplitude 7.34 A = 85% of a_max = 0.5*103.66/6 = 8.638 A (total_rms).
+#
+# COST
+# ----
+#   ~4e6 atoms, a 291^3 analysis grid, ~12 colour fields (~1.2 GB of field
+#   workspace) -- the heaviest of the three, and the reason
+#   runtime.memory_limit_gb below is worth reading before scaling the box.
+#
+# Run:
+#   grainsmith validate examples/texture/fe_bcc_rolling_texture_curved.yaml
+#   grainsmith generate examples/texture/fe_bcc_rolling_texture_curved.yaml --jobs 4
+# =========================================================================
+
+meta:
+  title: "alpha-Fe BCC, cold-rolling texture on self-affine curved GBs, ~20.7 nm grains"
+  verbose: 1
+
+runtime:
+  # Per-ALLOCATION guard (Section 13), not a total-RSS cap: it bounds any
+  # SINGLE array the run builds. The largest here is one 291^3 float32
+  # colour field plus the analysis voxel grid, ~1.2 GB. 8 GB is headroom
+  # that still fails fast, with an actionable message, on a mistyped
+  # parameter. The parallel fill also divides this by the worker count when
+  # it decides how many workers fit -- raise the box edge and this is the
+  # first knob to revisit.
+  memory_limit_gb: 8.0
+
+seed:
+  mode: fixed
+  value: 161803
+
+box:
+  lengths: [360.0, 360.0, 360.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 10
+  min_seed_distance: auto     # -> r_ws = 103.66 A
+  lloyd_iterations: 0
+
+crystal:
+  space_group:
+    number: 229               # Im-3m (BCC)
+  lattice:
+    a: 2.866                  # alpha-Fe, A
+  wyckoff_sites:
+    - element: Fe
+      coords: [0.0, 0.0, 0.0]
+      letter: a
+
+orientation:
+  scheme: odf_components
+  # 'volume' (the default) is the physical reading: each weight is a
+  # fraction of MATERIAL. Flip it to 'count' and re-run to see the sampler
+  # term this example exists to expose -- gate G25 reports both.
+  component_weight_basis: volume
+  components:
+    - euler_bunge_deg: [0.0, 0.0, 45.0]                # {001}<110>
+      weight: 0.25
+      spread_deg: 8.0
+    - euler_bunge_deg: [0.0, 35.264389682754654, 45.0] # {112}<110>
+      weight: 0.30
+      spread_deg: 8.0
+    - euler_bunge_deg: [0.0, 54.735610317245346, 45.0] # {111}<110>
+      weight: 0.45
+      spread_deg: 8.0
+  # NO mdf_target on purpose: the assignment permutation stays the
+  # identity, so the annealer term is exactly zero and whatever G25
+  # reports is the SAMPLER alone.
+
+boundaries:
+  geometry: curved
+  curved:
+    method: perturbed_distance
+    spectrum: self_affine
+    hurst: 0.7
+    amplitude: 7.34           # A, total RMS; 85% of a_max = 8.638 A
+    l_min: 4.96               # = 2*d_nn; clears Nyquist by +100.5%
+    l_max: 103.7              # ~= r_ws; <= min(L)/2 = 180 A
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower
+
+analysis:
+  voxel_grid: auto            # -> 291^3, uncapped at this l_min
+  gb_character: true
+  csl: true                   # BCC is cubic, so the Sigma tables apply
+  statistics: true
+  per_atom_margin: false
+  section: {axis: z, position: 0.5}
+
+output:
+  directory: ./out_fe_bcc_rolling_texture_curved
+  lammps:
+    filename: polycrystal.data
+    atom_style: atomic
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    summary: summary.csv
+    grains: grains.csv
+    boundaries: boundaries.csv
+  gnuplot:
+    enabled: true
+  methods_snippet: true

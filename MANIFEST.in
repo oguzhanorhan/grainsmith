@@ -1,0 +1,12 @@
+# The pre-built React studio bundle is data, not source: it is committed under
+# src/grainsmith/ui/static/ (built by `vite build` from a frontend tree that is
+# not published with the repository) and ships in both the sdist and (via
+# include-package-data) the wheel.
+recursive-include src/grainsmith/ui/static *
+
+# Attribution for the bundled React studio frontend (see NOTICE).
+include NOTICE THIRD_PARTY_LICENSES
+
+# The reproducibility pin set (constraints-repro.txt) is part of the published
+# provenance story, so it ships with the source distribution.
+include constraints-repro.txt

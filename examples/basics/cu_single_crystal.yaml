@@ -1,0 +1,89 @@
+# ===================== grainsmith run configuration =====================
+# FCC Cu SINGLE CRYSTAL — a perfect reference cell.
+#
+# WHAT THIS TEACHES
+#   * grains.number: 1 selects the single-crystal backend: no seeding, no
+#     Voronoi — one grain owns the whole box.  The natural baseline run
+#     for comparing any polycrystal property against the perfect crystal
+#     (elastic constants, melting, defect energies).
+#   * COMMENSURABILITY is the whole game: in a periodic box the crystal
+#     meets its own images at the box faces.  Here the box is exactly
+#     10 × 10 × 10 conventional cells and the orientation is identity, so
+#     the structure is defect-free: EXACTLY 4·10³ = 4000 atoms, zero
+#     overlap deletions.
+#   * Gate G14 (warn-only) measures the per-axis box/lattice misfit of
+#     the ROTATED lattice.  Try it: change the orientation to
+#       fixed: {axis_angle: {axis: [0, 0, 1], angle_deg: 15.0}}
+#     and re-run — G14 WARNs (incommensurate), and the box faces become
+#     self-boundary defects that overlap removal cleans like a real GB
+#     (sometimes that IS the experiment; the gate tells you which
+#     structure you got).
+#   * No grain boundaries by construction: boundaries.csv is written with
+#     zero rows, and vertices.csv is not written at all (it's a flat/power
+#     geometry output only — single-crystal is neither).
+#
+# HOW TO RUN
+#   grainsmith validate examples/basics/cu_single_crystal.yaml
+#   grainsmith generate examples/basics/cu_single_crystal.yaml
+#   Check summary.csv for the atom count (exactly 4000) and gate G14;
+#   grains.csv has a single row.
+
+meta:
+  title: "FCC Cu single crystal, 10x10x10 cells, commensurate"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 1                   # no stage consumes randomness here
+
+box:
+  lengths: [36.15, 36.15, 36.15]   # exactly 10·a per axis
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 1
+
+crystal:
+  space_group:
+    number: 225              # Fm-3m
+  lattice:
+    a: 3.615                 # Cu, Å
+  wyckoff_sites:
+    - {element: Cu, coords: [0.0, 0.0, 0.0], letter: a}
+
+orientation:
+  scheme: fixed
+  fixed:
+    euler_bunge_deg: [0.0, 0.0, 0.0]   # identity → commensurate (G14 ok)
+
+boundaries:
+  geometry: flat             # required for the single-crystal backend
+  overlap_removal:
+    enabled: true            # no-op here (0 deletions); cleans the box
+    cutoff: "0.85*d_nn"      # faces if you make the lattice incommensurate
+    policy: delete_shallower
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false
+  per_atom_margin: false
+
+output:
+  directory: ./out_cu_single
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

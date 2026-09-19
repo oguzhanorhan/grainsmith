@@ -1,0 +1,104 @@
+# ===================== grainsmith run configuration =====================
+# Anatase TiO2 (from CIF), 10 grains, 360×360×80 Å thin film (periodic xy,
+# free z + vacuum), PERTURBED-DISTANCE self-affine grain
+# boundaries.
+#
+# WHAT THIS TEACHES
+#   * crystal.cif on a NON-FULLY-PERIODIC box: the same low-symmetry CIF
+#     doping/tio2_cif_li_interstitial.yaml uses (anatase declares P 1,
+#     spglib detects the true I4_1/amd, SG 141) combined with a slab
+#     geometry — box.periodic = [true, true, false] plus vacuum on z —
+#     instead of the fully periodic cell that example uses.
+#   * boundaries.curved.method: perturbed_distance + spectrum: self_affine
+#     on a slab: the genuinely self-affine grain-boundary construction
+#     (self_affine_gb/pdau_perturbed_self_affine.yaml) does not require full
+#     periodicity — grain boundaries fold through the free-surface
+#     geometry the same way flat/warp boundaries do.
+#   * Gates G13 (Hurst back-estimate), G19 (repair severity) and G20
+#     (box-counting D_b) all apply here exactly as in the fully periodic
+#     self-affine examples — see docs/physics.md §5b.
+#
+# HOW TO RUN
+#   grainsmith validate examples/self_affine_gb/tio_2_thin_film_self_affine.yaml
+#   grainsmith generate examples/self_affine_gb/tio_2_thin_film_self_affine.yaml
+#   Check summary.csv for d_b_estimated / hurst_estimated (gates G13/G20)
+#   and view.plt / box.dat for the free-surface slab geometry.
+
+meta:
+  title: "Anatase TiO2 (I4_1/amd, SG 141), 10 grains, 360×360×80 Å thin film"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 282930
+
+box:
+  lengths: [360.0, 360.0, 80.0]
+  periodic: [true, true, false]   # free z-axis → slab/thin-film mode
+  vacuum: 180.0                    # Å of vacuum on the free z surfaces
+
+grains:
+  number: 10
+  min_seed_distance: auto
+  lloyd_iterations: 0
+
+crystal:
+  cif:
+    file: ../assets/TiO2_mp-390_conventional_standard.cif  # resolved relative to this file
+    symprec: 1.0e-4
+
+orientation:
+  scheme: random_uniform
+
+boundaries:
+  geometry: curved
+  curved:
+    method: perturbed_distance
+    spectrum: self_affine
+    amplitude: 1.6             # A; ~31% of THIS geometry's seed-containment
+                                # ceiling A_max = min_seed_distance/12 =
+                                # r_ws/12 = 62.79/12 = 5.23 A (10 grains in
+                                # 360x360x80 A; vacuum is export padding and
+                                # does not enter the material volume).  Kept
+                                # well under the ceiling because a slab has
+                                # free surfaces the level set must also clear.
+    hurst: 0.8                 # schema default; its documented 0.7-0.9 band
+                                # is for METAL surfaces/GBs -- an assumption
+                                # carried over here, not an oxide measurement.
+    l_min: 12.0                # >= 2*h_field: auto grid targets h = l_min/4
+                                # = 3.0 A, so 2*h_field = 6.0 A -- 12.0 A
+                                # clears the Nyquist floor by 100%
+    l_max: 40.0                # AT the cap: min(box.lengths)/2 = 80/2 = 40 A
+                                # (the thin z axis sets it, not the 360 A xy).
+                                # Band = log2(40/12) = 1.74 octaves.
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"
+    policy: delete_shallower   # midpoint_merge forbidden: multi-species
+                               # structure (Ti + O) -- merging two atoms of
+                               # different elements has no defined species
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false
+  per_atom_margin: false
+  mdf_bins: 40
+
+output:
+  directory: ./out_tio2_thin_film_self_affine
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

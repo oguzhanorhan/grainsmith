@@ -1,0 +1,82 @@
+# ===================== grainsmith run configuration =====================
+# Example: rutile TiO2 — a tetragonal, multi-sublattice ceramic.
+#
+# WHAT THIS TEACHES
+#   * Non-cubic crystal family: tetragonal needs exactly (a, c) — supply
+#     anything else and G1 tells you the family's free parameters.
+#   * FREE Wyckoff parameters: the oxygen 4f site is (x, x, 0) with
+#     x ≈ 0.305 — you substitute the numeric value directly in coords;
+#     gate G2 (spglib round-trip) then verifies SG 136 and the letters,
+#     so a typo in x that breaks the symmetry is caught immediately.
+#   * Stoichiometry through orbit sizes: 2 Ti (2a) + 4 O (4f) = TiO2 per
+#     cell — check atoms_per_cell and the composition rows in summary.csv.
+#   * analysis.csl MUST stay false: the CSL table is cubic-only;
+#     setting it true here is rejected at G1 with a clear message.
+#
+# HOW TO RUN
+#   grainsmith validate examples/crystallography/rutile_tio2_tetragonal.yaml
+#   grainsmith generate examples/crystallography/rutile_tio2_tetragonal.yaml
+#   Check summary.csv's composition rows (2 Ti + 4 O per cell) and G2's
+#   spglib round-trip result.
+
+meta:
+  title: "Rutile TiO2, 4 grains, tetragonal SG 136"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 141421
+
+box:
+  lengths: [50.0, 50.0, 50.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 4
+  min_seed_distance: auto
+  lloyd_iterations: 0
+
+crystal:
+  space_group:
+    number: 136              # P4_2/mnm
+  lattice:
+    a: 4.594                 # Å
+    c: 2.959                 # Å
+  wyckoff_sites:
+    - {element: Ti, coords: [0.0, 0.0, 0.0], letter: a}        # 2a
+    - {element: O,  coords: [0.305, 0.305, 0.0], letter: f}    # 4f, free x
+
+orientation:
+  scheme: random_uniform
+
+boundaries:
+  geometry: flat
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"      # d_nn = shortest Ti-O bond of the ideal crystal
+    policy: delete_shallower
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false                 # cubic-only in v1 — true raises ConfigError here
+  per_atom_margin: false
+
+output:
+  directory: ./out_rutile
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

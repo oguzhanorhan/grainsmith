@@ -1,0 +1,88 @@
+# ===================== grainsmith run configuration =====================
+# HPC tier 2/3: FCC Cu, 10 grains, 360³ Å, ANISOTROPIC (elongated) grains
+# with the midpoint_merge overlap policy (~4.0×10⁶ atoms).
+#
+# The SLURM recipe and the single-node parallel model are described in
+# 1_cu_flat.yaml's header and apply here unchanged: one node, one task,
+# --jobs = grains.number (10) = --cpus-per-task for the best fill
+# parallelism.
+#
+# WHAT THIS TEACHES (beyond 1_cu_flat.yaml)
+#   * `anisotropic` (ellipsoidal-metric) curved GBs at production scale —
+#     up to 2.5:1 elongated grains (rolled/columnar microstructures).
+#   * `midpoint_merge` overlap policy (legal here: elemental Cu; it is
+#     forbidden for multi-species alloys).
+#
+# RESOURCE NOTE (measured, 32 GB / 24-core laptop, fixed seed)
+#   The anisotropic metric makes each grain's candidate fill box larger
+#   than the flat case, but at N = 10 grains the chunked fill keeps the
+#   footprint modest: --jobs 10 completed in ~34 s at a peak driver RSS
+#   of ~1.1 GB. The advanced anisotropic example's --jobs 6 cap is a
+#   high-GRAIN-COUNT concern and does not bind here.
+#
+# HOW TO RUN
+#   grainsmith validate examples/hpc/2_cu_curved.yaml
+#   grainsmith generate examples/hpc/2_cu_curved.yaml --jobs 10
+
+meta:
+  title: "FCC Cu, 10 grains, anisotropic elongated grains (HPC)"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 282930
+
+box:
+  lengths: [360.0, 360.0, 360.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 10                 # == the recommended --jobs (see header)
+  min_seed_distance: auto
+  lloyd_iterations: 0
+
+crystal:
+  space_group:
+    number: 225              # Fm-3m
+  lattice:
+    a: 3.615                 # Cu, Å
+  wyckoff_sites:
+    - {element: Cu, coords: [0.0, 0.0, 0.0], letter: a}
+
+orientation:
+  scheme: random_uniform
+
+boundaries:
+  geometry: curved
+  curved:
+    method: anisotropic
+    aspect_ratio_range: [1.0, 2.5]   # up to 2.5:1 elongated grains
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"
+    policy: midpoint_merge   # elemental only; try keep_lower_id as well
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false
+  per_atom_margin: false
+
+output:
+  directory: ./out_hpc_cu_curved
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false

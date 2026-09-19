@@ -1,0 +1,88 @@
+# ===================== grainsmith run configuration =====================
+# Example: BCC Fe with ANISOTROPIC (elongated) grains + midpoint_merge.
+#
+# WHAT THIS TEACHES
+#   * boundaries.curved.method: anisotropic — each grain measures distance
+#     through its own random ellipsoidal metric (GBPD family), producing
+#     elongated/flattened grains as in rolled or columnar microstructures.
+#     aspect_ratio_range bounds the per-grain ellipsoid axis ratios.
+#   * overlap_removal.policy: midpoint_merge — an overlapping inter-grain
+#     pair is REPLACED by one atom at the (minimum-image) midpoint instead
+#     of deleting one side; allowed for ELEMENTAL systems only (a Cu-Ni
+#     merge would change composition — ConfigError).  Gate G7 still proves
+#     the final minimum distance >= cutoff afterwards.
+#   * BCC via SG 229 (Im-3m): the 2a site expands to the body-centered
+#     pair; d_nn = (sqrt(3)/2)·a ≈ 2.48 Å drives the "0.85*d_nn" cutoff.
+#   * SCOPE: the anisotropic metric has NO volume handle — combining it
+#     with grains.size_distribution is refused (config error). Volume
+#     targeting needs flat geometry or method: warp over base: power
+#     (see cu_curved_sizes.yaml for curved + prescribed volumes).
+#
+# HOW TO RUN
+#   grainsmith validate examples/grain_geometry/fe_bcc_anisotropic.yaml
+#   grainsmith generate examples/grain_geometry/fe_bcc_anisotropic.yaml
+#   Check grains.csv for the elongated grain volumes and gate G7's final
+#   minimum-distance report.
+
+meta:
+  title: "BCC Fe, 6 anisotropic grains, midpoint-merge overlap policy"
+  verbose: 1
+
+seed:
+  mode: fixed
+  value: 57721
+
+box:
+  lengths: [160.0, 160.0, 160.0]
+  periodic: [true, true, true]
+  vacuum: 0.0
+
+grains:
+  number: 6
+  min_seed_distance: auto
+  lloyd_iterations: 0
+
+crystal:
+  space_group:
+    number: 229              # Im-3m
+  lattice:
+    a: 2.866                 # alpha-Fe, Å
+  wyckoff_sites:
+    - {element: Fe, coords: [0.0, 0.0, 0.0], letter: a}
+
+orientation:
+  scheme: random_uniform
+
+boundaries:
+  geometry: curved
+  curved:
+    method: anisotropic
+    aspect_ratio_range: [1.0, 2.5]   # up to 2.5:1 elongated grains
+  overlap_removal:
+    enabled: true
+    cutoff: "0.85*d_nn"
+    policy: midpoint_merge   # elemental only; try keep_lower_id as well
+
+analysis:
+  voxel_grid: auto
+  gb_character: true
+  csl: false
+  per_atom_margin: false
+
+output:
+  directory: ./out_fe_anisotropic
+  lammps:
+    filename: polycrystal.data
+    atom_style: molecular
+  xyz:
+    enabled: true
+    filename: polycrystal.extxyz
+  csv:
+    grains: grains.csv
+    boundaries: boundaries.csv
+    vertices: vertices.csv
+    summary: summary.csv
+  gnuplot:
+    enabled: true
+  mesh:
+    enabled: false
