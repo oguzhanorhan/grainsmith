@@ -125,9 +125,9 @@ five use the shipped Materials Project CIFs in `examples/assets/`.
 
 The three `*_curved.yaml` files below are the **reference texture examples**:
 360 Å boxes, 10 grains (~20.7 nm), self-affine curved boundaries, and a
-`runtime.memory_limit_gb` guard. Each isolates one question a referee asks of
-a texture generator, and answers it with numbers in `summary.csv` rather than
-prose. All three run in 1.5–3 min on a laptop and pass every gate.
+`runtime.memory_limit_gb` guard. Each isolates one question a reader should
+ask of a texture generator, and answers it with numbers in `summary.csv`
+rather than prose. All three run in 1.5–3 min on a laptop and pass every gate.
 
 | file | teaches | ~atoms |
 |---|---|---|
