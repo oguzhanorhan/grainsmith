@@ -255,8 +255,8 @@ references:
     start: 1729
     notes: Neper — state-of-practice tessellation/meshing comparison.
 preferred-citation:
-  type: article
-  title: "grainsmith: A Generator of Polycrystalline Models for Atomistic
+  type: generic
+  title: "GRAINSMITH: A Generator of Polycrystalline Models for Atomistic
     Simulations with Statistical and Grain-Boundary Morphology Control"
   authors:
     - family-names: Orhan
@@ -268,6 +268,7 @@ preferred-citation:
       given-names: Soner
       affiliation: "Department of Physics, Fırat University, Elazığ, Türkiye"
       orcid: "https://orcid.org/0000-0003-4292-9187"
-  journal: Computer Physics Communications
   year: 2026
-  status: in-preparation
+  status: preprint
+  doi: 10.48550/arXiv.2609.22666
+  url: "https://arxiv.org/abs/2609.22666"

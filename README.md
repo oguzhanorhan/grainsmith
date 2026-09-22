@@ -309,8 +309,21 @@ minimize 1e-8 1e-10 1000 10000
 
 ## Citation
 
-A software paper describing `grainsmith` is in preparation for *Computer
-Physics Communications*. Until it appears, please cite the repository.
+If you use `grainsmith` in published work, please cite the paper
+([arXiv:2609.22666](https://arxiv.org/abs/2609.22666)),
+DOI: <https://doi.org/10.48550/arXiv.2609.22666>
+
+```bibtex
+@misc{orhan2026grainsmith,
+      title={GRAINSMITH: A Generator of Polycrystalline Models for Atomistic Simulations with Statistical and Grain-Boundary Morphology Control},
+      author={Oguzhan Orhan and Soner Özgen},
+      year={2026},
+      eprint={2609.22666},
+      archivePrefix={arXiv},
+      primaryClass={cond-mat.mtrl-sci},
+      url={https://arxiv.org/abs/2609.22666},
+}
+```
 
 ## License
 
